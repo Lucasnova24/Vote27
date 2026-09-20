@@ -1,0 +1,22 @@
+import { createClient } from '@supabase/supabase-js'
+
+const url = import.meta.env.VITE_SUPABASE_URL
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!url || !anonKey) {
+  // eslint-disable-next-line no-console
+  console.error(
+    'Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. Copy .env.example to .env.local and fill in your Supabase project values.',
+  )
+}
+
+// Note: intentionally untyped (no Database generic) — see src/lib/dbTypes.ts
+// for the row shapes, applied manually at each call site. Supabase's generated
+// types would work too (`supabase gen types typescript`), but require a live
+// project to generate against.
+export const supabase = createClient(url, anonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+})
