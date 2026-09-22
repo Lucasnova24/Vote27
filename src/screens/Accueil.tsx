@@ -1,171 +1,159 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, CANDS, DAYS_LEFT, LIVE_DEBATE, VOTE_RESULTS } from '../data'
-import { card, infoBox, mono, screenWrap, sectionLabel, serif } from '../styles'
+import { ACCENT, CANDS, DAYS_LEFT, EVENTS, EVENT_TAGS } from '../data'
+import { gapPage, h1Size } from '../styles'
+import Grid2 from '../components/Grid2'
+import { BellIcon, BoussoleIcon, ChevronRight, CheckIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
+  isWeb: boolean
 }
 
-export default function Accueil({ state: s, actions }: Props) {
+const toMin = (t: string) => {
+  const [h, m] = t.split(':')
+  return Number(h) * 60 + Number(m)
+}
+
+export default function Accueil({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
+  const gap = gapPage(isWeb)
 
-  const todos = [
-    { key: 'vote', title: 'Vote du jour', sub: 'Le vote obligatoire · 1 min', done: voteDone, onClick: actions.openRoute('vote') },
-    { key: 'quiz', title: 'Quiz du jour', sub: '5 questions · 2 min', done: s.quizDoneToday, onClick: actions.openRoute('quiz') },
-    { key: 'estimation', title: 'Estimation du 1er tour', sub: 'Clôture dimanche 8h', done: s.estSent, onClick: actions.openRoute('estimation') },
-    { key: 'boussole', title: 'Ta boussole', sub: '20 ou 24 questions', done: s.bDone, onClick: actions.openRoute('boussole') },
+  const rawTodos = [
+    { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
+    { k: 'quiz' as const, title: 'Quiz du jour', sub: '5 questions · 2 min', done: s.quizDoneToday, onClick: actions.openRoute('quiz'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
+    { k: 'bou' as const, title: 'Mes affinités', sub: '20 ou 100 questions', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
   ]
+  const todos = rawTodos.slice().sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1))
   const doneCount = todos.filter((t) => t.done).length
+  const ringOffset = (157.08 * (1 - doneCount / todos.length)).toFixed(2)
 
-  return (
-    <div style={screenWrap}>
-      <div>
-        <div style={sectionLabel}>Accueil — Jeudi 15 avril · {'J-' + DAYS_LEFT}</div>
-        <h1 style={{ margin: '6px 0 0', fontFamily: serif, fontSize: 32, lineHeight: 1.08, fontWeight: 600, letterSpacing: '-.02em' }}>
-          Le bulletin du jour
-        </h1>
-      </div>
+  const todays = EVENTS.filter((e) => e.day.indexOf("Aujourd'hui") === 0).slice().sort((a, b) => toMin(a.time) - toMin(b.time))
+  const nextEvt = todays[0] ?? null
+  const nextTg = nextEvt ? EVENT_TAGS[nextEvt.tag] : null
+  const nextLive = !!(nextEvt && nextEvt.live)
+  const nextBg = nextLive ? '#FFDFD8' : nextTg?.soft ?? '#FFDFD8'
+  const nextBc = nextLive ? '#F5C2B7' : '#E7E2D6'
+  const nextInk = nextLive ? '#8A1F0E' : nextTg?.ink ?? '#454A66'
+  const nextTitleColor = nextLive ? '#3D0E06' : '#14162B'
+  const nextBtnBg = nextLive ? '#C8341C' : '#14162B'
+  const nextCta = nextLive ? 'Voter pour le gagnant' : "Voir dans l'agenda"
+  const nextClick = nextLive ? actions.openRoute('debat') : actions.go('agenda')
 
-      <div style={card}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.02em' }}>À faire aujourd'hui</div>
-          <div style={{ fontFamily: mono, fontSize: 12, color: '#6b7392' }}>{doneCount + ' / 4'}</div>
+  const colA = (
+    <>
+      <section className="card" style={{ order: 1 }} aria-label="To do">
+        <div className="row" style={{ gap: 14, marginBottom: 16 }}>
+          <div style={{ position: 'relative', width: 60, height: 60, flex: 'none' }}>
+            <svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
+              <circle cx="30" cy="30" r="25" fill="none" stroke="#EFEBE2" strokeWidth={7} />
+              <circle className="ring" cx="30" cy="30" r="25" fill="none" stroke={ACCENT} strokeWidth={7} strokeLinecap="round" strokeDasharray="157.08" style={{ strokeDashoffset: ringOffset }} transform="rotate(-90 30 30)" />
+            </svg>
+            <span className="dsp num" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800 }}>{doneCount + ' / ' + todos.length}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>To do</h2>
+          </div>
         </div>
-        <div style={{ height: 4, borderRadius: 9, background: '#e8ebf5', overflow: 'hidden', marginBottom: 12 }}>
-          <div style={{ height: '100%', borderRadius: 9, transition: 'width .4s ease', width: (doneCount / 4 * 100) + '%', background: ACCENT }} />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="stk" style={{ gap: 8 }}>
           {todos.map((t) => (
-            <div key={t.key} onClick={t.onClick} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: 10, border: '1px solid #e8ebf5', borderRadius: 12, cursor: 'pointer', background: '#fbfcfe' }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, flex: 'none', background: t.done ? '#e7f0e8' : '#eef0f7', color: t.done ? '#2f6b3c' : ACCENT }}>
-                {t.done ? '✓' : '◆'}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, letterSpacing: '-.01em' }}>{t.title}</div>
-                <div style={{ fontSize: 11.5, color: '#6b7392', marginTop: 1 }}>{t.sub}</div>
-              </div>
-              <div style={{ fontSize: 11.5, color: '#6b7392', whiteSpace: 'nowrap' }}>{t.done ? 'Fait' : 'Y aller'} ›</div>
-            </div>
+            <button
+              key={t.k} type="button" onClick={t.onClick} className="lift row"
+              style={{
+                width: '100%', gap: t.done ? 10 : 12, minHeight: t.done ? 46 : 68, padding: t.done ? '4px 10px' : '10px 12px',
+                border: '1px solid #EDE9DF', borderRadius: 18, background: t.done ? '#F5FAF6' : '#FBFAF6',
+              }}
+            >
+              <span style={{ width: t.done ? 30 : 44, height: t.done ? 30 : 44, borderRadius: t.done ? 10 : 14, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: t.done ? '#DDF3E3' : t.chipBg, color: t.done ? '#14532D' : t.chipFg }}>
+                {t.k === 'vote' && <VoteIcon size={t.done ? 16 : 22} />}
+                {t.k === 'quiz' && <QuizIcon size={t.done ? 16 : 22} />}
+                {t.k === 'bou' && <BoussoleIcon size={t.done ? 16 : 22} />}
+              </span>
+              <span style={{ flex: 1, minWidth: 0, display: 'block', textAlign: 'left' }}>
+                <span style={{ display: 'block', fontSize: t.done ? 14 : 15.5, fontWeight: 700, letterSpacing: '-.01em' }}>{t.title}</span>
+                {!t.done && <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 1 }}>{t.sub}</span>}
+              </span>
+              {t.done ? (
+                <span className="tag" style={{ background: '#DDF3E3', color: '#14532D' }}><CheckIcon />Fait</span>
+              ) : (
+                <span className="row" style={{ gap: 2, fontSize: 13.5, fontWeight: 700, color: t.chipFg }}>Y aller<ChevronRight size={16} /></span>
+              )}
+            </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div onClick={actions.openRoute('programmes')} style={{ background: '#1b2a63', color: '#fff', borderRadius: 16, padding: 16, cursor: 'pointer' }}>
-        <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600, letterSpacing: '-.01em' }}>Les programmes, côte à côte</div>
-        <div style={{ fontSize: 12.5, lineHeight: 1.45, color: '#c3cbe8', marginTop: 6 }}>
-          Six thèmes, cinq candidats, une source vérifiable pour chaque position.
+      <section className="card" style={{ order: 4 }} aria-label="Sondage national">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+          <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Sondage national</h2>
+          <span style={{ fontSize: 13, color: '#5C617B' }}>Avril 2027</span>
         </div>
-        <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 9, padding: '8px 12px', fontSize: 12.5, fontWeight: 600 }}>
-          Lire les programmes ›
+        <div style={{ display: 'flex', gap: 3, height: 14, marginBottom: 8 }} aria-hidden="true">
+          {CANDS.map((c) => <div key={c.name} style={{ borderRadius: 99, flex: c.pct, background: c.color }} />)}
         </div>
-      </div>
-
-      <div style={card}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={sectionLabel}>Vote du jour · +15 ◆</div>
-          <div style={{ fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: '#e7f0e8', color: '#2f6b3c' }}>
-            {voteDone ? 'voté' : 'ouvert'}
-          </div>
-        </div>
-        <h2 style={{ margin: '10px 0 14px', fontFamily: serif, fontSize: 22, lineHeight: 1.2, fontWeight: 600, letterSpacing: '-.015em' }}>
-          Le vote devrait-il être obligatoire ?
-        </h2>
-        {!voteDone && (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <div onClick={actions.vote('oui')} style={{ flex: 1, textAlign: 'center', padding: 13, border: '1px solid #d3d9ec', borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: 'pointer', background: '#f7f9fd' }}>Oui</div>
-            <div onClick={actions.vote('non')} style={{ flex: 1, textAlign: 'center', padding: 13, border: '1px solid #d3d9ec', borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: 'pointer', background: '#f7f9fd' }}>Non</div>
-          </div>
-        )}
-        {voteDone && (
-          <div className="rise-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {VOTE_RESULTS(ACCENT).map((r) => (
-              <div key={r.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 600, marginBottom: 5 }}>
-                  <span>{r.label}</span>
-                  <span style={{ fontFamily: mono }}>{r.pct}</span>
-                </div>
-                <div style={{ height: 8, borderRadius: 9, background: '#eef0f7', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 9, transition: 'width .6s cubic-bezier(.2,.8,.2,1)', width: r.pct, background: r.color }} />
-                </div>
-              </div>
-            ))}
-            <div style={{ fontSize: 11.5, color: '#6b7392' }}>
-              Ton choix : <strong style={{ color: '#10162e' }}>{s.voteChoice === 'oui' ? 'Oui' : 'Non'}</strong> · +15 ◆ crédités. Résultat définitif à 20h.
-            </div>
-          </div>
-        )}
-        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #eef0f7', fontSize: 11.5, color: '#6b7392', fontFamily: mono }}>
-          12 480 citoyens ont glissé leur bulletin
-        </div>
-      </div>
-
-      <div style={card}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 600 }}>Sondage national</div>
-          <div style={{ fontSize: 11, color: '#6b7392' }}>Avril 2027</div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="stk">
           {CANDS.map((c) => (
-            <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10.5, fontWeight: 600, color: '#fff', background: c.color }}>
-                {c.initials}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                  <div style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{c.pct + '%'}</div>
-                </div>
-                <div style={{ fontSize: 11, color: '#6b7392', marginBottom: 5 }}>{c.party}</div>
-                <div style={{ height: 6, borderRadius: 9, background: '#eef0f7', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 9, width: c.pct + '%', background: c.color }} />
-                </div>
-              </div>
+            <div key={c.name} className="row sep" style={{ gap: 12, padding: '11px 0' }}>
+              <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
+              <span style={{ flex: 1, minWidth: 0, display: 'block' }}>
+                <span style={{ display: 'block', fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                <span style={{ display: 'block', fontSize: 13, color: '#5C617B' }}>{c.party}</span>
+              </span>
+              <span className="dsp num" style={{ fontSize: 24, fontWeight: 700, color: c.color }}>{c.pct + '%'}</span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+    </>
+  )
 
-      {LIVE_DEBATE && (
-        <div onClick={actions.openRoute('debat')} style={{ background: '#fff', border: '1px solid #e3e7f3', borderLeft: '3px solid #c02742', borderRadius: 16, padding: 16, cursor: 'pointer', boxShadow: '0 1px 2px rgba(16,22,46,.04)' }}>
-          <div style={sectionLabel}>Prochain débat</div>
-          <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 600, marginTop: 6 }}>Débat télévisé — France 2</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: '#6b7392', marginTop: 5 }}>
-            <span>Jeudi 15 avril · 21:00 ·</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#c02742', fontWeight: 600 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#c02742', display: 'inline-block', animation: 'pulseLive 1.6s infinite' }} />En direct
-            </span>
-          </div>
-          <div style={{ marginTop: 12, fontSize: 12.5, fontWeight: 600, color: ACCENT }}>Ouvrir la session live ›</div>
-        </div>
+  const colB = (
+    <>
+      {nextEvt && (
+        <button type="button" onClick={nextClick} className="lift" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
+          <span className="row" style={{ gap: 8 }}>
+            {nextLive && <span className="live" aria-hidden="true" />}
+            <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextEvt.tag}</span>
+          </span>
+          <span className="dsp" style={{ display: 'block', fontSize: 26, lineHeight: 1.05, fontWeight: 700, marginTop: 12, color: nextTitleColor }}>{nextEvt.title}</span>
+          <span className="num" style={{ display: 'block', fontSize: 14.5, color: nextInk, marginTop: 6 }}>{nextEvt.day.replace("Aujourd'hui · ", '') + ' · ' + nextEvt.time}</span>
+          <span className="btn" style={{ marginTop: 16, background: nextBtnBg }}>{nextCta}<ChevronRight size={16} /></span>
+        </button>
       )}
 
-      <div style={card}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={sectionLabel}>Quiz du jour</div>
-          <div style={{ fontFamily: mono, fontSize: 11.5, color: '#6b7392' }}>+20 ◆ / bonne réponse</div>
-        </div>
-        <div style={{ fontSize: 13.5, lineHeight: 1.5, marginTop: 8, color: '#3c4460' }}>
-          Cinq questions sur les institutions, une seule tentative par jour.
-        </div>
-        <div onClick={() => actions.openRoute('quiz')()} style={{ marginTop: 12, textAlign: 'center', padding: 12, borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: ACCENT }}>
-          Répondre
-        </div>
-      </div>
+      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
+        <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
+          <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
+            {CANDS.map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
+          </span>
+        </span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, cinq candidats, une source vérifiable pour chaque position.</span>
+        <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
+      </button>
 
-      <div style={infoBox}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', color: '#4d5680', fontWeight: 500 }}>Notifications</div>
-          <div style={{ fontSize: 11, color: '#4d5680' }}>{s.notifRead ? 'à jour' : '2 nouvelles'}</div>
+      <section className="card" style={{ order: 5, background: '#D8EBFB', borderColor: '#B7D6F0', boxShadow: 'none' }} aria-label="Notifications">
+        <div className="row" style={{ gap: 10, justifyContent: 'space-between' }}>
+          <span className="row" style={{ gap: 10 }}>
+            <span style={{ width: 36, height: 36, borderRadius: 12, background: '#0B6BB8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BellIcon /></span>
+            <span className="eyebrow" style={{ color: '#0A4577' }}>Notifications</span>
+          </span>
+          <span className="tag" style={{ background: '#fff', color: '#0A4577' }}>{s.notifRead ? 'à jour' : '2 nouvelles'}</span>
         </div>
-        <div style={{ fontSize: 13, lineHeight: 1.5, marginTop: 8, color: '#333c5e' }}>
-          Le vote du jour ferme à 20h. Ton estimation du 1er tour sera comparée dimanche soir.
-        </div>
-        <div onClick={actions.markRead} style={{ marginTop: 12, fontSize: 12, fontWeight: 600, color: '#4d5680', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-          Marquer comme lues
-        </div>
+        <div style={{ fontSize: 14.5, lineHeight: 1.5, marginTop: 12, color: '#0A2F52' }}>Le vote du jour ferme à 20h.</div>
+        <button type="button" onClick={actions.markRead} style={{ marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#0A4577', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Marquer comme lues</button>
+      </section>
+    </>
+  )
+
+  return (
+    <div className="rise stk" style={{ gap }}>
+      <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
+        <div className="eyebrow">{'Jeudi 15 avril · J-' + DAYS_LEFT + ' avant le 1er tour'}</div>
+        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
+      <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
   )
 }

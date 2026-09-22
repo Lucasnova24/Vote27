@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabaseClient'
 import type {
-  BoussoleResponseRow, DebatePredictionRow, EstimationRow, ProfileRow, QuizAttemptRow, VoteRow,
+  BoussoleResponseRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizAttemptRow, VoteRow,
 } from './lib/dbTypes'
 import type { AppState, AuthProvider, Route, Tab } from './types'
 import { BOUSSOLE, QUIZ } from './data'
@@ -13,13 +13,15 @@ const initialState: AppState = {
   tab: 'accueil', route: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null,
   quizDoneToday: false, quizScore: 0,
-  est: [20, 20, 20, 20, 20], estSent: false,
   bDone: false, bAnswers: [],
-  debPick: null,
+  debPick: null, firstRoundPick: null,
+  profileVille: '', profileRegion: '', profilePays: '', profileCP: '', profileTel: '', profileInterets: '',
   quizI: 0, quizSel: null, quizFinished: false,
   bMode: null, bI: 0,
+  reminders: [],
+  quizCorrectTotal: 0, quizAttemptsTotal: 0,
   authed: false, authView: 'signup', authProvider: null,
-  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authError: null,
+  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authDob: '', authSex: '', authError: null,
 }
 
 function providerFromUser(user: User): AuthProvider {
@@ -42,13 +44,13 @@ function mapAuthError(message: string): string {
 
 async function loadUserData(user: User): Promise<Partial<AppState>> {
   const uid = user.id
-  const [profileRes, voteRes, quizRes, bousRes, estRes, debRes] = await Promise.all([
+  const [profileRes, voteRes, quizRes, bousRes, debRes, frRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
     supabase.from('votes').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('quiz_attempts').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('boussole_responses').select('*').eq('user_id', uid).maybeSingle(),
-    supabase.from('estimations').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('debate_predictions').select('*').eq('user_id', uid).maybeSingle(),
+    supabase.from('first_round_picks').select('*').eq('user_id', uid).maybeSingle(),
   ])
 
   let profile = profileRes.data as ProfileRow | null
@@ -66,19 +68,27 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
   const vote = voteRes.data as VoteRow | null
   const quiz = quizRes.data as QuizAttemptRow | null
   const bous = bousRes.data as BoussoleResponseRow | null
-  const est = estRes.data as EstimationRow | null
   const deb = debRes.data as DebatePredictionRow | null
+  const fr = frRes.data as FirstRoundPickRow | null
 
   return {
     loading: false, authed: true, authBusy: false, authError: null,
     tab: 'accueil', route: null,
     points: profile?.points ?? 0,
     notifRead: profile?.notif_read ?? false,
+    quizCorrectTotal: profile?.quiz_correct_total ?? 0,
+    quizAttemptsTotal: profile?.quiz_attempts_total ?? 0,
     authProvider: providerFromUser(user),
     authEmail: user.email ?? '',
     authFirst: profile?.first_name ?? '',
     authLast: profile?.last_name ?? '',
     authPseudo: profile?.pseudo ?? '',
+    profileVille: profile?.ville ?? '',
+    profileRegion: profile?.region ?? '',
+    profilePays: profile?.pays ?? '',
+    profileCP: profile?.code_postal ?? '',
+    profileTel: profile?.telephone ?? '',
+    profileInterets: profile?.interets ?? '',
     voteChoice: vote?.choice ?? null,
     quizDoneToday: !!quiz,
     quizScore: quiz?.score ?? 0,
@@ -86,9 +96,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     bDone: !!bous,
     bAnswers: bous?.answers ?? [],
     bMode: null, bI: 0,
-    est: est?.est_values ?? [20, 20, 20, 20, 20],
-    estSent: est?.submitted ?? false,
     debPick: deb?.candidate_index ?? null,
+    firstRoundPick: fr?.candidate_index ?? null,
   }
 }
 
@@ -157,8 +166,14 @@ export function useAppState() {
     update((s) => {
       if (s.quizSel !== null) return null
       const ok = i === QUIZ[s.quizI].a
-      if (ok && uid) supabase.rpc('increment_points', { delta: 20 }).then(logIfError('increment_points'))
-      return { quizSel: i, quizScore: s.quizScore + (ok ? 1 : 0), points: s.points + (ok ? 20 : 0) }
+      if (uid) {
+        if (ok) supabase.rpc('increment_points', { delta: 20 }).then(logIfError('increment_points'))
+        supabase.rpc('increment_quiz_stat', { is_correct: ok }).then(logIfError('increment_quiz_stat'))
+      }
+      return {
+        quizSel: i, quizScore: s.quizScore + (ok ? 1 : 0), points: s.points + (ok ? 20 : 0),
+        quizAttemptsTotal: s.quizAttemptsTotal + 1, quizCorrectTotal: s.quizCorrectTotal + (ok ? 1 : 0),
+      }
     })
   }
 
@@ -194,29 +209,7 @@ export function useAppState() {
   }
 
   const bStart = () => update({ bMode: 'court', bI: 0, bAnswers: [] })
-
-  const setEst = (i: number) => (e: ChangeEvent<HTMLInputElement>) => {
-    const v = Number(e.target.value)
-    update((s) => {
-      const est = s.est.slice()
-      est[i] = v
-      return { est, estSent: false }
-    })
-  }
-
-  const sendEstimate = () => {
-    const s = stateRef.current
-    const total = s.est.reduce((a, b) => a + b, 0)
-    if (total < 98 || total > 102) return
-    update({ estSent: true })
-    const uid = userIdRef.current
-    if (uid) {
-      supabase
-        .from('estimations')
-        .upsert({ user_id: uid, est_values: s.est, submitted: true })
-        .then(logIfError('estimations upsert'))
-    }
-  }
+  const bRestart = () => update({ bMode: null, bI: 0, bAnswers: [], bDone: false })
 
   const markRead = () => {
     update({ notifRead: true })
@@ -237,6 +230,24 @@ export function useAppState() {
         .then(logIfError('debate_predictions upsert'))
     }
   }
+
+  const pickFirstRound = (i: number) => () => {
+    update({ firstRoundPick: i })
+    const uid = userIdRef.current
+    if (uid) {
+      supabase
+        .from('first_round_picks')
+        .upsert({ user_id: uid, candidate_index: i })
+        .then(logIfError('first_round_picks upsert'))
+    }
+  }
+
+  const changeFirstRound = () => update({ firstRoundPick: null })
+
+  const toggleReminder = (title: string) => () => update((s) => {
+    const on = s.reminders.indexOf(title) !== -1
+    return { reminders: on ? s.reminders.filter((t) => t !== title) : s.reminders.concat([title]) }
+  })
 
   const authApple = () => {
     update({ authBusy: true, authError: null })
@@ -266,6 +277,8 @@ export function useAppState() {
     if (s.authView === 'signup') {
       if (!s.authFirst.trim() || !s.authLast.trim()) return update({ authError: 'Indique ton prénom et ton nom.' })
       if (s.authPseudo.trim().length < 3) return update({ authError: 'Le pseudo doit faire 3 caractères minimum.' })
+      if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
+      if (!s.authSex) return update({ authError: 'Sélectionne une option pour le sexe.' })
     }
     update({ authBusy: true, authError: null })
     ;(async () => {
@@ -298,6 +311,35 @@ export function useAppState() {
   const setAuthPseudo = (e: ChangeEvent<HTMLInputElement>) => update({ authPseudo: e.target.value, authError: null })
   const setAuthEmail = (e: ChangeEvent<HTMLInputElement>) => update({ authEmail: e.target.value, authError: null })
   const setAuthPass = (e: ChangeEvent<HTMLInputElement>) => update({ authPass: e.target.value, authError: null })
+  const setAuthDob = (e: ChangeEvent<HTMLInputElement>) => update({ authDob: e.target.value, authError: null })
+  const setAuthSex = (e: ChangeEvent<HTMLSelectElement>) => update({ authSex: e.target.value, authError: null })
+
+  const setProfileVille = (e: ChangeEvent<HTMLInputElement>) => update({ profileVille: e.target.value })
+  const setProfileRegion = (e: ChangeEvent<HTMLInputElement>) => update({ profileRegion: e.target.value })
+  const setProfilePays = (e: ChangeEvent<HTMLInputElement>) => update({ profilePays: e.target.value })
+  const setProfileCP = (e: ChangeEvent<HTMLInputElement>) => update({ profileCP: e.target.value })
+  const setProfileTel = (e: ChangeEvent<HTMLInputElement>) => update({ profileTel: e.target.value })
+  const setProfileInterets = (e: ChangeEvent<HTMLInputElement>) => update({ profileInterets: e.target.value })
+
+  const saveProfileExtra = () => {
+    const s = stateRef.current
+    const uid = userIdRef.current
+    if (uid) {
+      supabase
+        .from('profiles')
+        .update({
+          ville: s.profileVille || null,
+          region: s.profileRegion || null,
+          pays: s.profilePays || null,
+          code_postal: s.profileCP || null,
+          telephone: s.profileTel || null,
+          interets: s.profileInterets || null,
+        })
+        .eq('id', uid)
+        .then(logIfError('profiles extra fields update'))
+    }
+    back()
+  }
 
   const logout = () => {
     supabase.auth.signOut().then(logIfError('signOut'))
@@ -308,8 +350,9 @@ export function useAppState() {
     update({
       voteChoice: null, points: 0,
       quizI: 0, quizSel: null, quizScore: 0, quizFinished: false, quizDoneToday: false,
-      notifRead: false, filter: 'Tout', est: [20, 20, 20, 20, 20], estSent: false,
+      notifRead: false, filter: 'Tout',
       bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debPick: null,
+      firstRoundPick: null, reminders: [], quizCorrectTotal: 0, quizAttemptsTotal: 0,
       tab: 'accueil', route: null,
     })
     if (uid) supabase.rpc('reset_progress').then(logIfError('reset_progress'))
@@ -318,10 +361,13 @@ export function useAppState() {
   return {
     state,
     actions: {
-      go, openRoute, back, vote, answer, next, bAnswer, bStart, setEst, sendEstimate,
-      markRead, setFilter, setTheme, setDebPick,
+      go, openRoute, back, vote, answer, next, bAnswer, bStart, bRestart,
+      markRead, setFilter, setTheme, setDebPick, pickFirstRound, changeFirstRound,
+      toggleReminder,
       authApple, authGoogle, authGuest, submitAuth, toggleAuthView,
-      setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass,
+      setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
+      setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
+      saveProfileExtra,
       logout, resetAll,
     },
   }
