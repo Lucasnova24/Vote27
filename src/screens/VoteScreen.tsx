@@ -52,7 +52,7 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
                 <div className="bar" style={{ height: 14 }}><i style={{ width: r.pct, background: r.color }} /></div>
               </div>
             ))}
-            <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>12 480 bulletins · clôture 20:00</div>
+            <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>Clôture 20:00</div>
           </div>
           <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 22, padding: 22, textAlign: 'center' }}>
             <div className="dsp num" style={{ fontSize: 44, fontWeight: 800, color: '#F0A03C', lineHeight: 1 }}>+15 ◆</div>
