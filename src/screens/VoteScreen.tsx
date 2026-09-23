@@ -1,65 +1,64 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT, VOTE_RESULTS } from '../data'
-import { backLink, infoBox, mono, primaryButton, screenWrap, sectionLabel, serif } from '../styles'
+import { backLink, flowWrap, h1Size } from '../styles'
+import { ChevronLeft } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
+  isWeb: boolean
 }
 
-export default function VoteScreen({ state: s, actions }: Props) {
+export default function VoteScreen({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
 
   return (
-    <div className="rise-in" style={screenWrap}>
-      <div onClick={actions.back} style={backLink}>‹ Retour</div>
-      <div>
-        <div style={sectionLabel}>Vote du jour · ferme à 20h</div>
-        <h1 style={{ margin: '8px 0 0', fontFamily: serif, fontSize: 29, lineHeight: 1.15, fontWeight: 600, letterSpacing: '-.02em' }}>
-          Le vote devrait-il être obligatoire ?
-        </h1>
+    <div className="rise" style={flowWrap(isWeb)}>
+      <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Retour</button>
+      <div className="stk" style={{ gap: 10 }}>
+        <div className="eyebrow">Vote du jour · ferme à 20h</div>
+        <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.04, fontWeight: 700 }}>Le vote devrait-il être obligatoire ?</h1>
       </div>
-      <div style={{ ...infoBox, borderRadius: 14, padding: 14, fontSize: 12.5, lineHeight: 1.55, color: '#4d5680' }}>
+      <div style={{ background: '#E3E7FF', borderRadius: 18, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.55, color: '#1F2A8A' }}>
         Question posée à tous les inscrits. Un seul bulletin par jour, modifiable jusqu'à 20h. Le résultat est publié ce soir avec le détail par tranche d'âge.
       </div>
 
       {!voteDone && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div onClick={actions.vote('oui')} style={{ padding: 20, border: '1.5px solid #d3d9ec', borderRadius: 16, background: '#fff', cursor: 'pointer' }}>
-            <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600 }}>Oui</div>
-            <div style={{ fontSize: 12.5, color: '#6b7392', marginTop: 3 }}>Voter serait un devoir civique sanctionné</div>
-          </div>
-          <div onClick={actions.vote('non')} style={{ padding: 20, border: '1.5px solid #d3d9ec', borderRadius: 16, background: '#fff', cursor: 'pointer' }}>
-            <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600 }}>Non</div>
-            <div style={{ fontSize: 12.5, color: '#6b7392', marginTop: 3 }}>L'abstention reste une expression politique</div>
-          </div>
+        <div className="stk" style={{ gap: 12 }}>
+          <button type="button" onClick={actions.vote('oui')} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#E3E7FF', border: '1.5px solid #B8C0F5', textAlign: 'left' }}>
+            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#1F2A8A', lineHeight: 1 }}>Oui</span>
+            <span style={{ display: 'block', fontSize: 14.5, color: '#2A3596', marginTop: 6 }}>Voter serait un devoir civique sanctionné</span>
+          </button>
+          <button type="button" onClick={actions.vote('non')} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#FFEBC6', border: '1.5px solid #F2CD86', textAlign: 'left' }}>
+            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#6E3A00', lineHeight: 1 }}>Non</span>
+            <span style={{ display: 'block', fontSize: 14.5, color: '#7A4300', marginTop: 6 }}>L'abstention reste une expression politique</span>
+          </button>
         </div>
       )}
 
       {voteDone && (
-        <div className="rise-in" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="stk" style={{ gap: 14 }}>
+          <div className="card rise stk" style={{ gap: 16 }}>
             {VOTE_RESULTS(ACCENT).map((r) => (
               <div key={r.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
-                  <span>{r.label}</span>
-                  <span style={{ fontFamily: mono }}>{r.pct}</span>
+                <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span className="row" style={{ gap: 8, fontSize: 16, fontWeight: 700 }}>
+                    {r.label}
+                    {s.voteChoice === r.label.toLowerCase() && <span className="tag" style={{ background: '#171B3C', color: '#fff' }}>Ton choix</span>}
+                  </span>
+                  <span className="dsp num" style={{ fontSize: 26, fontWeight: 700 }}>{r.pct}</span>
                 </div>
-                <div style={{ height: 10, borderRadius: 9, background: '#eef0f7', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 9, transition: 'width .6s cubic-bezier(.2,.8,.2,1)', width: r.pct, background: r.color }} />
-                </div>
+                <div className="bar" style={{ height: 14 }}><i style={{ width: r.pct, background: r.color }} /></div>
               </div>
             ))}
-            <div style={{ fontSize: 11.5, color: '#6b7392', fontFamily: mono, paddingTop: 4, borderTop: '1px solid #eef0f7' }}>
-              12 480 bulletins · clôture 20:00
-            </div>
+            <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>12 480 bulletins · clôture 20:00</div>
           </div>
-          <div style={{ background: '#1b2a63', color: '#fff', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-            <div style={{ fontFamily: mono, fontSize: 24, fontWeight: 600 }}>+15 ◆</div>
-            <div style={{ fontSize: 12.5, color: '#c3cbe8', marginTop: 4 }}>Bulletin enregistré : {s.voteChoice === 'oui' ? 'Oui' : 'Non'}</div>
+          <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 22, padding: 22, textAlign: 'center' }}>
+            <div className="dsp num" style={{ fontSize: 44, fontWeight: 800, color: '#F0A03C', lineHeight: 1 }}>+15 ◆</div>
+            <div style={{ fontSize: 14.5, color: '#B9BEDD', marginTop: 8 }}>{'Bulletin enregistré : ' + (s.voteChoice === 'oui' ? 'Oui' : 'Non')}</div>
           </div>
-          <div onClick={actions.back} style={primaryButton(ACCENT)}>Retour au bulletin</div>
+          <button type="button" onClick={actions.back} className="btn" style={{ background: ACCENT }}>Retour au bulletin</button>
         </div>
       )}
     </div>

@@ -1,129 +1,153 @@
-import type { CSSProperties } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
-import { serif } from '../styles'
+import { AppleLogo, GoogleLogo, LogoDiamond } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
+  isWeb: boolean
 }
 
-const inputStyle: CSSProperties = {
-  width: '100%',
-  height: 42,
-  padding: '0 12px',
-  border: '1px solid #d9dfee',
-  borderRadius: 11,
-  fontFamily: "'IBM Plex Sans',sans-serif",
-  fontSize: 13.5,
-  color: '#10162e',
-  background: '#fbfcfe',
-  outline: 'none',
-}
-
-const fieldLabel: CSSProperties = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: '#6b7392',
-  marginBottom: 5,
-}
-
-export default function Auth({ state: s, actions }: Props) {
+export default function Auth({ state: s, actions, isWeb }: Props) {
   const isSignup = s.authView === 'signup'
   const busy = s.authBusy
+  const title = isSignup ? 'Crée ton compte' : 'Bon retour'
+  const sub = isSignup
+    ? 'Un compte pour retrouver tes votes, tes affinités et ta progression sur tous tes appareils.'
+    : 'Connecte-toi pour retrouver ta progression et tes votes enregistrés.'
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 40, background: '#eef0f7', overflowY: 'auto', display: 'flex' }}>
-      <div className="rise-in" style={{ margin: 'auto', width: '100%', maxWidth: 400, padding: '44px 22px 34px', display: 'flex', flexDirection: 'column', gap: 16, opacity: busy ? 0.7 : 1, pointerEvents: busy ? 'none' : 'auto' }}>
-        <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 700, letterSpacing: '-.02em' }}>
-          Vote<span style={{ color: ACCENT }}>2027</span>
-        </div>
-
-        <div>
-          <h1 style={{ margin: '0 0 6px', fontFamily: serif, fontSize: 30, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-.02em' }}>
-            {isSignup ? 'Crée ton compte' : 'Bon retour'}
-          </h1>
-          <div style={{ fontSize: 13, color: '#6b7392', lineHeight: 1.45 }}>
-            {isSignup
-              ? 'Un compte pour retrouver tes votes, ta boussole et ta progression sur tous tes appareils.'
-              : 'Connecte-toi pour retrouver ta progression et tes votes enregistrés.'}
+    <div style={{ position: 'relative', display: 'flex', minHeight: '100dvh', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
+      {isWeb && (
+        <div style={{ flex: 1, minWidth: 0, background: '#171B3C', color: '#fff', padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div className="row" style={{ gap: 10 }}>
+            <span style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ACCENT }}>
+              <LogoDiamond size={18} />
+            </span>
+            <span className="dsp" style={{ fontSize: 24, fontWeight: 800 }}>Vote<span style={{ color: '#B8C0F5' }}>2027</span></span>
+          </div>
+          <div className="stk" style={{ gap: 32 }}>
+            <div className="dsp" style={{ fontSize: 50, lineHeight: 1.04, fontWeight: 700, maxWidth: 520 }}>
+              Six thèmes, cinq candidats, une source vérifiable pour chaque position.
+            </div>
+            <div style={{ display: 'flex', gap: 6, height: 16, maxWidth: 520 }} aria-hidden="true">
+              <div style={{ flex: 26, borderRadius: 99, background: '#5B6DF0' }} />
+              <div style={{ flex: 23, borderRadius: 99, background: '#2FB39F' }} />
+              <div style={{ flex: 19, borderRadius: 99, background: '#F0A03C' }} />
+              <div style={{ flex: 17, borderRadius: 99, background: '#9A78F2' }} />
+              <div style={{ flex: 15, borderRadius: 99, background: '#EF7C97' }} />
+            </div>
+          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.55, color: '#A7ADD3', maxWidth: 460 }}>
+            Vote 2027 est une application civique indépendante. Les candidats et sondages affichés ici sont fictifs.
           </div>
         </div>
+      )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-          <div
-            onClick={actions.authApple}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, height: 48, borderRadius: 13, background: '#10162e', color: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
-          >
-            <svg width="15" height="17" viewBox="0 0 15 17" fill="none">
-              <path d="M10.4 8.9c0-2 1.6-3 1.7-3.1-.9-1.4-2.4-1.5-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.3 0-2.6.8-3.3 2-1.4 2.5-.4 6.1 1 8.1.7 1 1.5 2.1 2.5 2 1-.1 1.4-.6 2.6-.6s1.5.6 2.6.6c1.1 0 1.8-1 2.4-2 .8-1.1 1.1-2.2 1.1-2.3-.1 0-2.1-.8-2.1-3.1Z" fill="currentColor" />
-              <path d="M8.9 2.9c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.2 1.2-.5.6-.9 1.5-.8 2.3.9.1 1.7-.5 2.2-1.1Z" fill="currentColor" />
-            </svg>
-            Continuer avec Apple
-          </div>
-          <div
-            onClick={actions.authGoogle}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, height: 48, borderRadius: 13, background: '#fff', border: '1px solid #d9dfee', color: '#10162e', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 18 18">
-              <path d="M17.6 9.2c0-.6-.1-1.2-.2-1.8H9v3.4h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5Z" fill="#4285F4" />
-              <path d="M9 18c2.4 0 4.5-.8 6-2.3l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.5-1.6-5.2-3.8H.8v2.3A9 9 0 0 0 9 18Z" fill="#34A853" />
-              <path d="M3.8 10.6a5.4 5.4 0 0 1 0-3.4V4.9H.8a9 9 0 0 0 0 8.1l3-2.4Z" fill="#FBBC05" />
-              <path d="M9 3.6c1.3 0 2.5.5 3.4 1.4l2.6-2.6A9 9 0 0 0 .8 4.9l3 2.3C4.5 5 6.6 3.6 9 3.6Z" fill="#EA4335" />
-            </svg>
-            Continuer avec Google Play
-          </div>
-        </div>
+      <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', display: 'flex' }}>
+        <div className="rise" style={{ margin: 'auto', width: '100%', maxWidth: 420, padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', gap: 18, opacity: busy ? 0.7 : 1, pointerEvents: busy ? 'none' : 'auto' }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#aab2cc', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase' }}>
-          <div style={{ flex: 1, height: 1, background: '#dfe3f0' }} />ou<div style={{ flex: 1, height: 1, background: '#dfe3f0' }} />
-        </div>
-
-        <div style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 16, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {isSignup && (
-            <>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={fieldLabel}>Prénom</div>
-                  <input value={s.authFirst} onChange={actions.setAuthFirst} placeholder="Léa" style={inputStyle} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={fieldLabel}>Nom</div>
-                  <input value={s.authLast} onChange={actions.setAuthLast} placeholder="Martin" style={inputStyle} />
-                </div>
+          {!isWeb && (
+            <div className="stk" style={{ gap: 16 }}>
+              <div className="row" style={{ gap: 10 }}>
+                <span style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ACCENT }}>
+                  <LogoDiamond size={18} />
+                </span>
+                <span className="dsp" style={{ fontSize: 24, fontWeight: 800 }}>Vote<span style={{ color: ACCENT }}>2027</span></span>
               </div>
-              <div>
-                <div style={fieldLabel}>Pseudo</div>
-                <input value={s.authPseudo} onChange={actions.setAuthPseudo} placeholder="lea_m" style={inputStyle} />
+              <div style={{ display: 'flex', gap: 5, height: 8 }} aria-hidden="true">
+                <div style={{ flex: 26, borderRadius: 99, background: '#3B4FD8' }} />
+                <div style={{ flex: 23, borderRadius: 99, background: '#0E7A6B' }} />
+                <div style={{ flex: 19, borderRadius: 99, background: '#A85400' }} />
+                <div style={{ flex: 17, borderRadius: 99, background: '#6B45D9' }} />
+                <div style={{ flex: 15, borderRadius: 99, background: '#C2385A' }} />
               </div>
-            </>
+            </div>
           )}
-          <div>
-            <div style={fieldLabel}>Adresse e-mail</div>
-            <input value={s.authEmail} onChange={actions.setAuthEmail} placeholder="lea.martin@mail.fr" style={inputStyle} />
-          </div>
-          <div>
-            <div style={fieldLabel}>Mot de passe</div>
-            <input type="password" value={s.authPass} onChange={actions.setAuthPass} placeholder="8 caractères minimum" style={inputStyle} />
-          </div>
-          {s.authError && <div style={{ fontSize: 11.5, color: '#b03a4a', fontWeight: 500 }}>{s.authError}</div>}
-          <div onClick={actions.submitAuth} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 46, borderRadius: 12, fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer', marginTop: 2, background: ACCENT }}>
-            {busy ? '…' : isSignup ? 'Créer mon compte' : 'Se connecter'}
-          </div>
-        </div>
 
-        <div style={{ textAlign: 'center', fontSize: 12.5, color: '#6b7392' }}>
-          {isSignup ? 'Tu as déjà un compte ?' : 'Pas encore de compte ?'}{' '}
-          <span onClick={actions.toggleAuthView} style={{ fontWeight: 600, color: ACCENT, cursor: 'pointer' }}>
-            {isSignup ? 'Se connecter' : "S'inscrire"}
-          </span>
-        </div>
-        <div onClick={actions.authGuest} style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#6b7392', cursor: 'pointer', padding: 2 }}>
-          Continuer sans compte
-        </div>
-        <div style={{ fontSize: 11, color: '#8189a8', lineHeight: 1.5, textAlign: 'center', padding: '0 6px' }}>
-          En continuant, tu acceptes les conditions d'utilisation et la politique de confidentialité. Tes données sont stockées de façon sécurisée via Supabase.
+          <div className="stk" style={{ gap: 8 }}>
+            <h1 className="dsp" style={{ margin: 0, fontSize: 36, lineHeight: 1.02, fontWeight: 700 }}>{title}</h1>
+            <div style={{ fontSize: 15, lineHeight: 1.5, color: '#454A66' }}>{sub}</div>
+          </div>
+
+          <div className="stk" style={{ gap: 10 }}>
+            <button type="button" onClick={actions.authApple} className="btn" style={{ background: '#14162B' }}>
+              <AppleLogo size={16} />Continuer avec Apple
+            </button>
+            <button type="button" onClick={actions.authGoogle} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>
+              <GoogleLogo size={17} />Continuer avec Google Play
+            </button>
+          </div>
+
+          <div className="row" style={{ gap: 12, color: '#5C617B', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>
+            <span style={{ flex: 1, height: 1, background: '#DDD7C9' }} />ou<span style={{ flex: 1, height: 1, background: '#DDD7C9' }} />
+          </div>
+
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 16 }}>
+            {isSignup && (
+              <>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <label className="lbl" htmlFor="au-first">Prénom</label>
+                    <input id="au-first" className="inp" autoComplete="given-name" value={s.authFirst} onChange={actions.setAuthFirst} placeholder="Léa" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <label className="lbl" htmlFor="au-last">Nom</label>
+                    <input id="au-last" className="inp" autoComplete="family-name" value={s.authLast} onChange={actions.setAuthLast} placeholder="Martin" />
+                  </div>
+                </div>
+                <div>
+                  <label className="lbl" htmlFor="au-pseudo">Pseudo</label>
+                  <input id="au-pseudo" className="inp" autoComplete="nickname" value={s.authPseudo} onChange={actions.setAuthPseudo} placeholder="lea_m" />
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <label className="lbl" htmlFor="au-dob">Date de naissance</label>
+                    <input id="au-dob" className="inp" type="date" autoComplete="bday" value={s.authDob} onChange={actions.setAuthDob} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <label className="lbl" htmlFor="au-sex">Sexe</label>
+                    <select id="au-sex" className="inp" value={s.authSex} onChange={actions.setAuthSex}>
+                      <option value="">Choisir</option>
+                      <option value="femme">Femme</option>
+                      <option value="homme">Homme</option>
+                      <option value="autre">Autres / Ne souhaite pas s'exprimer</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+            <div>
+              <label className="lbl" htmlFor="au-email">Adresse e-mail</label>
+              <input id="au-email" className="inp" type="email" autoComplete="email" value={s.authEmail} onChange={actions.setAuthEmail} placeholder="lea.martin@mail.fr" />
+            </div>
+            <div>
+              <label className="lbl" htmlFor="au-pass">Mot de passe</label>
+              <input id="au-pass" className="inp" type="password" autoComplete="current-password" value={s.authPass} onChange={actions.setAuthPass} placeholder="8 caractères minimum" />
+            </div>
+            {s.authError && (
+              <div role="alert" style={{ fontSize: 13, fontWeight: 600, color: '#8A1F0E', background: '#FFDFD8', borderRadius: 12, padding: '10px 12px' }}>{s.authError}</div>
+            )}
+            <button type="button" onClick={actions.submitAuth} className="btn" style={{ background: ACCENT }}>
+              {busy ? '…' : isSignup ? 'Créer mon compte' : 'Se connecter'}
+            </button>
+          </div>
+
+          <div className="stk" style={{ alignItems: 'center', gap: 2 }}>
+            <div style={{ fontSize: 14, color: '#454A66' }}>
+              {isSignup ? 'Tu as déjà un compte ?' : 'Pas encore de compte ?'}{' '}
+              <button type="button" onClick={actions.toggleAuthView} style={{ fontWeight: 700, color: ACCENT, minHeight: 44, padding: '0 4px', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                {isSignup ? 'Se connecter' : "S'inscrire"}
+              </button>
+            </div>
+            <button type="button" onClick={actions.authGuest} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>
+              Continuer sans compte
+            </button>
+          </div>
+          <div style={{ fontSize: 12, color: '#5C617B', lineHeight: 1.55, textAlign: 'center' }}>
+            En continuant, tu acceptes les conditions d'utilisation et la politique de confidentialité. Tes données sont stockées de façon sécurisée via Supabase.
+          </div>
         </div>
       </div>
     </div>

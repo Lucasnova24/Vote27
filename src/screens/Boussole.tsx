@@ -1,110 +1,117 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, BOUSSOLE, BOUSSOLE_SCALE, BOUSSOLE_SEED, CANDS } from '../data'
-import { backLink, card, h1, infoBox, mono, primaryButton, screenWrap, sectionLabel, serif } from '../styles'
+import { ACCENT, BOUSSOLE, BOUSSOLE_SCALE, BOUSSOLE_SEED, CANDS, THEME_STYLE } from '../data'
+import { backLink, flowWrap, h1Size, qSize } from '../styles'
+import { ChevronLeft } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
+  isWeb: boolean
 }
 
-export default function Boussole({ state: s, actions }: Props) {
+export default function Boussole({ state: s, actions, isWeb }: Props) {
   const bIntro = !s.bMode && !s.bDone
   const bRunning = !!s.bMode && !s.bDone
   const bq = BOUSSOLE[Math.min(s.bI, BOUSSOLE.length - 1)]
+  const bts = THEME_STYLE[bq.t]
 
   const bias = s.bAnswers.reduce((a, b) => a + b, 0)
   const bMatches = CANDS.map((c, i) => ({
-    name: c.name,
-    color: c.color,
+    name: c.name, color: c.color, initials: c.initials,
     pct: Math.max(18, Math.min(94, BOUSSOLE_SEED[i] + bias * (i % 2 === 0 ? 2 : -2))),
   })).sort((a, b) => b.pct - a.pct)
 
   return (
-    <div className="rise-in" style={screenWrap}>
-      <div onClick={actions.back} style={backLink}>‹ Retour</div>
+    <div className="rise" style={flowWrap(isWeb)}>
+      <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Retour</button>
 
       {bIntro && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <div style={sectionLabel}>Ma boussole</div>
-            <h1 style={h1}>Où vous situez-vous ?</h1>
-            <div style={{ fontSize: 13, color: '#6b7392' }}>Vos réponses restent sur cet appareil.</div>
+        <div className="stk" style={{ gap: 16 }}>
+          <div className="stk" style={{ gap: 8 }}>
+            <div className="eyebrow" style={{ color: '#3F238F' }}>Mes affinités</div>
+            <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Où vous situez-vous ?</h1>
+            <div style={{ fontSize: 15, color: '#454A66' }}>Vos réponses restent sur cet appareil.</div>
           </div>
-          <div style={{ ...infoBox, borderRadius: 14, padding: 14 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 6 }}>Comment ça marche</div>
-            <div style={{ fontSize: 12.5, lineHeight: 1.55, color: '#4d5680' }}>
+          <div style={{ background: '#E8E0FF', borderRadius: 20, padding: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#2E1A70', marginBottom: 6 }}>Comment ça marche</div>
+            <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>
               Vous répondez à des affirmations. Vos positions sont comparées à celles des candidats, extraites de leurs prises de position publiques et sourcées une par une. Ce n'est pas une recommandation de vote.
             </div>
           </div>
-          <div onClick={actions.bStart} style={{ background: '#fff', border: '1.5px solid #d3d9ec', borderRadius: 16, padding: 16, cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600 }}>Version courte</div>
-              <div style={{ fontFamily: mono, fontSize: 12, color: '#6b7392' }}>20 questions</div>
-            </div>
-            <div style={{ fontSize: 12.5, color: '#6b7392', marginTop: 5 }}>Environ 4 minutes. Les six thèmes principaux.</div>
-          </div>
-          <div onClick={actions.bStart} style={{ background: '#fff', border: '1.5px solid #d3d9ec', borderRadius: 16, padding: 16, cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600 }}>Version longue</div>
-              <div style={{ fontFamily: mono, fontSize: 12, color: '#6b7392' }}>24 questions</div>
-            </div>
-            <div style={{ fontSize: 12.5, color: '#6b7392', marginTop: 5 }}>Environ 8 minutes. Résultats détaillés thème par thème.</div>
-          </div>
-          <div style={card}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 6 }}>Limites</div>
-            <div style={{ fontSize: 12.5, lineHeight: 1.55, color: '#6b7392' }}>
-              Un programme ne se résume pas à des affirmations binaires. La boussole ouvre la comparaison, elle ne la termine pas : chaque position renvoie à sa source dans les programmes.
+          <button type="button" onClick={actions.bStart} className="lift" style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px solid #D3C6FA', borderRadius: 22, padding: 18, textAlign: 'left' }}>
+            <span className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span className="dsp" style={{ fontSize: 23, fontWeight: 700 }}>Version courte</span>
+              <span className="tag num" style={{ background: '#E8E0FF', color: '#3F238F' }}>20 questions</span>
+            </span>
+            <span style={{ display: 'block', fontSize: 14.5, color: '#454A66', marginTop: 6 }}>Environ 4 minutes. Les six thèmes principaux.</span>
+          </button>
+          <button type="button" onClick={actions.bStart} className="lift" style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px solid #D3C6FA', borderRadius: 22, padding: 18, textAlign: 'left' }}>
+            <span className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span className="dsp" style={{ fontSize: 23, fontWeight: 700 }}>Version longue</span>
+              <span className="tag num" style={{ background: '#E8E0FF', color: '#3F238F' }}>100 questions</span>
+            </span>
+            <span style={{ display: 'block', fontSize: 14.5, color: '#454A66', marginTop: 6 }}>Environ 20 minutes. Résultats détaillés thème par thème.</span>
+          </button>
+          <div style={{ background: '#EFEBE2', borderRadius: 20, padding: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Limites</div>
+            <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>
+              Un programme ne se résume pas à des affirmations binaires. Mes affinités ouvre la comparaison, elle ne la termine pas : chaque position renvoie à sa source dans les programmes.
             </div>
           </div>
         </div>
       )}
 
       {bRunning && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="stk" style={{ gap: 20 }}>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#6b7392', marginBottom: 8, fontFamily: mono }}>
-              <span>{(s.bI + 1) + ' / 6'}</span><span>{bq.t}</span>
+            <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
+              <span className="tag num" style={{ background: '#EFEBE2', color: '#14162B' }}>{(Math.min(s.bI, BOUSSOLE.length - 1) + 1) + ' / 6'}</span>
+              <span className="tag" style={{ background: bts.soft, color: bts.ink }}>{bq.t}</span>
             </div>
-            <div style={{ height: 4, borderRadius: 9, background: '#e1e5f1', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 9, transition: 'width .35s ease', width: (s.bI / BOUSSOLE.length * 100) + '%', background: ACCENT }} />
+            <div style={{ display: 'flex', gap: 6 }} aria-hidden="true">
+              {BOUSSOLE.map((_, i) => (
+                <span key={i} style={{ flex: 1, height: 8, borderRadius: 99, transition: 'background-color .3s ease', background: i < s.bI ? '#6B45D9' : i === s.bI ? '#B7A2FF' : '#E7E2D6' }} />
+              ))}
             </div>
           </div>
-          <h1 style={{ margin: '4px 0 0', fontFamily: serif, fontSize: 25, lineHeight: 1.25, fontWeight: 600, letterSpacing: '-.015em' }}>{bq.s}</h1>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <h1 className="dsp" style={{ margin: 0, fontSize: qSize(isWeb), lineHeight: 1.1, fontWeight: 700 }}>{bq.s}</h1>
+          <div className="stk" style={{ gap: 10 }}>
             {BOUSSOLE_SCALE.map((opt) => (
-              <div key={opt.label} onClick={actions.bAnswer(opt.v)} style={{ padding: '14px 16px', background: '#fff', border: '1.5px solid #e3e7f3', borderRadius: 13, fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 11 }}>
-                <div style={{ width: 10, height: 10, transform: 'rotate(45deg)', flex: 'none', background: opt.color }} />{opt.label}
-              </div>
+              <button key={opt.label} type="button" onClick={actions.bAnswer(opt.v)} className="lift row" style={{ width: '100%', gap: 14, minHeight: 58, padding: '0 18px', background: '#fff', border: '1.5px solid #E7E2D6', borderRadius: 18, fontSize: 16, fontWeight: 600 }}>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', flex: 'none', background: opt.color }} />{opt.label}
+              </button>
             ))}
           </div>
         </div>
       )}
 
       {s.bDone && (
-        <div className="rise-in" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <div style={sectionLabel}>Résultat</div>
-            <h1 style={{ margin: '6px 0 4px', fontFamily: serif, fontSize: 29, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-.02em' }}>Proximité par candidat</h1>
-            <div style={{ fontSize: 12.5, color: '#6b7392', lineHeight: 1.5 }}>Sur les six affirmations. Ce n'est pas une recommandation de vote.</div>
+        <div className="stk" style={{ gap: 16 }}>
+          <div className="stk" style={{ gap: 8 }}>
+            <div className="eyebrow" style={{ color: '#3F238F' }}>Résultat</div>
+            <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Proximité par candidat</h1>
+            <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Sur les six affirmations. Ce n'est pas une recommandation de vote.</div>
           </div>
-          <div style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 13 }}>
+          <div className="card pop stk" style={{ gap: 16 }}>
             {bMatches.map((m) => (
-              <div key={m.name}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600 }}>{m.name}</div>
-                  <div style={{ fontFamily: mono, fontSize: 13, fontWeight: 600 }}>{m.pct + '%'}</div>
-                </div>
-                <div style={{ height: 8, borderRadius: 9, background: '#eef0f7', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 9, transition: 'width .7s cubic-bezier(.2,.8,.2,1)', width: m.pct + '%', background: m.color }} />
+              <div key={m.name} className="row" style={{ gap: 12, alignItems: 'center' }}>
+                <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: m.color }}>{m.initials}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700 }}>{m.name}</span>
+                    <span className="dsp num" style={{ fontSize: 22, fontWeight: 700, color: m.color }}>{m.pct + '%'}</span>
+                  </div>
+                  <div className="bar"><i style={{ width: m.pct + '%', background: m.color }} /></div>
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ ...infoBox, borderRadius: 14, padding: 14, fontSize: 12.5, lineHeight: 1.55, color: '#4d5680' }}>
-            Chaque position de candidat renvoie à sa source dans les programmes. Refaites la boussole quand vous voulez : rien n'est envoyé.
+          <div style={{ background: '#E8E0FF', borderRadius: 20, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>
+            Chaque position de candidat renvoie à sa source dans les programmes. Refaites le test quand vous voulez : rien n'est envoyé.
           </div>
-          <div onClick={actions.openRoute('programmes')} style={primaryButton(ACCENT)}>Comparer les programmes</div>
+          <button type="button" onClick={actions.openRoute('programmes')} className="btn" style={{ background: ACCENT }}>Comparer les programmes</button>
+          <button type="button" onClick={actions.bRestart} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>Refaire le test</button>
         </div>
       )}
     </div>

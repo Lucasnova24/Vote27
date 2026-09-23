@@ -1,106 +1,140 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, SETTINGS_ROWS } from '../data'
+import { BADGES, QUIZ, SETTINGS_ROWS } from '../data'
 import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
-import { h1, mono, screenWrap, sectionLabel, serif } from '../styles'
+import { gapPage, h1Size } from '../styles'
+import Grid2 from '../components/Grid2'
+import { BoussoleIcon, ChevronRight, LogoDiamond, PersonIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
+  isWeb: boolean
 }
 
-export default function Profil({ state: s, actions }: Props) {
+export default function Profil({ state: s, actions, isWeb }: Props) {
+  const gap = gapPage(isWeb)
   const level = levelFromPoints(s.points)
-  const { xpIntoLevel, xpTarget } = levelProgress(s.points)
-
-  const stats = [
-    { value: s.voteChoice ? 'Fait' : 'À faire', label: 'vote du jour' },
-    { value: s.quizDoneToday ? s.quizScore + ' / 5' : 'À faire', label: 'quiz' },
-    { value: s.bDone ? 'Faite' : 'À faire', label: 'boussole' },
-  ]
-
-  const badges = [
-    { name: 'Première voix', color: '#2f4bb0', unlocked: s.voteChoice !== null },
-    { name: 'Sans faute', color: '#7a4a8c', unlocked: s.quizDoneToday && s.quizScore === 5 },
-    { name: 'Bon pronostic', color: '#9a5b1f', unlocked: s.debPick !== null },
-    { name: 'Boussole faite', color: '#4a7a56', unlocked: s.bDone },
-  ]
+  const { xpIntoLevel, xpTarget, pct } = levelProgress(s.points)
+  const levelOffset = (201.06 * (1 - pct / 100)).toFixed(2)
 
   const accountLine =
     s.authProvider === 'apple' ? 'Connectée avec Apple'
     : s.authProvider === 'google' ? 'Connectée avec Google Play'
-    : s.authProvider === 'anonymous' ? 'Session invitée — supprimée si tu te déconnectes'
+    : s.authProvider === 'anonymous' ? 'Session invitée — progression locale uniquement'
     : s.authEmail || 'Compte e-mail'
 
-  return (
-    <div style={screenWrap}>
-      <div>
-        <div style={sectionLabel}>Profil</div>
-        <h1 style={h1}>{getDisplayName(s)}</h1>
-        <div style={{ fontSize: 13, color: '#6b7392' }}>{accountLine}</div>
-      </div>
+  const badgeUnlocked: Record<string, boolean> = {
+    'Première voix': s.voteChoice !== null,
+    'Bon pronostic': s.debPick !== null,
+    'Sans faute': s.quizDoneToday && s.quizScore === QUIZ.length,
+    'Affinités faites': s.bDone,
+  }
 
-      <div style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 16, padding: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>{'Niveau ' + level}</div>
-          <div style={{ fontFamily: mono, fontSize: 12, color: '#6b7392' }}>{xpIntoLevel + ' / ' + xpTarget + ' XP'}</div>
+  const stats = [
+    { value: s.quizAttemptsTotal > 0 ? Math.round((s.quizCorrectTotal / s.quizAttemptsTotal) * 100) + ' %' : '—', label: 'justesse aux quiz' },
+    { value: String(s.quizAttemptsTotal), label: 'réponses aux quiz' },
+  ]
+
+  const colA = (
+    <>
+      <section className="card" style={{ order: 1, background: '#171B3C', borderColor: '#171B3C', color: '#fff' }} aria-label="Niveau et statistiques">
+        <div className="row" style={{ gap: 16 }}>
+          <div style={{ position: 'relative', width: 76, height: 76, flex: 'none' }}>
+            <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
+              <circle cx="38" cy="38" r="32" fill="none" stroke="rgba(255,255,255,.14)" strokeWidth={8} />
+              <circle className="ring" cx="38" cy="38" r="32" fill="none" stroke="#F0A03C" strokeWidth={8} strokeLinecap="round" strokeDasharray="201.06" style={{ strokeDashoffset: levelOffset }} transform="rotate(-90 38 38)" />
+            </svg>
+            <span className="dsp num" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800 }}>{level}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="eyebrow" style={{ color: '#A7ADD3' }}>{'Niveau ' + level}</div>
+            <div className="dsp" style={{ fontSize: 23, lineHeight: 1.1, fontWeight: 700, marginTop: 4 }}>{getDisplayName(s)}</div>
+            <div className="num" style={{ fontSize: 13, color: '#B9BEDD', marginTop: 6 }}>{xpIntoLevel + ' / ' + xpTarget + ' XP'}</div>
+          </div>
         </div>
-        <div style={{ height: 6, borderRadius: 9, background: '#eef0f7', overflow: 'hidden' }}>
-          <div style={{ height: '100%', borderRadius: 9, width: (xpIntoLevel / xpTarget * 100) + '%', background: ACCENT }} />
-        </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+        <div className="bar" style={{ marginTop: 16, background: 'rgba(255,255,255,.14)' }}><i style={{ width: pct + '%', background: '#F0A03C' }} /></div>
+        <div style={{ fontSize: 13.5, color: '#B9BEDD', marginTop: 10 }}>{(xpTarget - xpIntoLevel) + ' XP avant le niveau ' + (level + 1)}</div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
           {stats.map((st) => (
-            <div key={st.label} style={{ flex: 1, textAlign: 'center', padding: '10px 6px', background: '#f7f9fd', border: '1px solid #eef0f7', borderRadius: 12 }}>
-              <div style={{ fontFamily: mono, fontSize: 17, fontWeight: 600 }}>{st.value}</div>
-              <div style={{ fontSize: 10.5, color: '#6b7392', marginTop: 2 }}>{st.label}</div>
+            <div key={st.label} style={{ flex: 1, textAlign: 'center', padding: '12px 6px', borderRadius: 16, background: 'rgba(255,255,255,.1)' }}>
+              <div className="dsp num" style={{ fontSize: 24, fontWeight: 800, lineHeight: 1 }}>{st.value}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 5, color: '#B9BEDD' }}>{st.label}</div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {!s.bDone && (
-        <div onClick={actions.openRoute('boussole')} style={{ background: '#1b2a63', color: '#fff', borderRadius: 16, padding: 16, cursor: 'pointer' }}>
-          <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600 }}>Ta boussole n'est pas faite</div>
-          <div style={{ fontSize: 12.5, lineHeight: 1.45, color: '#c3cbe8', marginTop: 6 }}>20 questions, 4 minutes. Tes réponses restent liées à ton compte.</div>
-          <div style={{ marginTop: 12, display: 'inline-flex', background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 9, padding: '8px 12px', fontSize: 12.5, fontWeight: 600 }}>
-            Commencer ›
-          </div>
+      <button type="button" onClick={actions.openRoute('boussole')} className="press" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: '#5A36C8', color: '#fff', borderRadius: 22, padding: 20 }}>
+        <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>
+            {s.bDone ? 'Mes affinités sont faites' : 'Mes affinités ne sont pas faites'}
+          </span>
+          <span style={{ flex: 'none' }}><BoussoleIcon size={44} /></span>
+        </span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#E4DBFF', marginTop: 10 }}>20 ou 100 questions. Tes réponses restent sur cet appareil.</span>
+        <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#3F238F' }}>{s.bDone ? 'Voir mon résultat' : 'Commencer'}<ChevronRight size={16} /></span>
+      </button>
+
+      <button type="button" onClick={actions.openRoute('completeprofile')} className="card lift row" style={{ order: 3, width: '100%', gap: 12, textAlign: 'left' }}>
+        <span style={{ width: 44, height: 44, borderRadius: 14, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#EFEBE2', color: '#454A66' }}><PersonIcon /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: 15.5, fontWeight: 700 }}>Compléter mon profil</span>
+          <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 2 }}>Ville, région, pays, téléphone, centres d'intérêt</span>
+        </span>
+        <ChevronRight size={18} color="#5C617B" />
+      </button>
+
+      <section style={{ order: 4 }} aria-label="Badges">
+        <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Badges</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+          {BADGES.map((b) => {
+            const unlocked = badgeUnlocked[b.name]
+            return (
+              <div key={b.name} style={{ background: '#fff', border: '1px solid #E7E2D6', borderRadius: 20, padding: '14px 8px', textAlign: 'center', opacity: unlocked ? 1 : 0.45 }}>
+                <div style={{ width: 46, height: 46, margin: '0 auto', borderRadius: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', background: unlocked ? b.color : '#8B90A8' }}>
+                  <LogoDiamond size={20} />
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, marginTop: 9, lineHeight: 1.2 }}>{b.name}</div>
+              </div>
+            )
+          })}
         </div>
-      )}
+      </section>
+    </>
+  )
 
-      <div>
-        <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600, margin: '4px 0 10px' }}>Badges</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-          {badges.map((b) => (
-            <div key={b.name} style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 14, padding: '12px 8px', textAlign: 'center', opacity: b.unlocked ? 1 : 0.4 }}>
-              <div style={{ width: 30, height: 30, margin: '0 auto', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', background: b.unlocked ? b.color : '#aab2cc' }}>◆</div>
-              <div style={{ fontSize: 11, fontWeight: 600, marginTop: 7, lineHeight: 1.25 }}>{b.name}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ background: '#fff', border: '1px solid #e3e7f3', borderRadius: 16, overflow: 'hidden' }}>
-        {SETTINGS_ROWS.map((label, i) => (
-          <div
-            key={label}
-            onClick={label === 'Se déconnecter' ? actions.logout : undefined}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: i < SETTINGS_ROWS.length - 1 ? '1px solid #eef0f7' : 'none', cursor: 'pointer' }}
-          >
-            <div style={{ flex: 1, fontSize: 13.5 }}>{label}</div>
-            <div style={{ color: '#aab2cc', fontSize: 15 }}>›</div>
-          </div>
+  const colB = (
+    <>
+      <section className="card" style={{ order: 5, padding: 6 }} aria-label="Réglages">
+        {SETTINGS_ROWS.map((label) => (
+          <button key={label} type="button" className="row sep rowh" style={{ width: '100%', gap: 12, minHeight: 58, padding: '0 14px', borderRadius: 16 }}>
+            <span style={{ flex: 1, fontSize: 15, fontWeight: 600, textAlign: 'left' }}>{label}</span>
+            <ChevronRight size={18} color="#5C617B" />
+          </button>
         ))}
-      </div>
+      </section>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div onClick={actions.logout} style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#4d5680', cursor: 'pointer', padding: 4 }}>Se déconnecter</div>
-        <div onClick={actions.resetAll} style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#b03a4a', cursor: 'pointer', padding: 4 }}>Réinitialiser ma progression</div>
+      <div className="stk" style={{ order: 6, alignItems: 'center', gap: 2, textAlign: 'center' }}>
+        <div style={{ fontSize: 13, color: '#5C617B', paddingBottom: 4 }}>{accountLine}</div>
+        <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
+        <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
+        <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.55, padding: '8px 12px 0', maxWidth: 420 }}>
+          Vote 2027 est une application civique indépendante. Les candidats et sondages affichés ici sont fictifs.
+        </div>
       </div>
-      <div style={{ fontSize: 11.5, color: '#8189a8', lineHeight: 1.5, textAlign: 'center', padding: '0 12px' }}>
-        Vote 2027 est une application civique indépendante. Les candidats et sondages affichés ici sont fictifs.
+    </>
+  )
+
+  return (
+    <div className="rise stk" style={{ gap }}>
+      <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
+        <div className="eyebrow">Profil</div>
+        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>{getDisplayName(s)}</h1>
+        <div style={{ fontSize: 15, color: '#454A66' }}>{accountLine}</div>
       </div>
+      <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
   )
 }

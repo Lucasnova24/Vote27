@@ -13,8 +13,28 @@ create table if not exists public.profiles (
   pseudo text,
   points integer not null default 0,
   notif_read boolean not null default false,
+  quiz_correct_total integer not null default 0,
+  quiz_attempts_total integer not null default 0,
+  ville text,
+  region text,
+  pays text,
+  code_postal text,
+  telephone text,
+  interets text,
   created_at timestamptz not null default now()
 );
+
+-- Extra profile fields added by the "Compléter mon profil" screen and the
+-- cumulative quiz accuracy stats shown on the "Quiz" tab — additive, safe to
+-- re-run on a project created from an earlier version of this schema.
+alter table public.profiles add column if not exists quiz_correct_total integer not null default 0;
+alter table public.profiles add column if not exists quiz_attempts_total integer not null default 0;
+alter table public.profiles add column if not exists ville text;
+alter table public.profiles add column if not exists region text;
+alter table public.profiles add column if not exists pays text;
+alter table public.profiles add column if not exists code_postal text;
+alter table public.profiles add column if not exists telephone text;
+alter table public.profiles add column if not exists interets text;
 
 alter table public.profiles enable row level security;
 
@@ -77,7 +97,9 @@ create policy "boussole_responses: owner all" on public.boussole_responses
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
--- estimations — first-round point allocation (one row per user)
+-- estimations — kept for backward compatibility with older app versions;
+-- the "Estimation du 1er tour" screen was replaced by first_round_picks
+-- below (a single monthly candidate pick, not a percentage split).
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.estimations (
   user_id uuid primary key references public.profiles (id) on delete cascade,
@@ -90,6 +112,22 @@ alter table public.estimations enable row level security;
 
 drop policy if exists "estimations: owner all" on public.estimations;
 create policy "estimations: owner all" on public.estimations
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────────────────────
+-- first_round_picks — "Mon vote du 1er tour" monthly poll (one row per
+-- user, overwritten each time they change their pick)
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.first_round_picks (
+  user_id uuid primary key references public.profiles (id) on delete cascade,
+  candidate_index integer not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.first_round_picks enable row level security;
+
+drop policy if exists "first_round_picks: owner all" on public.first_round_picks;
+create policy "first_round_picks: owner all" on public.first_round_picks
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
@@ -159,7 +197,25 @@ begin
   delete from public.boussole_responses where user_id = auth.uid();
   delete from public.estimations where user_id = auth.uid();
   delete from public.debate_predictions where user_id = auth.uid();
-  update public.profiles set points = 0, notif_read = false where id = auth.uid();
+  delete from public.first_round_picks where user_id = auth.uid();
+  update public.profiles
+    set points = 0, notif_read = false, quiz_correct_total = 0, quiz_attempts_total = 0
+    where id = auth.uid();
+end;
+$$;
+
+-- Cumulative quiz accuracy — called once per answered question (the "Taux de
+-- bonne réponse" / "Bonnes réponses" tiles on the Quiz tab read these back).
+create or replace function public.increment_quiz_stat(is_correct boolean)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  update public.profiles
+    set quiz_attempts_total = quiz_attempts_total + 1,
+        quiz_correct_total = quiz_correct_total + case when is_correct then 1 else 0 end
+    where id = auth.uid();
 end;
 $$;
 
@@ -178,5 +234,6 @@ as $$
 $$;
 
 grant execute on function public.increment_points(integer) to authenticated;
+grant execute on function public.increment_quiz_stat(boolean) to authenticated;
 grant execute on function public.reset_progress() to authenticated;
 grant execute on function public.get_leaderboard(integer) to authenticated;

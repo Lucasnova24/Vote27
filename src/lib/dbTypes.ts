@@ -9,6 +9,14 @@ export interface ProfileRow {
   pseudo: string | null
   points: number
   notif_read: boolean
+  quiz_correct_total: number
+  quiz_attempts_total: number
+  ville: string | null
+  region: string | null
+  pays: string | null
+  code_postal: string | null
+  telephone: string | null
+  interets: string | null
   created_at: string
 }
 
@@ -31,10 +39,9 @@ export interface BoussoleResponseRow {
   created_at: string
 }
 
-export interface EstimationRow {
+export interface FirstRoundPickRow {
   user_id: string
-  est_values: number[]
-  submitted: boolean
+  candidate_index: number
   updated_at: string
 }
 
