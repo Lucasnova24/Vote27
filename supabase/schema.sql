@@ -520,8 +520,11 @@ create policy "Lecture publique des participations"
   on public.event_candidates for select to anon, authenticated using (true);
 
 -- Ready-to-consume view: computed status + candidates aggregated as JSON.
+-- No `security_invoker` option here (Postgres 15+ only, and errors out on
+-- older Postgres — which broke this view entirely on first deploy): the
+-- RLS policies on all three underlying tables are public "using (true)"
+-- reads anyway, so invoker vs. definer semantics make no difference here.
 create or replace view public.agenda
-with (security_invoker = true)
 as
 select
   e.id,
