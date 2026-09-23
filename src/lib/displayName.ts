@@ -1,9 +1,9 @@
 import type { AppState } from '../types'
 
 export function getDisplayName(s: Pick<AppState, 'authFirst' | 'authLast' | 'authPseudo' | 'authEmail' | 'authProvider'>): string {
+  if (s.authPseudo) return s.authPseudo
   const full = `${s.authFirst} ${s.authLast}`.trim()
   if (full) return full
-  if (s.authPseudo) return s.authPseudo
   if (s.authProvider === 'anonymous') return 'Invité'
   return s.authEmail || 'Mon compte'
 }
