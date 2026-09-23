@@ -25,10 +25,12 @@ export function tonightDebate(events: AgendaRow[] | null, now: Date = new Date()
   return events.find((e) => e.category === 'debat' && e.event_date === today) ?? null
 }
 
-// Voting opens only once the debate has actually started. With no known
-// start time we can't tell, so it stays closed.
+// Voting is open only on the debate's own day, from its start time on
+// (same rule as public.debate_vote_allowed). With no known start time we
+// can't tell, so it stays closed.
 export function debateStarted(e: AgendaRow | null, now: Date = new Date()): boolean {
   if (!e || !e.event_date || !e.start_time) return false
+  if (e.event_date !== parisStamp(now).slice(0, 10)) return false
   const start = e.event_date + ' ' + (e.start_time.length === 5 ? e.start_time + ':00' : e.start_time)
   return parisStamp(now) >= start
 }

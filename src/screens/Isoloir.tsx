@@ -43,7 +43,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
       key: 'debat', title: 'Vote du débat de ce soir', sub: debateOpen ? 'En direct, parmi les participants' : 'Ouvre au début du débat', tileBg: '#FFDFD8', tileFg: '#8A1F0E',
       tag: debateOpen ? (debateVoted ? 'voté' : 'en direct') : debateStart ? 'dès ' + debateStart : 'horaire à venir',
       tagBg: debateVoted ? '#DDF3E3' : '#FFDFD8', tagFg: debateVoted ? '#14532D' : '#8A1F0E',
-      icon: <DebatIcon />, onClick: debateOpen ? actions.openRoute('debat') : undefined,
+      icon: <DebatIcon />, onClick: debateOpen ? actions.openDebate(debate.slug) : undefined,
     })
   }
 

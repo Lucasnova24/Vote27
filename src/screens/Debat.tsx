@@ -2,7 +2,7 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { useAgenda } from '../lib/useAgenda'
 import { debateMembers, debateStarted, debateStartLabel, tonightDebate, useNow } from '../lib/debate'
-import { todayLabelFr } from '../lib/countdown'
+import { dayLabelFr, relativeDateLabel } from '../lib/countdown'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
 
@@ -31,7 +31,8 @@ function initials(name: string): string {
 export default function Debat({ state: s, actions, isWeb }: Props) {
   const events = useAgenda()
   const now = useNow()
-  const debate = tonightDebate(events, now)
+  // The debate that was clicked; falls back to tonight's if none was given.
+  const debate = (s.debateSlug && events?.find((e) => e.slug === s.debateSlug && e.category === 'debat')) || tonightDebate(events, now)
   const started = debateStarted(debate, now)
   const members = debateMembers(debate)
   const startLabel = debateStartLabel(debate)
@@ -50,7 +51,7 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
 
       {events !== null && !debate && (
         <section className="card">
-          <h1 className="dsp" style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 700 }}>Pas de débat ce soir</h1>
+          <h1 className="dsp" style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 700 }}>{s.debateSlug ? 'Débat introuvable' : 'Pas de débat ce soir'}</h1>
           <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Le vote s'ouvrira le soir du prochain débat, dès son début.</div>
         </section>
       )}
@@ -59,11 +60,11 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
         <>
           <div className="stk" style={{ gap: 10, alignItems: 'flex-start' }}>
             <span className="tag" style={{ background: '#FFDFD8', color: '#8A1F0E', textTransform: 'uppercase', letterSpacing: '.08em', padding: '6px 12px' }}>
-              {started ? <><span className="live" aria-hidden="true" />Session live</> : 'Ce soir'}
+              {started ? <><span className="live" aria-hidden="true" />Session live</> : debate.event_date ? relativeDateLabel(debate.event_date, now) : debate.display_date}
             </span>
             <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>{debate.title + (debate.media ? ' — ' + debate.media : '')}</h1>
             <div className="num" style={{ fontSize: 15, color: '#454A66' }}>
-              {[todayLabelFr(now), startLabel, members.length + ' participant' + (members.length > 1 ? 's' : '')].filter(Boolean).join(' · ')}
+              {[debate.event_date ? dayLabelFr(new Date(debate.event_date + 'T00:00:00')) : debate.display_date, startLabel, members.length + ' participant' + (members.length > 1 ? 's' : '')].filter(Boolean).join(' · ')}
             </div>
           </div>
 
@@ -71,7 +72,9 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
             <h2 className="dsp" style={{ margin: '0 0 14px', fontSize: 21, lineHeight: 1.15, fontWeight: 700 }}>Qui est le plus convaincant ?</h2>
             {!started && (
               <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5, marginBottom: 12 }}>
-                {startLabel ? 'Le vote ouvre au début du débat, à ' + startLabel + '.' : "Le vote ouvrira au début du débat (horaire non communiqué)."}
+                {debate.status === 'passe'
+                  ? 'Ce débat est terminé, le vote est clos.'
+                  : startLabel ? 'Le vote ouvre au début du débat, à ' + startLabel + '.' : 'Le vote ouvrira au début du débat (horaire non communiqué).'}
               </div>
             )}
             {members.length === 0 && <div style={{ fontSize: 14.5, color: '#454A66' }}>Participants non communiqués.</div>}

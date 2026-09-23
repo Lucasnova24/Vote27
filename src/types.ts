@@ -38,6 +38,8 @@ export interface AppState {
   // navigation (client-only, not persisted to Supabase)
   tab: Tab
   route: Route
+  // agenda slug of the debate opened on the 'debat' route
+  debateSlug: string | null
   filter: string
   theme: string
 

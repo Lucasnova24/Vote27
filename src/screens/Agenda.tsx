@@ -69,7 +69,7 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
           </div>
           {e.description && <div style={{ fontSize: 13.5, color: '#5C617B', marginTop: 6, lineHeight: 1.4 }}>{e.description}</div>}
           {isLiveNow && (
-            <button type="button" onClick={actions.openRoute('debat')} className="row" style={{ gap: 8, marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#8A1F0E' }}>
+            <button type="button" onClick={actions.openDebate(e.slug)} className="row" style={{ gap: 8, marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#8A1F0E' }}>
               <span className="live" aria-hidden="true" />En direct · ouvrir la session
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
             </button>

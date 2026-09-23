@@ -11,7 +11,7 @@ import { currentWeekStart } from './lib/week'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
-  tab: 'accueil', route: null, filter: 'Tout', theme: 'Institutions',
+  tab: 'accueil', route: null, debateSlug: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null,
   quizDoneToday: false, quizScore: 0,
   bDone: false, bAnswers: [],
@@ -155,6 +155,7 @@ export function useAppState() {
   const go = (tab: Tab) => () => update({ tab, route: null })
   const openRoute = (route: Route) => () => update({ route })
   const back = () => update({ route: null })
+  const openDebate = (slug: string) => () => update({ route: 'debat', debateSlug: slug })
 
   const vote = (choice: 'oui' | 'non') => () => {
     const wasVoted = stateRef.current.voteChoice !== null
@@ -373,7 +374,7 @@ export function useAppState() {
   return {
     state,
     actions: {
-      go, openRoute, back, vote, answer, next, bAnswer, bStart, bRestart,
+      go, openRoute, openDebate, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound, changeFirstRound,
       toggleReminder,
       authApple, authGoogle, authGuest, submitAuth, toggleAuthView,

@@ -44,8 +44,9 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const nextInk = nextLive ? '#8A1F0E' : nextCat?.ink ?? '#454A66'
   const nextTitleColor = nextLive ? '#3D0E06' : '#14162B'
   const nextBtnBg = nextLive ? '#C8341C' : '#14162B'
-  const nextCta = nextLive ? 'Suivre le débat' : "Voir dans l'agenda"
-  const nextClick = nextLive ? actions.openRoute('debat') : actions.go('agenda')
+  const nextIsDebate = nextEvt?.category === 'debat'
+  const nextCta = nextLive ? 'Suivre le débat' : nextIsDebate ? 'Voir le débat' : "Voir dans l'agenda"
+  const nextClick = nextIsDebate ? actions.openDebate(nextEvt!.slug) : actions.go('agenda')
 
   const colA = (
     <>
