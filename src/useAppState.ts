@@ -9,7 +9,7 @@ import type { AppState, AuthProvider, Route, Tab } from './types'
 import { BOUSSOLE, QUIZ } from './data'
 
 const initialState: AppState = {
-  loading: true, authBusy: false,
+  loading: false, authBusy: false,
   tab: 'accueil', route: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null,
   quizDoneToday: false, quizScore: 0,
@@ -18,10 +18,10 @@ const initialState: AppState = {
   profileVille: '', profileRegion: '', profilePays: '', profileCP: '', profileTel: '', profileInterets: '',
   quizI: 0, quizSel: null, quizFinished: false,
   bMode: null, bI: 0,
-  reminders: [],
+  reminders: [], leagueCreated: false,
   quizCorrectTotal: 0, quizAttemptsTotal: 0,
-  authed: false, authView: 'signup', authProvider: null,
-  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authDob: '', authSex: '', authError: null,
+  authed: true, authView: 'signup', authProvider: 'email',
+  authFirst: 'Léa', authLast: 'Martin', authPseudo: 'lea_m', authEmail: 'lea@example.com', authPass: '', authDob: '', authSex: '', authError: null,
 }
 
 function providerFromUser(user: User): AuthProvider {
@@ -249,6 +249,10 @@ export function useAppState() {
     return { reminders: on ? s.reminders.filter((t) => t !== title) : s.reminders.concat([title]) }
   })
 
+  // Local-only, cosmetic: leagues are fictional demo groups, not a real
+  // backend feature, so this never syncs to Supabase.
+  const createLeague = () => update({ leagueCreated: true })
+
   const authApple = () => {
     update({ authBusy: true, authError: null })
     supabase.auth.signInWithOAuth({ provider: 'apple' }).then(({ error }) => {
@@ -352,7 +356,7 @@ export function useAppState() {
       quizI: 0, quizSel: null, quizScore: 0, quizFinished: false, quizDoneToday: false,
       notifRead: false, filter: 'Tout',
       bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debPick: null,
-      firstRoundPick: null, reminders: [], quizCorrectTotal: 0, quizAttemptsTotal: 0,
+      firstRoundPick: null, reminders: [], leagueCreated: false, quizCorrectTotal: 0, quizAttemptsTotal: 0,
       tab: 'accueil', route: null,
     })
     if (uid) supabase.rpc('reset_progress').then(logIfError('reset_progress'))
@@ -363,7 +367,7 @@ export function useAppState() {
     actions: {
       go, openRoute, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound, changeFirstRound,
-      toggleReminder,
+      toggleReminder, createLeague,
       authApple, authGoogle, authGuest, submitAuth, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,

@@ -77,6 +77,7 @@ export interface AppState {
 
   // client-only cosmetic state (not backed by Supabase)
   reminders: string[]
+  leagueCreated: boolean
 
   // real cumulative quiz accuracy, backed by Supabase
   quizCorrectTotal: number

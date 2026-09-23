@@ -188,6 +188,13 @@ export const FIRST_ROUND_HISTORY = [
   { month: 'Février 2027', name: 'Nadia Belkacem', color: '#A85400' },
 ]
 
+export const LEAGUES = [
+  { badge: '◆', name: 'Classement global', meta: '182 040 joueurs', bg: '#E3E7FF', fg: '#1F2A8A' },
+  { badge: 'LC', name: "La coloc'", meta: '4 joueurs', bg: '#D2F1EA', fg: '#0A4F45' },
+  { badge: 'P19', name: 'Promo 2019', meta: '5 joueurs', bg: '#FFEBC6', fg: '#6E3A00' },
+  { badge: 'B4', name: 'Bureau 4e étage', meta: '3 joueurs', bg: '#E8E0FF', fg: '#3F238F' },
+]
+
 export const BADGES = [
   { name: 'Première voix', color: '#3B4FD8' },
   { name: 'Bon pronostic', color: '#A85400' },
