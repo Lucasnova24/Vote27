@@ -1,6 +1,8 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { PAST_VOTES } from '../data'
+import { useAgenda } from '../lib/useAgenda'
+import { debateStarted, debateStartLabel, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import { ChevronRight, DebatIcon, FirstRoundIcon, VoteIcon } from '../components/Icons'
@@ -14,8 +16,16 @@ interface Props {
 export default function Isoloir({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
+  const now = useNow()
+  const debate = tonightDebate(useAgenda(), now)
+  const debateOpen = debateStarted(debate, now)
+  const debateStart = debateStartLabel(debate)
+  const debateVoted = !!debate && s.debEvent === debate.slug && s.debPick !== null
 
-  const openVotes = [
+  const openVotes: {
+    key: string; title: string; sub: string; tileBg: string; tileFg: string
+    tag: string; tagBg: string; tagFg: string; icon: JSX.Element; onClick?: () => void
+  }[] = [
     {
       key: 'vote', title: 'Vote du jour', sub: 'Ferme à 20h', tileBg: '#E3E7FF', tileFg: '#1F2A8A',
       tag: voteDone ? 'voté' : 'à voter', tagBg: voteDone ? '#DDF3E3' : '#FFEBC6', tagFg: voteDone ? '#14532D' : '#6E3A00',
@@ -26,25 +36,29 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
       tag: s.firstRoundPick !== null ? 'répondu' : 'à répondre', tagBg: s.firstRoundPick !== null ? '#DDF3E3' : '#FFEBC6', tagFg: s.firstRoundPick !== null ? '#14532D' : '#6E3A00',
       icon: <FirstRoundIcon />, onClick: actions.openRoute('firstround'),
     },
-    {
-      key: 'debat', title: 'Votes du débat de ce soir', sub: 'Avant, pendant et après', tileBg: '#FFDFD8', tileFg: '#8A1F0E',
-      tag: '21h00', tagBg: '#FFDFD8', tagFg: '#8A1F0E',
-      icon: <DebatIcon />, onClick: actions.openRoute('debat'),
-    },
   ]
+  // The debate vote is only reachable once tonight's debate has started.
+  if (debate) {
+    openVotes.push({
+      key: 'debat', title: 'Vote du débat de ce soir', sub: debateOpen ? 'En direct, parmi les participants' : 'Ouvre au début du débat', tileBg: '#FFDFD8', tileFg: '#8A1F0E',
+      tag: debateOpen ? (debateVoted ? 'voté' : 'en direct') : debateStart ? 'dès ' + debateStart : 'horaire à venir',
+      tagBg: debateVoted ? '#DDF3E3' : '#FFDFD8', tagFg: debateVoted ? '#14532D' : '#8A1F0E',
+      icon: <DebatIcon />, onClick: debateOpen ? actions.openRoute('debat') : undefined,
+    })
+  }
 
   const colA = (
     <>
       <section className="card" style={{ order: 1, padding: 6 }} aria-label="Votes ouverts">
         {openVotes.map((v) => (
-          <button key={v.key} type="button" onClick={v.onClick} className="row sep rowh" style={{ width: '100%', gap: 12, minHeight: 72, padding: '10px 12px', borderRadius: 18 }}>
+          <button key={v.key} type="button" onClick={v.onClick} disabled={!v.onClick} className="row sep rowh" style={{ width: '100%', gap: 12, minHeight: 72, padding: '10px 12px', borderRadius: 18, cursor: v.onClick ? 'pointer' : 'default' }}>
             <span style={{ width: 44, height: 44, borderRadius: 14, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: v.tileBg, color: v.tileFg }}>{v.icon}</span>
             <span style={{ flex: 1, minWidth: 0, display: 'block', textAlign: 'left' }}>
               <span style={{ display: 'block', fontSize: 15.5, fontWeight: 700, letterSpacing: '-.01em' }}>{v.title}</span>
               <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 2 }}>{v.sub}</span>
             </span>
             <span className="tag" style={{ background: v.tagBg, color: v.tagFg }}>{v.tag}</span>
-            <ChevronRight size={18} color="#5C617B" />
+            {v.onClick && <ChevronRight size={18} color="#5C617B" />}
           </button>
         ))}
       </section>

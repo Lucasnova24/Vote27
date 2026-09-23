@@ -50,7 +50,9 @@ export interface FirstRoundPickRow {
 
 export interface DebatePredictionRow {
   user_id: string
-  candidate_index: number
+  candidate_index: number | null
+  event_slug: string | null
+  candidate_slug: string | null
   created_at: string
 }
 

@@ -15,7 +15,7 @@ const initialState: AppState = {
   points: 0, notifRead: false, voteChoice: null,
   quizDoneToday: false, quizScore: 0,
   bDone: false, bAnswers: [],
-  debPick: null, firstRoundPick: null,
+  debEvent: null, debPick: null, firstRoundPick: null,
   profileVille: '', profileRegion: '', profilePays: '', profileCP: '', profileTel: '', profileInterets: '',
   quizI: 0, quizSel: null, quizFinished: false,
   bMode: null, bI: 0,
@@ -99,7 +99,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     bDone: !!bous,
     bAnswers: bous?.answers ?? [],
     bMode: null, bI: 0,
-    debPick: deb?.candidate_index ?? null,
+    debEvent: deb?.event_slug ?? null,
+    debPick: deb?.candidate_slug ?? null,
     firstRoundPick: fr?.candidate_index ?? null,
   }
 }
@@ -223,13 +224,13 @@ export function useAppState() {
   const setFilter = (f: string) => () => update({ filter: f })
   const setTheme = (t: string) => () => update({ theme: t })
 
-  const setDebPick = (i: number) => () => {
-    update({ debPick: i })
+  const setDebPick = (eventSlug: string, candidateSlug: string) => () => {
+    update({ debEvent: eventSlug, debPick: candidateSlug })
     const uid = userIdRef.current
     if (uid) {
       supabase
         .from('debate_predictions')
-        .upsert({ user_id: uid, candidate_index: i })
+        .upsert({ user_id: uid, event_slug: eventSlug, candidate_slug: candidateSlug, candidate_index: null })
         .then(logIfError('debate_predictions upsert'))
     }
   }
@@ -362,7 +363,7 @@ export function useAppState() {
       voteChoice: null, points: 0,
       quizI: 0, quizSel: null, quizScore: 0, quizFinished: false, quizDoneToday: false,
       notifRead: false, filter: 'Tout',
-      bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debPick: null,
+      bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debEvent: null, debPick: null,
       firstRoundPick: null, reminders: [], quizCorrectTotal: 0, quizAttemptsTotal: 0,
       tab: 'accueil', route: null,
     })

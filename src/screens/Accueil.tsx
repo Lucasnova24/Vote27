@@ -3,6 +3,7 @@ import type { AppState } from '../types'
 import { ACCENT, CANDS, EVENT_CATEGORY_STYLE } from '../data'
 import { firstRoundCountdownLabel, relativeDateLabel, todayLabelFr } from '../lib/countdown'
 import { useAgenda } from '../lib/useAgenda'
+import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
@@ -18,6 +19,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
   const agendaEvents = useAgenda()
+  const now = useNow()
 
   const rawTodos = [
     { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
@@ -35,7 +37,8 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
     .sort((a, b) => (a.event_date! + (a.start_time ?? '99:99')).localeCompare(b.event_date! + (b.start_time ?? '99:99')))
   const nextEvt = upcoming[0] ?? null
   const nextCat = nextEvt ? EVENT_CATEGORY_STYLE[nextEvt.category] : null
-  const nextLive = !!(nextEvt && nextEvt.category === 'debat' && nextEvt.status === 'en_cours')
+  // Only send people to the debate vote once tonight's debate has started.
+  const nextLive = !!nextEvt && tonightDebate(agendaEvents, now)?.id === nextEvt.id && debateStarted(nextEvt, now)
   const nextBg = nextLive ? '#FFDFD8' : nextCat?.soft ?? '#FFDFD8'
   const nextBc = nextLive ? '#F5C2B7' : '#E7E2D6'
   const nextInk = nextLive ? '#8A1F0E' : nextCat?.ink ?? '#454A66'

@@ -4,6 +4,7 @@ import type { AgendaRow } from '../lib/dbTypes'
 import { AGENDA_FILTERS, CALENDAR, EVENT_CATEGORY_STYLE, RELIABILITY_STYLE } from '../data'
 import { relativeDateLabel } from '../lib/countdown'
 import { useAgenda } from '../lib/useAgenda'
+import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 
@@ -20,6 +21,9 @@ const FILTER_TO_CATEGORY: Record<string, string | null> = {
 export default function Agenda({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
   const events = useAgenda()
+  const now = useNow()
+  const tonight = tonightDebate(events, now)
+  const tonightOpen = debateStarted(tonight, now)
 
   const filtered = (events ?? []).filter((e) => {
     if (e.status === 'passe') return false
@@ -45,7 +49,7 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
     const cat = EVENT_CATEGORY_STYLE[e.category]
     const rel = RELIABILITY_STYLE[e.reliability]
     const on = s.reminders.indexOf(e.slug) !== -1
-    const isLiveNow = e.category === 'debat' && e.status === 'en_cours'
+    const isLiveNow = tonightOpen && e.id === tonight?.id
     const who = e.candidates.length === 0
       ? null
       : e.candidates.length === 1

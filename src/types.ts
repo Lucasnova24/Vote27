@@ -49,7 +49,9 @@ export interface AppState {
   quizScore: number
   bDone: boolean
   bAnswers: number[]
-  debPick: number | null
+  // tonight's debate vote: agenda event slug + chosen member's candidate slug
+  debEvent: string | null
+  debPick: string | null
   firstRoundPick: number | null
 
   profileVille: string

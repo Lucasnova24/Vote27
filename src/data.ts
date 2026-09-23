@@ -153,12 +153,6 @@ export const VOTE_RESULTS = (accent: string) => [
   { label: 'Non', pct: '42%', color: '#C26A00' },
 ]
 
-export const DEBATE_STEPS = [
-  { time: '20:50', label: 'Ouverture du pronostic avant débat', dot: '#F4B860' },
-  { time: '21:00', label: 'Votes en direct, séquence par séquence', dot: '#8E9BFF' },
-  { time: '23:15', label: 'Vote final et comparaison des écarts', dot: '#5FD3BF' },
-]
-
 export const BOUSSOLE_SCALE = [
   { label: "Tout à fait d'accord", v: 2, color: '#1F7A3E' },
   { label: "Plutôt d'accord", v: 1, color: '#6DB287' },

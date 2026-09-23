@@ -169,6 +169,13 @@ create table if not exists public.debate_predictions (
   created_at timestamptz not null default now()
 );
 
+-- The debate vote now targets the members of a real agenda debate (who may
+-- not be presidential candidates at all), so it's keyed by slugs rather
+-- than by an index into the app's CANDS roster.
+alter table public.debate_predictions add column if not exists event_slug text;
+alter table public.debate_predictions add column if not exists candidate_slug text;
+alter table public.debate_predictions alter column candidate_index drop not null;
+
 alter table public.debate_predictions enable row level security;
 
 drop policy if exists "debate_predictions: owner all" on public.debate_predictions;
@@ -564,6 +571,46 @@ select
 from public.events e;
 
 grant select on public.agenda to anon, authenticated;
+
+-- Debate vote rules, enforced server-side (needs the agenda tables above):
+-- a vote is only accepted once today's debate has started, and only for
+-- one of its actual members (event_candidates, role 'participant').
+drop policy if exists "debate_predictions: owner all" on public.debate_predictions;
+drop policy if exists "debate_predictions: owner read" on public.debate_predictions;
+drop policy if exists "debate_predictions: owner delete" on public.debate_predictions;
+drop policy if exists "debate_predictions: vote insert" on public.debate_predictions;
+drop policy if exists "debate_predictions: vote update" on public.debate_predictions;
+
+create policy "debate_predictions: owner read" on public.debate_predictions
+  for select using (auth.uid() = user_id);
+create policy "debate_predictions: owner delete" on public.debate_predictions
+  for delete using (auth.uid() = user_id);
+
+create or replace function public.debate_vote_allowed(p_event_slug text, p_candidate_slug text)
+returns boolean
+language sql
+stable
+set search_path = ''
+as $$
+  select exists (
+    select 1
+      from public.events e
+      join public.event_candidates ec on ec.event_id = e.id and ec.role = 'participant'
+      join public.candidates c on c.id = ec.candidate_id
+     where e.slug = p_event_slug
+       and c.slug = p_candidate_slug
+       and e.category = 'debat'
+       and e.start_time is not null
+       and e.event_date = (now() at time zone 'Europe/Paris')::date
+       and (e.event_date + e.start_time) <= (now() at time zone 'Europe/Paris')
+  );
+$$;
+
+create policy "debate_predictions: vote insert" on public.debate_predictions
+  for insert with check (auth.uid() = user_id and public.debate_vote_allowed(event_slug, candidate_slug));
+create policy "debate_predictions: vote update" on public.debate_predictions
+  for update using (auth.uid() = user_id)
+  with check (auth.uid() = user_id and public.debate_vote_allowed(event_slug, candidate_slug));
 
 -- Seed data — additive, safe to re-run (unique slugs, on conflict do nothing).
 insert into public.candidates (slug, full_name, party, candidacy_status, candidacy_note, website_url) values
