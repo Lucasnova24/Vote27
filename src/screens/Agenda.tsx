@@ -18,6 +18,46 @@ const FILTER_TO_CATEGORY: Record<string, string | null> = {
   Tout: null, Débat: 'debat', Meeting: 'meeting', Interview: 'interview', Autre: 'autre',
 }
 
+const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
+const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+
+// What the date box shows, from most to least precise: the exact time,
+// otherwise the day, otherwise the month — and the free label as a last resort.
+function whenLabel(e: AgendaRow): { main: string; sub: string | null } {
+  if (e.start_time && e.event_date && e.date_precision === 'exact') return { main: e.start_time.slice(0, 5), sub: null }
+  if (e.event_date && (e.date_precision === 'exact' || e.date_precision === 'jour')) {
+    const [, m, d] = e.event_date.split('-').map(Number)
+    return { main: String(d), sub: MONTHS_SHORT[m - 1] }
+  }
+  let month: number | null = null
+  let year: string | null = null
+  if (e.event_date) {
+    month = Number(e.event_date.slice(5, 7)) - 1
+    year = e.event_date.slice(0, 4)
+  } else {
+    const label = e.display_date.toLowerCase()
+    const i = MONTHS_FR.findIndex((m) => label.includes(m))
+    if (i !== -1) {
+      month = i
+      year = label.match(/\b(20\d\d)\b/)?.[1] ?? null
+    }
+  }
+  if (month !== null) return { main: MONTHS_SHORT[month], sub: year }
+  return { main: e.display_date, sub: null }
+}
+
+function WhenBox({ e }: { e: AgendaRow }) {
+  const cat = EVENT_CATEGORY_STYLE[e.category]
+  const w = whenLabel(e)
+  const short = w.main.length <= 6
+  return (
+    <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: short ? '9px 0' : '9px 6px', textAlign: 'center', background: cat.soft, color: cat.ink }}>
+      <div className={short ? 'dsp num' : undefined} style={{ fontSize: short ? 19 : 11, fontWeight: short ? 800 : 700, lineHeight: short ? 1 : 1.2 }}>{w.main}</div>
+      {w.sub && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 3 }}>{w.sub}</div>}
+    </div>
+  )
+}
+
 export default function Agenda({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
   const events = useAgenda()
@@ -31,8 +71,9 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
     return cat === null || cat === undefined || e.category === cat
   })
 
-  const dated = filtered.filter((e) => e.event_date)
-  const undated = filtered.filter((e) => !e.event_date)
+  const dayKnown = (e: AgendaRow) => !!e.event_date && (e.date_precision === 'exact' || e.date_precision === 'jour')
+  const dated = filtered.filter(dayKnown)
+  const undated = filtered.filter((e) => !dayKnown(e))
 
   const days: { key: string; label: string; events: AgendaRow[] }[] = []
   dated.forEach((e) => {
@@ -57,9 +98,7 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
         : e.candidates.length + ' candidats'
     return (
       <div key={e.id} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
-        <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: '9px 0', textAlign: 'center', background: cat.soft, color: cat.ink }}>
-          <div className="dsp num" style={{ fontSize: e.start_time ? 19 : 14, fontWeight: 800, lineHeight: 1 }}>{e.start_time ? e.start_time.slice(0, 5) : '—'}</div>
-        </div>
+        <WhenBox e={e} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
@@ -126,9 +165,7 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
             <div className="stk" style={{ gap: 10 }}>
               {undated.map((e) => (
                 <div key={e.id} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
-                  <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: '9px 6px', textAlign: 'center', background: EVENT_CATEGORY_STYLE[e.category].soft, color: EVENT_CATEGORY_STYLE[e.category].ink }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>{e.display_date}</div>
-                  </div>
+                  <WhenBox e={e} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
