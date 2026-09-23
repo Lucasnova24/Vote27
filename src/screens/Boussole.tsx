@@ -32,7 +32,7 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
           <div className="stk" style={{ gap: 8 }}>
             <div className="eyebrow" style={{ color: '#3F238F' }}>Mes affinités</div>
             <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Où vous situez-vous ?</h1>
-            <div style={{ fontSize: 15, color: '#454A66' }}>Vos réponses restent sur cet appareil.</div>
+            <div style={{ fontSize: 15, color: '#454A66' }}>Vos réponses sont enregistrées sur votre compte et ne sont jamais publiées.</div>
           </div>
           <div style={{ background: '#E8E0FF', borderRadius: 20, padding: 16 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#2E1A70', marginBottom: 6 }}>Comment ça marche</div>
@@ -42,22 +42,15 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
           </div>
           <button type="button" onClick={actions.bStart} className="lift" style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px solid #D3C6FA', borderRadius: 22, padding: 18, textAlign: 'left' }}>
             <span className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span className="dsp" style={{ fontSize: 23, fontWeight: 700 }}>Version courte</span>
-              <span className="tag num" style={{ background: '#E8E0FF', color: '#3F238F' }}>20 questions</span>
+              <span className="dsp" style={{ fontSize: 23, fontWeight: 700 }}>Commencer</span>
+              <span className="tag num" style={{ background: '#E8E0FF', color: '#3F238F' }}>{BOUSSOLE.length + ' affirmations'}</span>
             </span>
-            <span style={{ display: 'block', fontSize: 14.5, color: '#454A66', marginTop: 6 }}>Environ 4 minutes. Les six thèmes principaux.</span>
-          </button>
-          <button type="button" onClick={actions.bStart} className="lift" style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px solid #D3C6FA', borderRadius: 22, padding: 18, textAlign: 'left' }}>
-            <span className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span className="dsp" style={{ fontSize: 23, fontWeight: 700 }}>Version longue</span>
-              <span className="tag num" style={{ background: '#E8E0FF', color: '#3F238F' }}>100 questions</span>
-            </span>
-            <span style={{ display: 'block', fontSize: 14.5, color: '#454A66', marginTop: 6 }}>Environ 20 minutes. Résultats détaillés thème par thème.</span>
+            <span style={{ display: 'block', fontSize: 14.5, color: '#454A66', marginTop: 6 }}>Environ 1 minute. Une affirmation par thème.</span>
           </button>
           <div style={{ background: '#EFEBE2', borderRadius: 20, padding: 16 }}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Limites</div>
             <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>
-              Un programme ne se résume pas à des affirmations binaires. Mes affinités ouvre la comparaison, elle ne la termine pas : chaque position renvoie à sa source dans les programmes.
+              Un programme ne se résume pas à des affirmations binaires. Mes affinités décrit vos positions, sans les comparer à celles des candidats.
             </div>
           </div>
         </div>
@@ -67,7 +60,7 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
         <div className="stk" style={{ gap: 20 }}>
           <div>
             <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
-              <span className="tag num" style={{ background: '#EFEBE2', color: '#14162B' }}>{(Math.min(s.bI, BOUSSOLE.length - 1) + 1) + ' / 6'}</span>
+              <span className="tag num" style={{ background: '#EFEBE2', color: '#14162B' }}>{(Math.min(s.bI, BOUSSOLE.length - 1) + 1) + ' / ' + BOUSSOLE.length}</span>
               <span className="tag" style={{ background: bts.soft, color: bts.ink }}>{bq.t}</span>
             </div>
             <div style={{ display: 'flex', gap: 6 }} aria-hidden="true">
@@ -111,7 +104,7 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
             ))}
           </div>
           <div style={{ background: '#E8E0FF', borderRadius: 20, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>
-            Ce résultat ne compare pas tes réponses à celles des candidats : on n'a pas encore leurs positions sourcées sur ces thèmes. Refais le test quand tu veux : rien n'est envoyé.
+            Ce résultat ne compare pas tes réponses à celles des candidats : on n'a pas encore leurs positions sourcées sur ces thèmes. Refais le test quand tu veux : tes réponses restent privées.
           </div>
           <button type="button" onClick={actions.bRestart} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>Refaire le test</button>
         </div>

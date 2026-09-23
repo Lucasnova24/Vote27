@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { PAST_VOTES } from '../data'
+import { CANDS } from '../data'
+import { supabase } from '../lib/supabaseClient'
+import { formatWeekLabel } from '../lib/week'
 import { useAgenda } from '../lib/useAgenda'
 import { debateStarted, debateStartLabel, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
@@ -17,17 +20,43 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
   const now = useNow()
-  const debate = tonightDebate(useAgenda(), now)
+  const agenda = useAgenda()
+  const debate = tonightDebate(agenda, now)
   const debateOpen = debateStarted(debate, now)
   const debateStart = debateStartLabel(debate)
   const debateVoted = !!debate && s.debEvent === debate.slug && s.debPick !== null
+
+  // Real history: every weekly 1st-round pick (first_round_picks), plus the
+  // current daily ballot and debate vote from the user's own records.
+  const [weekly, setWeekly] = useState<{ week_start: string; candidate_index: number }[] | null>(null)
+  useEffect(() => {
+    supabase
+      .from('first_round_picks')
+      .select('week_start,candidate_index')
+      .order('week_start', { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (error) console.error('[supabase] first_round_picks history:', error.message)
+        setWeekly((data as { week_start: string; candidate_index: number }[] | null) ?? [])
+      })
+  }, [s.firstRoundPick])
+
+  const debEvt = s.debEvent ? agenda?.find((e) => e.slug === s.debEvent) ?? null : null
+  const debName = debEvt?.candidates.find((c) => c.slug === s.debPick)?.name ?? null
+  const myVotes: { key: string; title: string; result: string }[] = []
+  if (s.voteChoice) myVotes.push({ key: 'vote', title: 'Vote du jour · Le vote devrait-il être obligatoire ?', result: s.voteChoice === 'oui' ? 'Oui' : 'Non' })
+  if (debEvt && debName) myVotes.push({ key: 'debat', title: 'Débat · ' + debEvt.title, result: debName })
+  ;(weekly ?? []).forEach((w) => {
+    const c = CANDS[w.candidate_index]
+    if (c) myVotes.push({ key: 'fr-' + w.week_start, title: '1er tour · ' + formatWeekLabel(w.week_start), result: c.name })
+  })
 
   const openVotes: {
     key: string; title: string; sub: string; tileBg: string; tileFg: string
     tag: string; tagBg: string; tagFg: string; icon: JSX.Element; onClick?: () => void
   }[] = [
     {
-      key: 'vote', title: 'Vote du jour', sub: 'Ferme à 20h', tileBg: '#E3E7FF', tileFg: '#1F2A8A',
+      key: 'vote', title: 'Vote du jour', sub: 'Oui ou non, un bulletin', tileBg: '#E3E7FF', tileFg: '#1F2A8A',
       tag: voteDone ? 'voté' : 'à voter', tagBg: voteDone ? '#DDF3E3' : '#FFEBC6', tagFg: voteDone ? '#14532D' : '#6E3A00',
       icon: <VoteIcon />, onClick: actions.openRoute('vote'),
     },
@@ -63,13 +92,15 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
         ))}
       </section>
 
-      <section style={{ order: 2 }} aria-label="Mes votes passés">
-        <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Mes votes passés</h2>
+      <section style={{ order: 2 }} aria-label="Mes votes">
+        <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Mes votes</h2>
         <div className="card" style={{ padding: '6px 18px' }}>
-          {PAST_VOTES.map((p) => (
-            <div key={p.title} className="row sep" style={{ gap: 12, minHeight: 58, padding: '10px 0' }}>
+          {weekly === null && <div style={{ fontSize: 13, color: '#5C617B', padding: '14px 0' }}>Chargement…</div>}
+          {weekly !== null && myVotes.length === 0 && <div style={{ fontSize: 14, color: '#5C617B', padding: '14px 0' }}>Aucun vote pour l'instant.</div>}
+          {myVotes.map((p) => (
+            <div key={p.key} className="row sep" style={{ gap: 12, minHeight: 58, padding: '10px 0' }}>
               <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 500, lineHeight: 1.3 }}>{p.title}</span>
-              <span className="tag num" style={{ background: p.bg, color: p.fg }}>{p.result}</span>
+              <span className="tag" style={{ background: '#EFEBE2', color: '#454A66' }}>{p.result}</span>
             </div>
           ))}
         </div>
@@ -85,7 +116,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
         </span>
         <h2 className="dsp" style={{ margin: 0, fontSize: 19, fontWeight: 700, color: '#2E1A70' }}>Comment les points sont comptés</h2>
       </div>
-      <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>Aucune mise, aucun argent. Participer rapporte peu, être juste rapporte beaucoup.</div>
+      <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>Aucune mise, aucun argent. Vote du jour : +15 ◆ au premier bulletin. Quiz : +20 ◆ par bonne réponse.</div>
     </section>
   )
 

@@ -12,7 +12,7 @@ import { currentWeekStart } from './lib/week'
 const initialState: AppState = {
   loading: true, authBusy: false,
   tab: 'accueil', route: null, debateSlug: null, filter: 'Tout', theme: 'Institutions',
-  points: 0, notifRead: false, voteChoice: null,
+  points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0,
   bDone: false, bAnswers: [],
   debEvent: null, debPick: null, firstRoundPick: null,
@@ -162,7 +162,10 @@ export function useAppState() {
     const uid = userIdRef.current
     update((s) => ({ voteChoice: choice, points: wasVoted ? s.points : s.points + 15 }))
     if (!uid) return
-    supabase.from('votes').upsert({ user_id: uid, choice }).then(logIfError('votes upsert'))
+    supabase.from('votes').upsert({ user_id: uid, choice }).then((res) => {
+      logIfError('votes upsert')(res)
+      update((s) => ({ voteSaved: s.voteSaved + 1 }))
+    })
     if (!wasVoted) supabase.rpc('increment_points', { delta: 15 }).then(logIfError('increment_points'))
   }
 
@@ -236,18 +239,18 @@ export function useAppState() {
     }
   }
 
+  // A weekly pick is final until next Sunday (no update policy server-side).
   const pickFirstRound = (i: number) => () => {
+    if (stateRef.current.firstRoundPick !== null) return
     update({ firstRoundPick: i })
     const uid = userIdRef.current
     if (uid) {
       supabase
         .from('first_round_picks')
-        .upsert({ user_id: uid, week_start: currentWeekStart(), candidate_index: i }, { onConflict: 'user_id,week_start' })
-        .then(logIfError('first_round_picks upsert'))
+        .insert({ user_id: uid, week_start: currentWeekStart(), candidate_index: i })
+        .then(logIfError('first_round_picks insert'))
     }
   }
-
-  const changeFirstRound = () => update({ firstRoundPick: null })
 
   const toggleReminder = (title: string) => () => update((s) => {
     const on = s.reminders.indexOf(title) !== -1
@@ -375,7 +378,7 @@ export function useAppState() {
     state,
     actions: {
       go, openRoute, openDebate, back, vote, answer, next, bAnswer, bStart, bRestart,
-      markRead, setFilter, setTheme, setDebPick, pickFirstRound, changeFirstRound,
+      markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
       authApple, authGoogle, authGuest, submitAuth, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,

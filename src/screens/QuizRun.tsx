@@ -72,9 +72,9 @@ export default function QuizRun({ state: s, actions, isWeb }: Props) {
           <div className="card">
             <div className="row" style={{ gap: 10, marginBottom: 6 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8341C" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.4 1 2 2 2 0-3-1-5 1-8Z" /></svg>
-              <span style={{ fontSize: 15.5, fontWeight: 700 }}>Prochaine tentative demain à 00h00</span>
+              <span style={{ fontSize: 15.5, fontWeight: 700 }}>Quiz enregistré</span>
             </div>
-            <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Une seule tentative par jour : c'est ce qui rend le classement comparable. Reviens demain pour continuer à progresser.</div>
+            <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Une seule tentative : c'est ce qui rend le classement comparable.</div>
           </div>
           <button type="button" onClick={actions.go('quiz')} className="btn" style={{ background: ACCENT }}>Voir le classement</button>
         </div>

@@ -66,7 +66,7 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
     <div className="rise stk" style={{ gap }}>
       <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
         <div className="eyebrow">Quiz</div>
-        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Cinq questions par jour</h1>
+        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Cinq questions sur les institutions</h1>
         <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Une seule tentative : sinon le classement n'a pas de sens.</div>
       </div>
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />

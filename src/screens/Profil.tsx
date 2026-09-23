@@ -1,6 +1,6 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { BADGES, QUIZ, SETTINGS_ROWS } from '../data'
+import { BADGES, QUIZ } from '../data'
 import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
 import { gapPage, h1Size } from '../styles'
@@ -22,12 +22,12 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
   const accountLine =
     s.authProvider === 'apple' ? 'Connectée avec Apple'
     : s.authProvider === 'google' ? 'Connectée avec Google Play'
-    : s.authProvider === 'anonymous' ? 'Session invitée — progression locale uniquement'
+    : s.authProvider === 'anonymous' ? 'Session invitée'
     : s.authEmail || 'Compte e-mail'
 
   const badgeUnlocked: Record<string, boolean> = {
     'Première voix': s.voteChoice !== null,
-    'Bon pronostic': s.debPick !== null,
+    'Vote de débat': s.debPick !== null,
     'Sans faute': s.quizDoneToday && s.quizScore === QUIZ.length,
     'Affinités faites': s.bDone,
   }
@@ -73,7 +73,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
           </span>
           <span style={{ flex: 'none' }}><BoussoleIcon size={44} /></span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#E4DBFF', marginTop: 10 }}>20 ou 100 questions. Tes réponses restent sur cet appareil.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#E4DBFF', marginTop: 10 }}>6 affirmations, une par thème. Tes réponses restent privées.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#3F238F' }}>{s.bDone ? 'Voir mon résultat' : 'Commencer'}<ChevronRight size={16} /></span>
       </button>
 
@@ -107,14 +107,6 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
   const colB = (
     <>
-      <section className="card" style={{ order: 5, padding: 6 }} aria-label="Réglages">
-        {SETTINGS_ROWS.map((label) => (
-          <button key={label} type="button" className="row sep rowh" style={{ width: '100%', gap: 12, minHeight: 58, padding: '0 14px', borderRadius: 16 }}>
-            <span style={{ flex: 1, fontSize: 15, fontWeight: 600, textAlign: 'left' }}>{label}</span>
-            <ChevronRight size={18} color="#5C617B" />
-          </button>
-        ))}
-      </section>
 
       <div className="stk" style={{ order: 6, alignItems: 'center', gap: 2, textAlign: 'center' }}>
         <div style={{ fontSize: 13, color: '#5C617B', paddingBottom: 4 }}>{accountLine}</div>

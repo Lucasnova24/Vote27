@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, VOTE_RESULTS } from '../data'
+import { ACCENT } from '../data'
+import { supabase } from '../lib/supabaseClient'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
 
@@ -12,16 +14,39 @@ interface Props {
 
 export default function VoteScreen({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
+  const [tally, setTally] = useState<{ oui: number; non: number } | null>(null)
+
+  // Real tally of every ballot cast in the app (get_vote_results RPC).
+  useEffect(() => {
+    if (!voteDone) return
+    supabase.rpc('get_vote_results').then(({ data, error }) => {
+      if (error) {
+        console.error('[supabase] get_vote_results:', error.message)
+        return
+      }
+      const rows = (data as { choice: string; total: number }[] | null) ?? []
+      const get = (c: string) => Number(rows.find((r) => r.choice === c)?.total ?? 0)
+      setTally({ oui: get('oui'), non: get('non') })
+    })
+  }, [voteDone, s.voteSaved])
+
+  const total = tally ? tally.oui + tally.non : 0
+  const results = tally && total > 0
+    ? [
+        { label: 'Oui', pct: Math.round((tally.oui / total) * 100) + '%', color: ACCENT },
+        { label: 'Non', pct: Math.round((tally.non / total) * 100) + '%', color: '#C26A00' },
+      ]
+    : []
 
   return (
     <div className="rise" style={flowWrap(isWeb)}>
       <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Retour</button>
       <div className="stk" style={{ gap: 10 }}>
-        <div className="eyebrow">Vote du jour · ferme à 20h</div>
+        <div className="eyebrow">Vote du jour</div>
         <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.04, fontWeight: 700 }}>Le vote devrait-il être obligatoire ?</h1>
       </div>
       <div style={{ background: '#E3E7FF', borderRadius: 18, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.55, color: '#1F2A8A' }}>
-        Question posée à tous les inscrits. Un seul bulletin par jour, modifiable jusqu'à 20h. Le résultat est publié ce soir avec le détail par tranche d'âge.
+        Question posée à tous les inscrits. Un seul bulletin par personne. Le résultat affiché est le décompte réel des bulletins déposés dans l'app.
       </div>
 
       {!voteDone && (
@@ -40,7 +65,8 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
       {voteDone && (
         <div className="stk" style={{ gap: 14 }}>
           <div className="card rise stk" style={{ gap: 16 }}>
-            {VOTE_RESULTS(ACCENT).map((r) => (
+            {tally === null && <div style={{ fontSize: 14, color: '#5C617B' }}>Chargement des résultats…</div>}
+            {results.map((r) => (
               <div key={r.label}>
                 <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
                   <span className="row" style={{ gap: 8, fontSize: 16, fontWeight: 700 }}>
@@ -52,7 +78,9 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
                 <div className="bar" style={{ height: 14 }}><i style={{ width: r.pct, background: r.color }} /></div>
               </div>
             ))}
-            <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>Clôture 20:00</div>
+            {tally !== null && (
+              <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>{total + (total > 1 ? ' bulletins' : ' bulletin')}</div>
+            )}
           </div>
           <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 22, padding: 22, textAlign: 'center' }}>
             <div className="dsp num" style={{ fontSize: 44, fontWeight: 800, color: '#F0A03C', lineHeight: 1 }}>+15 ◆</div>

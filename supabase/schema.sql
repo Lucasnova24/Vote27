@@ -156,9 +156,23 @@ end $$;
 
 alter table public.first_round_picks enable row level security;
 
+-- A weekly pick is final until the next week starts: owners can read and
+-- insert (for the current week only), but there is no update policy, so a
+-- pick can't be changed. Deletes stay allowed for "Réinitialiser".
 drop policy if exists "first_round_picks: owner all" on public.first_round_picks;
-create policy "first_round_picks: owner all" on public.first_round_picks
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "first_round_picks: owner read" on public.first_round_picks;
+drop policy if exists "first_round_picks: owner insert this week" on public.first_round_picks;
+drop policy if exists "first_round_picks: owner delete" on public.first_round_picks;
+create policy "first_round_picks: owner read" on public.first_round_picks
+  for select using (auth.uid() = user_id);
+create policy "first_round_picks: owner insert this week" on public.first_round_picks
+  for insert with check (
+    auth.uid() = user_id
+    and week_start <= (now() at time zone 'Europe/Paris')::date
+    and week_start > (now() at time zone 'Europe/Paris')::date - 7
+  );
+create policy "first_round_picks: owner delete" on public.first_round_picks
+  for delete using (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
 -- debate_predictions — "who will be most convincing" pre-debate pick
@@ -414,6 +428,19 @@ grant execute on function public.join_league(text) to authenticated;
 grant execute on function public.leave_league(uuid) to authenticated;
 grant execute on function public.get_my_leagues() to authenticated;
 grant execute on function public.get_league_members(uuid) to authenticated;
+
+-- Real tally of the "Vote du jour" ballots (votes rows are private per
+-- user, so the aggregate goes through a security-definer function).
+create or replace function public.get_vote_results()
+returns table (choice text, total bigint)
+language sql
+stable
+security definer set search_path = public
+as $$
+  select v.choice, count(*)::bigint from public.votes v group by v.choice;
+$$;
+
+grant execute on function public.get_vote_results() to authenticated;
 
 -- ═════════════════════════════════════════════════════════════
 -- Agenda — real 2027 campaign events (interviews, débats, meetings,

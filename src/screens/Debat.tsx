@@ -38,11 +38,6 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
   const startLabel = debateStartLabel(debate)
   const pick = debate && s.debEvent === debate.slug ? s.debPick : null
 
-  const steps = [
-    { time: startLabel ?? '—', label: 'Début du débat — ouverture du vote, séquence par séquence', dot: '#8E9BFF' },
-    { time: 'Fin', label: 'Vote final et comparaison des écarts', dot: '#5FD3BF' },
-  ]
-
   return (
     <div className="rise" style={flowWrap(isWeb)}>
       <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Retour</button>
@@ -100,23 +95,6 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
             </div>
           </section>
 
-          <section className="card" style={{ background: '#171B3C', borderColor: '#171B3C', color: '#fff' }} aria-label="Déroulé de la session">
-            <h2 className="eyebrow" style={{ margin: '0 0 16px', color: '#A7ADD3' }}>Déroulé de la session</h2>
-            <div className="stk">
-              {steps.map((st, i) => (
-                <div key={st.time} style={{ display: 'flex', gap: 14 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 5 }}>
-                    <span style={{ width: 14, height: 14, borderRadius: '50%', flex: 'none', border: '3px solid', background: '#171B3C', borderColor: st.dot }} />
-                    <span style={{ flex: 1, width: 2, marginTop: 4, background: 'rgba(255,255,255,.18)', display: i < steps.length - 1 ? 'block' : 'none' }} />
-                  </div>
-                  <div style={{ paddingBottom: 18 }}>
-                    <div className="dsp num" style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.1 }}>{st.time}</div>
-                    <div style={{ fontSize: 14.5, color: '#B9BEDD', marginTop: 3, lineHeight: 1.4 }}>{st.label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
         </>
       )}
     </div>

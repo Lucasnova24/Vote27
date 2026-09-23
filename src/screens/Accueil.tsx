@@ -7,7 +7,7 @@ import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
-import { BellIcon, BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
+import { BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -25,7 +25,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
     { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
     { k: 'quiz' as const, title: 'Quiz du jour', sub: '5 questions · 2 min', done: s.quizDoneToday, onClick: actions.openRoute('quiz'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
     { k: 'fr' as const, title: 'Mon vote du 1er tour', sub: 'Sondage hebdomadaire', done: s.firstRoundPick !== null, onClick: actions.openRoute('firstround'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
-    { k: 'bou' as const, title: 'Mes affinités', sub: '20 ou 100 questions', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
+    { k: 'bou' as const, title: 'Mes affinités', sub: '6 affirmations · 1 min', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
   ]
   const todos = rawTodos.slice().sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1))
   const doneCount = todos.filter((t) => t.done).length
@@ -136,21 +136,10 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
             {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
           </span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats déclarés, une source vérifiable pour chaque position.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats. Les positions sourcées sont ajoutées à mesure que les programmes officiels sont publiés.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
       </button>
 
-      <section className="card" style={{ order: 5, background: '#D8EBFB', borderColor: '#B7D6F0', boxShadow: 'none' }} aria-label="Notifications">
-        <div className="row" style={{ gap: 10, justifyContent: 'space-between' }}>
-          <span className="row" style={{ gap: 10 }}>
-            <span style={{ width: 36, height: 36, borderRadius: 12, background: '#0B6BB8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BellIcon /></span>
-            <span className="eyebrow" style={{ color: '#0A4577' }}>Notifications</span>
-          </span>
-          <span className="tag" style={{ background: '#fff', color: '#0A4577' }}>{s.notifRead ? 'à jour' : '2 nouvelles'}</span>
-        </div>
-        <div style={{ fontSize: 14.5, lineHeight: 1.5, marginTop: 12, color: '#0A2F52' }}>Le vote du jour ferme à 20h.</div>
-        <button type="button" onClick={actions.markRead} style={{ marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#0A4577', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Marquer comme lues</button>
-      </section>
     </>
   )
 

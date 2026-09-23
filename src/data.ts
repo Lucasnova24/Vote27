@@ -137,22 +137,6 @@ export const CALENDAR = [
   { label: '2nd tour', when: '2 mai 2027', dot: '#5FD3BF' },
 ]
 
-export const SETTINGS_ROWS = ['Notifications', 'Données et confidentialité', 'Sources et méthodologie']
-
-// Static demo flavor text for past participation, matching the prototype —
-// this app has no historical ledger of past estimations/votes to read from.
-export const PAST_VOTES = [
-  { title: 'Estimation · débat du 2 avril', result: '+180 ◆', bg: '#DDF3E3', fg: '#14532D' },
-  { title: 'Vote du jour · vote blanc', result: 'participé', bg: '#EFEBE2', fg: '#454A66' },
-  { title: 'Estimation · municipales', result: '+40 ◆', bg: '#DDF3E3', fg: '#14532D' },
-  { title: 'Vote du jour · mandat de 5 ans', result: 'participé', bg: '#EFEBE2', fg: '#454A66' },
-]
-
-export const VOTE_RESULTS = (accent: string) => [
-  { label: 'Oui', pct: '58%', color: accent },
-  { label: 'Non', pct: '42%', color: '#C26A00' },
-]
-
 export const BOUSSOLE_SCALE = [
   { label: "Tout à fait d'accord", v: 2, color: '#1F7A3E' },
   { label: "Plutôt d'accord", v: 1, color: '#6DB287' },
@@ -163,7 +147,7 @@ export const BOUSSOLE_SCALE = [
 
 export const BADGES = [
   { name: 'Première voix', color: '#3B4FD8' },
-  { name: 'Bon pronostic', color: '#A85400' },
+  { name: 'Vote de débat', color: '#A85400' },
   { name: 'Sans faute', color: '#6B45D9' },
   { name: 'Affinités faites', color: '#0E7A6B' },
 ]

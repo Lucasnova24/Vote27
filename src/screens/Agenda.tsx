@@ -212,7 +212,6 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
       <section className="card" style={{ order: 4, background: '#EFEBE2', borderColor: '#E2DCCD', boxShadow: 'none' }}>
         <h2 className="dsp" style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 700 }}>D'où vient cet agenda</h2>
         <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Événements réels, sourcés (LCP, Touteleurope, sites de campagne…), avec un niveau de fiabilité par événement. Certaines dates restent à confirmer.</div>
-        <button type="button" style={{ marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#14162B', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Signaler un événement manquant</button>
       </section>
     </>
   )

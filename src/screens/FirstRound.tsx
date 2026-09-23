@@ -3,7 +3,7 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { CANDS } from '../data'
 import { supabase } from '../lib/supabaseClient'
-import { currentWeekStart, formatWeekLabel } from '../lib/week'
+import { currentWeekStart, formatWeekLabel, nextWeekLabel } from '../lib/week'
 import { backLink, flowWrap, h1Size } from '../styles'
 import StatusTag from '../components/StatusTag'
 import { ChevronLeft } from '../components/Icons'
@@ -50,7 +50,7 @@ export default function FirstRound({ state: s, actions, isWeb }: Props) {
       <div className="stk" style={{ gap: 8 }}>
         <div className="eyebrow" style={{ color: '#6E3A00' }}>Sondage hebdomadaire</div>
         <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Ton vote au 1er tour</h1>
-        <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>On te redemande chaque dimanche pour suivre l'évolution des intentions dans le temps. Rien n'est public ni partagé.</div>
+        <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Un vote par semaine, définitif jusqu'au dimanche suivant : on te redemande chaque dimanche pour suivre l'évolution de tes intentions. Rien n'est public ni partagé.</div>
       </div>
 
       {done && (
@@ -59,7 +59,9 @@ export default function FirstRound({ state: s, actions, isWeb }: Props) {
             <div className="eyebrow" style={{ color: '#A7ADD3' }}>Ta réponse cette semaine</div>
             <div className="dsp" style={{ fontSize: 28, fontWeight: 800, marginTop: 10 }}>{CANDS[s.firstRoundPick as number].name}</div>
           </div>
-          <button type="button" onClick={actions.changeFirstRound} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>Modifier ma réponse</button>
+          <div style={{ background: '#FFF4DA', borderRadius: 18, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.5, color: '#6E3A00' }}>
+            {'Ta réponse est enregistrée pour la semaine et ne peut plus être modifiée. Prochain vote : ' + nextWeekLabel() + '.'}
+          </div>
           {history && history.length > 0 && (
             <section aria-label="Historique">
               <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 20, fontWeight: 700 }}>Historique</h2>

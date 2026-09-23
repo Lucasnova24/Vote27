@@ -47,6 +47,8 @@ export interface AppState {
   points: number
   notifRead: boolean
   voteChoice: 'oui' | 'non' | null
+  // bumped each time a ballot is saved, so the results tally refreshes
+  voteSaved: number
   quizDoneToday: boolean
   quizScore: number
   bDone: boolean
