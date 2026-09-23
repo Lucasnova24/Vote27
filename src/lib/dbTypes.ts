@@ -71,3 +71,39 @@ export interface LeagueMemberRow {
   pseudo: string
   points: number
 }
+
+export type EventCategory = 'interview' | 'debat' | 'meeting' | 'autre'
+export type EventReliability = 'confirme' | 'a_confirmer' | 'conditionnel'
+export type DatePrecision = 'exact' | 'jour' | 'mois' | 'approx'
+export type AgendaStatus = 'date_a_fixer' | 'passe' | 'en_cours' | 'a_venir'
+
+export interface AgendaCandidateRef {
+  id: string
+  slug: string
+  name: string
+  party: string
+  role: 'participant' | 'invite' | 'organisateur'
+}
+
+// Matches the public.agenda view (supabase/schema.sql).
+export interface AgendaRow {
+  id: string
+  slug: string
+  category: EventCategory
+  subtype: string | null
+  title: string
+  description: string | null
+  event_date: string | null
+  end_date: string | null
+  start_time: string | null
+  date_precision: DatePrecision
+  display_date: string
+  location: string | null
+  city: string | null
+  media: string | null
+  reliability: EventReliability
+  source_name: string | null
+  source_url: string | null
+  status: AgendaStatus
+  candidates: AgendaCandidateRef[]
+}

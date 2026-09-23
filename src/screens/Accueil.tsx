@@ -1,7 +1,8 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, CANDS, EVENTS, EVENT_TAGS } from '../data'
-import { firstRoundCountdownLabel, relativeDayLabel, todayLabelFr } from '../lib/countdown'
+import { ACCENT, CANDS, EVENT_CATEGORY_STYLE } from '../data'
+import { firstRoundCountdownLabel, relativeDateLabel, todayLabelFr } from '../lib/countdown'
+import { useAgenda } from '../lib/useAgenda'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
@@ -13,14 +14,10 @@ interface Props {
   isWeb: boolean
 }
 
-const toMin = (t: string) => {
-  const [h, m] = t.split(':')
-  return Number(h) * 60 + Number(m)
-}
-
 export default function Accueil({ state: s, actions, isWeb }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
+  const agendaEvents = useAgenda()
 
   const rawTodos = [
     { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
@@ -32,16 +29,19 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const doneCount = todos.filter((t) => t.done).length
   const ringOffset = (157.08 * (1 - doneCount / todos.length)).toFixed(2)
 
-  const todays = EVENTS.filter((e) => e.dayOffset === 0).slice().sort((a, b) => toMin(a.time) - toMin(b.time))
-  const nextEvt = todays[0] ?? null
-  const nextTg = nextEvt ? EVENT_TAGS[nextEvt.tag] : null
-  const nextLive = !!(nextEvt && nextEvt.live)
-  const nextBg = nextLive ? '#FFDFD8' : nextTg?.soft ?? '#FFDFD8'
+  const upcoming = (agendaEvents ?? [])
+    .filter((e) => e.event_date && (e.status === 'en_cours' || e.status === 'a_venir'))
+    .slice()
+    .sort((a, b) => (a.event_date! + (a.start_time ?? '99:99')).localeCompare(b.event_date! + (b.start_time ?? '99:99')))
+  const nextEvt = upcoming[0] ?? null
+  const nextCat = nextEvt ? EVENT_CATEGORY_STYLE[nextEvt.category] : null
+  const nextLive = !!(nextEvt && nextEvt.category === 'debat' && nextEvt.status === 'en_cours')
+  const nextBg = nextLive ? '#FFDFD8' : nextCat?.soft ?? '#FFDFD8'
   const nextBc = nextLive ? '#F5C2B7' : '#E7E2D6'
-  const nextInk = nextLive ? '#8A1F0E' : nextTg?.ink ?? '#454A66'
+  const nextInk = nextLive ? '#8A1F0E' : nextCat?.ink ?? '#454A66'
   const nextTitleColor = nextLive ? '#3D0E06' : '#14162B'
   const nextBtnBg = nextLive ? '#C8341C' : '#14162B'
-  const nextCta = nextLive ? 'Voter pour le gagnant' : "Voir dans l'agenda"
+  const nextCta = nextLive ? 'Suivre le débat' : "Voir dans l'agenda"
   const nextClick = nextLive ? actions.openRoute('debat') : actions.go('agenda')
 
   const colA = (
@@ -115,10 +115,12 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         <button type="button" onClick={nextClick} className="lift" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
           <span className="row" style={{ gap: 8 }}>
             {nextLive && <span className="live" aria-hidden="true" />}
-            <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextEvt.tag}</span>
+            <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextCat!.label}</span>
           </span>
           <span className="dsp" style={{ display: 'block', fontSize: 26, lineHeight: 1.05, fontWeight: 700, marginTop: 12, color: nextTitleColor }}>{nextEvt.title}</span>
-          <span className="num" style={{ display: 'block', fontSize: 14.5, color: nextInk, marginTop: 6 }}>{relativeDayLabel(nextEvt.dayOffset) + ' · ' + nextEvt.time}</span>
+          <span className="num" style={{ display: 'block', fontSize: 14.5, color: nextInk, marginTop: 6 }}>
+            {relativeDateLabel(nextEvt.event_date as string) + (nextEvt.start_time ? ' · ' + nextEvt.start_time.slice(0, 5) : '')}
+          </span>
           <span className="btn" style={{ marginTop: 16, background: nextBtnBg }}>{nextCta}<ChevronRight size={16} /></span>
         </button>
       )}

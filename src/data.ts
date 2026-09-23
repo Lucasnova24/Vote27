@@ -1,4 +1,4 @@
-import type { AgendaEvent, BoussoleStatement, Candidate, QuizQuestion } from './types'
+import type { BoussoleStatement, Candidate, QuizQuestion } from './types'
 
 export const ACCENT = '#3B4FD8'
 export const SHOW_POINTS = true
@@ -113,25 +113,23 @@ export const THEME_STYLE: Record<string, { solid: string; soft: string; ink: str
   Sécurité: { solid: '#6B45D9', soft: '#E8E0FF', ink: '#3F238F' },
 }
 
-export const EVENT_TAGS: Record<string, { soft: string; ink: string }> = {
-  Débat: { soft: '#FFDFD8', ink: '#8A1F0E' },
-  Meeting: { soft: '#E3E7FF', ink: '#1F2A8A' },
-  Presse: { soft: '#FFEBC6', ink: '#6E3A00' },
+// Styling per real event category (public.event_category) and per
+// reliability level (public.event_reliability) — see the `agenda` view,
+// fetched live via src/lib/useAgenda.ts.
+export const EVENT_CATEGORY_STYLE: Record<string, { soft: string; ink: string; label: string }> = {
+  debat: { soft: '#FFDFD8', ink: '#8A1F0E', label: 'Débat' },
+  meeting: { soft: '#E3E7FF', ink: '#1F2A8A', label: 'Meeting' },
+  interview: { soft: '#FFEBC6', ink: '#6E3A00', label: 'Interview' },
+  autre: { soft: '#E8E0FF', ink: '#3F238F', label: 'Autre' },
 }
 
-// Illustrative campaign calendar. Deliberately attributed to parties/
-// movements rather than to a specific real person and a specific claimed
-// event, since we have no verified real schedule to source that to.
-export const EVENTS: AgendaEvent[] = [
-  { dayOffset: 0, time: '18:30', title: 'Interview — France Inter', who: 'Candidat RN', tag: 'Presse' },
-  { dayOffset: 0, time: '21:00', title: 'Débat télévisé — France 2', who: 'Candidats déclarés', tag: 'Débat', live: true },
-  { dayOffset: 1, time: '11:00', title: 'Conférence de presse — Paris', who: 'Renaissance', tag: 'Presse' },
-  { dayOffset: 1, time: '19:00', title: 'Meeting — Lyon', who: 'La France insoumise', tag: 'Meeting' },
-  { dayOffset: 2, time: '08:15', title: 'Interview — RTL', who: 'Les Républicains', tag: 'Presse' },
-  { dayOffset: 2, time: '15:00', title: 'Meeting — Marseille', who: 'Horizons', tag: 'Meeting' },
-]
+export const RELIABILITY_STYLE: Record<string, { soft: string; ink: string; label: string } | null> = {
+  confirme: null,
+  a_confirmer: { soft: '#FFF4DA', ink: '#6E3A00', label: 'À confirmer' },
+  conditionnel: { soft: '#EFEBE2', ink: '#454A66', label: 'Conditionnel' },
+}
 
-export const AGENDA_FILTERS = ['Tout', 'Débat', 'Meeting', 'Presse']
+export const AGENDA_FILTERS = ['Tout', 'Débat', 'Meeting', 'Interview', 'Autre']
 
 export const CALENDAR = [
   { label: 'Clôture du vote hebdomadaire', when: 'dimanche', dot: '#F4B860' },

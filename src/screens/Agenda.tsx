@@ -1,7 +1,9 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { AGENDA_FILTERS, CALENDAR, EVENTS, EVENT_TAGS } from '../data'
-import { relativeDayLabel } from '../lib/countdown'
+import type { AgendaRow } from '../lib/dbTypes'
+import { AGENDA_FILTERS, CALENDAR, EVENT_CATEGORY_STYLE, RELIABILITY_STYLE } from '../data'
+import { relativeDateLabel } from '../lib/countdown'
+import { useAgenda } from '../lib/useAgenda'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 
@@ -11,18 +13,84 @@ interface Props {
   isWeb: boolean
 }
 
+const FILTER_TO_CATEGORY: Record<string, string | null> = {
+  Tout: null, Débat: 'debat', Meeting: 'meeting', Interview: 'interview', Autre: 'autre',
+}
+
 export default function Agenda({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
-  const filtered = EVENTS.filter((e) => s.filter === 'Tout' || e.tag === s.filter)
-  const days: { offset: number; label: string; events: typeof filtered }[] = []
-  filtered.forEach((e) => {
-    let d = days.find((x) => x.offset === e.dayOffset)
+  const events = useAgenda()
+
+  const filtered = (events ?? []).filter((e) => {
+    if (e.status === 'passe') return false
+    const cat = FILTER_TO_CATEGORY[s.filter]
+    return cat === null || cat === undefined || e.category === cat
+  })
+
+  const dated = filtered.filter((e) => e.event_date)
+  const undated = filtered.filter((e) => !e.event_date)
+
+  const days: { key: string; label: string; events: AgendaRow[] }[] = []
+  dated.forEach((e) => {
+    const key = e.event_date as string
+    let d = days.find((x) => x.key === key)
     if (!d) {
-      d = { offset: e.dayOffset, label: relativeDayLabel(e.dayOffset), events: [] }
+      d = { key, label: relativeDateLabel(key), events: [] }
       days.push(d)
     }
     d.events.push(e)
   })
+
+  const renderEvent = (e: AgendaRow) => {
+    const cat = EVENT_CATEGORY_STYLE[e.category]
+    const rel = RELIABILITY_STYLE[e.reliability]
+    const on = s.reminders.indexOf(e.slug) !== -1
+    const isLiveNow = e.category === 'debat' && e.status === 'en_cours'
+    const who = e.candidates.length === 0
+      ? null
+      : e.candidates.length === 1
+        ? e.candidates[0].name
+        : e.candidates.length + ' candidats'
+    return (
+      <div key={e.id} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
+        <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: '9px 0', textAlign: 'center', background: cat.soft, color: cat.ink }}>
+          <div className="dsp num" style={{ fontSize: e.start_time ? 19 : 14, fontWeight: 800, lineHeight: 1 }}>{e.start_time ? e.start_time.slice(0, 5) : '—'}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+            <span className="tag" style={{ background: cat.soft, color: cat.ink }}>{cat.label}</span>
+            {rel && <span className="tag" style={{ background: rel.soft, color: rel.ink }}>{rel.label}</span>}
+            {(who || e.city) && <span style={{ fontSize: 13.5, color: '#5C617B' }}>{[who, e.city].filter(Boolean).join(' · ')}</span>}
+          </div>
+          {e.description && <div style={{ fontSize: 13.5, color: '#5C617B', marginTop: 6, lineHeight: 1.4 }}>{e.description}</div>}
+          {isLiveNow && (
+            <button type="button" onClick={actions.openRoute('debat')} className="row" style={{ gap: 8, marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#8A1F0E' }}>
+              <span className="live" aria-hidden="true" />En direct · ouvrir la session
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+            </button>
+          )}
+          {e.source_name && (
+            <div style={{ fontSize: 12, color: '#8B90A8', marginTop: 6 }}>
+              {'Source · '}
+              {e.source_url
+                ? <a href={e.source_url} target="_blank" rel="noreferrer">{e.source_name}</a>
+                : e.source_name}
+            </div>
+          )}
+        </div>
+        <button
+          type="button" onClick={actions.toggleReminder(e.slug)} aria-pressed={on}
+          aria-label={(on ? 'Annuler le rappel — ' : 'Me rappeler — ') + e.title} className="press"
+          style={{ flex: 'none', width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? '#3B4FD8' : '#F6F4EE', color: on ? '#fff' : '#5C617B' }}
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15L6 16.5Z" /><path d="M10 20.5a2 2 0 0 0 4 0" />
+          </svg>
+        </button>
+      </div>
+    )
+  }
 
   const colA = (
     <>
@@ -38,46 +106,44 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
       </div>
 
       <div className="stk" style={{ order: 2, gap: 20 }}>
+        {events === null && <div style={{ fontSize: 13, color: '#5C617B' }}>Chargement…</div>}
+        {events !== null && filtered.length === 0 && <div style={{ fontSize: 13, color: '#5C617B' }}>Aucun événement pour ce filtre.</div>}
+
         {days.map((d) => (
-          <section key={d.label}>
+          <section key={d.key}>
             <h2 className="eyebrow" style={{ margin: '0 0 10px' }}>{d.label}</h2>
-            <div className="stk" style={{ gap: 10 }}>
-              {d.events.map((e) => {
-                const tg = EVENT_TAGS[e.tag]
-                const on = s.reminders.indexOf(e.title) !== -1
-                return (
-                  <div key={e.title + e.time} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
-                    <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: '9px 0', textAlign: 'center', background: tg.soft, color: tg.ink }}>
-                      <div className="dsp num" style={{ fontSize: 19, fontWeight: 800, lineHeight: 1 }}>{e.time}</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-                        <span className="tag" style={{ background: tg.soft, color: tg.ink }}>{e.tag}</span>
-                        <span style={{ fontSize: 13.5, color: '#5C617B' }}>{e.who}</span>
-                      </div>
-                      {e.live && (
-                        <button type="button" onClick={actions.openRoute('debat')} className="row" style={{ gap: 8, marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#8A1F0E' }}>
-                          <span className="live" aria-hidden="true" />En direct · ouvrir la session
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      type="button" onClick={actions.toggleReminder(e.title)} aria-pressed={on}
-                      aria-label={(on ? 'Annuler le rappel — ' : 'Me rappeler — ') + e.title} className="press"
-                      style={{ flex: 'none', width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? '#3B4FD8' : '#F6F4EE', color: on ? '#fff' : '#5C617B' }}
-                    >
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15L6 16.5Z" /><path d="M10 20.5a2 2 0 0 0 4 0" />
-                      </svg>
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+            <div className="stk" style={{ gap: 10 }}>{d.events.map(renderEvent)}</div>
           </section>
         ))}
+
+        {undated.length > 0 && (
+          <section>
+            <h2 className="eyebrow" style={{ margin: '0 0 10px' }}>Dates à préciser</h2>
+            <div className="stk" style={{ gap: 10 }}>
+              {undated.map((e) => (
+                <div key={e.id} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
+                  <div style={{ width: 64, flex: 'none', borderRadius: 14, padding: '9px 6px', textAlign: 'center', background: EVENT_CATEGORY_STYLE[e.category].soft, color: EVENT_CATEGORY_STYLE[e.category].ink }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>{e.display_date}</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+                      <span className="tag" style={{ background: EVENT_CATEGORY_STYLE[e.category].soft, color: EVENT_CATEGORY_STYLE[e.category].ink }}>{EVENT_CATEGORY_STYLE[e.category].label}</span>
+                      {RELIABILITY_STYLE[e.reliability] && <span className="tag" style={{ background: RELIABILITY_STYLE[e.reliability]!.soft, color: RELIABILITY_STYLE[e.reliability]!.ink }}>{RELIABILITY_STYLE[e.reliability]!.label}</span>}
+                    </div>
+                    {e.description && <div style={{ fontSize: 13.5, color: '#5C617B', marginTop: 6, lineHeight: 1.4 }}>{e.description}</div>}
+                    {e.source_name && (
+                      <div style={{ fontSize: 12, color: '#8B90A8', marginTop: 6 }}>
+                        {'Source · '}
+                        {e.source_url ? <a href={e.source_url} target="_blank" rel="noreferrer">{e.source_name}</a> : e.source_name}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </>
   )
@@ -104,7 +170,7 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
 
       <section className="card" style={{ order: 4, background: '#EFEBE2', borderColor: '#E2DCCD', boxShadow: 'none' }}>
         <h2 className="dsp" style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 700 }}>D'où vient cet agenda</h2>
-        <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Agendas des équipes de campagne, grilles des chaînes, annonces officielles. Tous les candidats déclarés, même format, aucun tri par popularité.</div>
+        <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Événements réels, sourcés (LCP, Touteleurope, sites de campagne…), avec un niveau de fiabilité par événement. Certaines dates restent à confirmer.</div>
         <button type="button" style={{ marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#14162B', textDecoration: 'underline', textUnderlineOffset: '3px' }}>Signaler un événement manquant</button>
       </section>
     </>

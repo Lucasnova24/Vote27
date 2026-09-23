@@ -406,3 +406,260 @@ grant execute on function public.join_league(text) to authenticated;
 grant execute on function public.leave_league(uuid) to authenticated;
 grant execute on function public.get_my_leagues() to authenticated;
 grant execute on function public.get_league_members(uuid) to authenticated;
+
+-- ═════════════════════════════════════════════════════════════
+-- Agenda — real 2027 campaign events (interviews, débats, meetings,
+-- primaries...), sourced with a reliability flag per event. This is
+-- separate from the app's own CANDS roster (src/data.ts, one candidate
+-- per party for voting/programmes/débat): here every individual in a
+-- real scheduled event is tracked, including primary contenders who
+-- won't all end up as the final candidate.
+-- Collected 23/09/2026, spot-checked against LCP and Touteleurope.
+-- ═════════════════════════════════════════════════════════════
+
+do $$ begin
+  create type public.event_category as enum ('interview', 'debat', 'meeting', 'autre');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.event_reliability as enum ('confirme', 'a_confirmer', 'conditionnel');
+exception when duplicate_object then null; end $$;
+
+-- exact  : date + heure connues
+-- jour   : date connue, heure inconnue
+-- mois   : seul le mois est connu
+-- approx : période approximative (ex. « vers la Toussaint »)
+do $$ begin
+  create type public.date_precision as enum ('exact', 'jour', 'mois', 'approx');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.participant_role as enum ('participant', 'invite', 'organisateur');
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.candidates (
+  id               uuid primary key default gen_random_uuid(),
+  slug             text not null unique,
+  full_name        text not null,
+  party            text not null,
+  candidacy_status text not null,
+  candidacy_note   text,
+  website_url      text,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+
+create table if not exists public.events (
+  id             uuid primary key default gen_random_uuid(),
+  slug           text not null unique,
+  category       public.event_category not null,
+  subtype        text,
+  title          text not null,
+  description    text,
+  event_date     date,
+  end_date       date,
+  start_time     time,
+  date_precision public.date_precision not null default 'jour',
+  date_label     text,
+  location       text,
+  city           text,
+  media          text,
+  reliability    public.event_reliability not null default 'confirme',
+  source_name    text,
+  source_url     text,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now(),
+  constraint end_after_start check (end_date is null or event_date is null or end_date >= event_date),
+  constraint label_if_no_date check (event_date is not null or date_label is not null)
+);
+
+create table if not exists public.event_candidates (
+  event_id     uuid not null references public.events(id) on delete cascade,
+  candidate_id uuid not null references public.candidates(id) on delete cascade,
+  role         public.participant_role not null default 'participant',
+  primary key (event_id, candidate_id)
+);
+
+create index if not exists events_category_idx on public.events (category);
+create index if not exists events_date_idx on public.events (event_date);
+create index if not exists event_candidates_cand_idx on public.event_candidates (candidate_id);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists candidates_updated_at on public.candidates;
+create trigger candidates_updated_at before update on public.candidates
+  for each row execute function public.set_updated_at();
+
+drop trigger if exists events_updated_at on public.events;
+create trigger events_updated_at before update on public.events
+  for each row execute function public.set_updated_at();
+
+alter table public.candidates enable row level security;
+alter table public.events enable row level security;
+alter table public.event_candidates enable row level security;
+
+drop policy if exists "Lecture publique des candidats" on public.candidates;
+create policy "Lecture publique des candidats"
+  on public.candidates for select to anon, authenticated using (true);
+
+drop policy if exists "Lecture publique des événements" on public.events;
+create policy "Lecture publique des événements"
+  on public.events for select to anon, authenticated using (true);
+
+drop policy if exists "Lecture publique des participations" on public.event_candidates;
+create policy "Lecture publique des participations"
+  on public.event_candidates for select to anon, authenticated using (true);
+
+-- Ready-to-consume view: computed status + candidates aggregated as JSON.
+create or replace view public.agenda
+with (security_invoker = true)
+as
+select
+  e.id,
+  e.slug,
+  e.category,
+  e.subtype,
+  e.title,
+  e.description,
+  e.event_date,
+  e.end_date,
+  e.start_time,
+  e.date_precision,
+  coalesce(e.date_label, to_char(e.event_date, 'DD/MM/YYYY')) as display_date,
+  e.location,
+  e.city,
+  e.media,
+  e.reliability,
+  e.source_name,
+  e.source_url,
+  case
+    when e.event_date is null then 'date_a_fixer'
+    when coalesce(e.end_date, e.event_date) < (now() at time zone 'Europe/Paris')::date then 'passe'
+    when e.event_date <= (now() at time zone 'Europe/Paris')::date then 'en_cours'
+    else 'a_venir'
+  end as status,
+  coalesce(
+    (select jsonb_agg(jsonb_build_object(
+              'id', c.id, 'slug', c.slug, 'name', c.full_name,
+              'party', c.party, 'role', ec.role)
+            order by c.full_name)
+       from public.event_candidates ec
+       join public.candidates c on c.id = ec.candidate_id
+      where ec.event_id = e.id),
+    '[]'::jsonb
+  ) as candidates
+from public.events e;
+
+grant select on public.agenda to anon, authenticated;
+
+-- Seed data — additive, safe to re-run (unique slugs, on conflict do nothing).
+insert into public.candidates (slug, full_name, party, candidacy_status, candidacy_note, website_url) values
+  ('marine-le-pen',         'Marine Le Pen',         'RN',                        'Déclarée (7 juillet 2026)',                'Condamnée en appel le même jour, pourvoi en cassation.', null),
+  ('jean-luc-melenchon',    'Jean-Luc Mélenchon',    'LFI',                       'Déclaré (3 mai 2026)',                     '4e candidature ; refuse toute primaire.',               'https://lafranceinsoumise.fr/'),
+  ('edouard-philippe',      'Édouard Philippe',      'Horizons',                  'Déclaré (septembre 2024)',                 null,                                                     'https://www.edouardphilippe.fr/'),
+  ('gabriel-attal',         'Gabriel Attal',         'Renaissance',               'Déclaré (22 mai 2026)',                    null,                                                     'https://attalpresident.fr/'),
+  ('bruno-retailleau',      'Bruno Retailleau',      'LR',                        'Désigné par les adhérents (19 avril 2026)','73,8 % des voix en consultation interne.',              null),
+  ('marine-tondelier',      'Marine Tondelier',      'Les Écologistes',           'Déclarée',                                 'Hors primaire PS / Place publique.',                    'https://marinetondelier.fr/'),
+  ('fabien-roussel',        'Fabien Roussel',        'PCF',                       'Déclaré (6 septembre 2026)',               'Validé à 72 % par les militants.',                       null),
+  ('olivier-faure',         'Olivier Faure',         'PS',                        'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
+  ('raphael-glucksmann',    'Raphaël Glucksmann',    'Place publique',            'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
+  ('segolene-royal',        'Ségolène Royal',        'Primaire PS / Place publique','Candidate à la primaire',                'Primaire « Choisir 2027 ».',                             null),
+  ('jerome-guedj',          'Jérôme Guedj',          'PS',                        'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
+  ('emmanuel-maurel',       'Emmanuel Maurel',       'GRS',                       'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
+  ('eric-zemmour',          'Éric Zemmour',          'Reconquête',                'Candidature confirmée oralement (17 sept. 2026)', 'Déclaration formelle attendue à l''automne.',   null),
+  ('nicolas-dupont-aignan', 'Nicolas Dupont-Aignan', 'DLF',                       'Déclaré (19 septembre 2026)',              '4e candidature.',                                        null),
+  ('david-lisnard',         'David Lisnard',         'Nouvelle Énergie',          'Déclaré',                                  'A quitté LR en avril 2026.',                             null),
+  ('bernard-cazeneuve',     'Bernard Cazeneuve',     'Gauche (hors primaire)',    'Déclaré (16 juillet 2026)',                'A décliné la primaire socialiste.',                      null),
+  ('delphine-batho',        'Delphine Batho',        'Génération écologie',       'Déclarée',                                 null,                                                     null),
+  ('karim-bouamrane',       'Karim Bouamrane',       'PS',                        'Déclaré',                                  'Maire de Saint-Ouen.',                                   null),
+  ('nathalie-arthaud',      'Nathalie Arthaud',      'LO',                        'Déclarée',                                 null,                                                     null)
+on conflict (slug) do nothing;
+
+insert into public.events
+  (slug, category, subtype, title, description, event_date, end_date, start_time, date_precision, date_label, location, city, media, reliability, source_name, source_url)
+values
+  ('primaire-ps-debat-1', 'debat', 'Débat de primaire',
+   'Débat n°1 de la primaire sociale-démocrate',
+   'Format « Face aux Français », présenté par David Pujadas, en partenariat avec Le Parisien. Une dizaine de Français interpellent les candidats.',
+   '2026-09-23', null, '20:40', 'exact', null,
+   null, null, 'LCI', 'confirme', 'LCP',
+   'https://lcp.fr/actualites/primaire-de-gauche-les-candidats-face-a-face-lors-d-un-premier-debat-televise-ce'),
+
+  ('primaire-ps-debat-2', 'debat', 'Débat de primaire',
+   'Débat n°2 de la primaire sociale-démocrate',
+   'Horaire, chaîne précise et présentateurs non communiqués à ce stade.',
+   '2026-10-01', null, null, 'jour', null,
+   null, null, 'France Télévisions', 'a_confirmer', 'LCP',
+   'https://lcp.fr/actualites/primaire-de-gauche-les-candidats-face-a-face-lors-d-un-premier-debat-televise-ce'),
+
+  ('primaire-ps-debat-3', 'debat', 'Débat de primaire',
+   'Débat n°3 de la primaire sociale-démocrate',
+   'Horaire non communiqué à ce stade.',
+   '2026-10-04', null, null, 'jour', null,
+   null, null, 'BFMTV', 'a_confirmer', 'LCP',
+   'https://lcp.fr/actualites/primaire-de-gauche-les-candidats-face-a-face-lors-d-un-premier-debat-televise-ce'),
+
+  ('primaire-ps-tour-1', 'autre', 'Scrutin interne',
+   '1er tour de la primaire « Choisir 2027 »',
+   'Vote ouvert moyennant une participation financière.',
+   '2026-10-09', '2026-10-10', null, 'jour', null,
+   null, null, null, 'confirme', 'Toute l''Europe',
+   'https://www.touteleurope.eu/vie-politique-des-etats-membres/presidentielle-2027-qui-sont-les-candidats-deja-declares/'),
+
+  ('attal-meeting-lyon', 'meeting', 'Grand meeting',
+   'Grand meeting de campagne de Gabriel Attal',
+   'Inscription en ligne sur le site de campagne. Salle exacte à préciser.',
+   '2026-10-10', null, null, 'jour', null,
+   null, 'Lyon', null, 'confirme', 'Site de campagne Gabriel Attal',
+   'https://attalpresident.fr/meeting'),
+
+  ('primaire-ps-tour-2', 'autre', 'Scrutin interne',
+   '2nd tour éventuel de la primaire « Choisir 2027 »',
+   'Uniquement si aucun candidat n''est désigné au premier tour.',
+   '2026-10-16', '2026-10-17', null, 'jour', null,
+   null, null, null, 'conditionnel', 'LCP',
+   'https://lcp.fr/actualites/primaire-de-gauche-les-candidats-face-a-face-lors-d-un-premier-debat-televise-ce'),
+
+  ('zemmour-declaration', 'autre', 'Annonce',
+   'Déclaration formelle de candidature d''Éric Zemmour',
+   'Selon son entourage, déclaration attendue à l''automne, probablement dès octobre.',
+   null, null, null, 'mois', 'Octobre 2026 (date non fixée)',
+   null, null, null, 'a_confirmer', 'ICI',
+   'https://www.ici.fr/infos/politique/presidentielle-2027-qui-sont-les-candidats-declares-1598133'),
+
+  ('reunion-droite-centre-toussaint', 'autre', 'Réunion politique',
+   'Réunion de la droite et du centre proposée par Édouard Philippe',
+   'Invitations adressées aux partis et courants de la droite et du centre. Bruno Retailleau (LR) a décliné.',
+   null, null, null, 'approx', 'Vers la Toussaint 2026',
+   null, 'Paris', null, 'a_confirmer', 'Revue de presse (Le Monde, TF1 Info, AFP)',
+   'https://www.titrespresse.com/20633512603/edouard-philippe-rencontre')
+on conflict (slug) do nothing;
+
+insert into public.event_candidates (event_id, candidate_id, role)
+select e.id, c.id, 'participant'
+from public.events e
+cross join public.candidates c
+where e.slug in ('primaire-ps-debat-1', 'primaire-ps-debat-2', 'primaire-ps-debat-3',
+                 'primaire-ps-tour-1', 'primaire-ps-tour-2')
+  and c.slug in ('olivier-faure', 'raphael-glucksmann', 'segolene-royal', 'jerome-guedj', 'emmanuel-maurel')
+on conflict do nothing;
+
+insert into public.event_candidates (event_id, candidate_id, role)
+select e.id, c.id, v.role::public.participant_role
+from (values
+  ('attal-meeting-lyon',             'gabriel-attal',    'participant'),
+  ('zemmour-declaration',            'eric-zemmour',     'participant'),
+  ('reunion-droite-centre-toussaint','edouard-philippe', 'organisateur')
+) as v(event_slug, candidate_slug, role)
+join public.events e     on e.slug = v.event_slug
+join public.candidates c on c.slug = v.candidate_slug
+on conflict do nothing;

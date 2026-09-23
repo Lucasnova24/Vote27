@@ -36,6 +36,13 @@ export function relativeDayLabel(offset: number, from: Date = new Date()): strin
   return dayLabelFr(d)
 }
 
+// "Aujourd'hui" / "Demain" / "Mercredi 23 septembre" for a real 'YYYY-MM-DD'
+// date string (e.g. an agenda event's event_date), relative to today.
+export function relativeDateLabel(dateStr: string, from: Date = new Date()): string {
+  const target = new Date(dateStr + 'T00:00:00')
+  return relativeDayLabel(daysUntil(target, from), from)
+}
+
 export function firstRoundCountdownLabel(from: Date = new Date()): string {
   const days = daysUntil(FIRST_ROUND_DATE, from)
   if (days > 0) return 'J-' + days + ' avant le 1er tour'

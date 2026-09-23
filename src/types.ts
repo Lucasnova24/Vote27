@@ -30,15 +30,6 @@ export interface BoussoleStatement {
   s: string
 }
 
-export interface AgendaEvent {
-  dayOffset: number // 0 = today, 1 = tomorrow, ...
-  time: string
-  title: string
-  who: string
-  tag: string
-  live?: boolean
-}
-
 export interface AppState {
   // session / sync
   loading: boolean
