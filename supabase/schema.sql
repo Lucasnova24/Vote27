@@ -741,34 +741,3 @@ from (values
 join public.events e     on e.slug = v.event_slug
 join public.candidates c on c.slug = v.candidate_slug
 on conflict do nothing;
-
--- ═════════════════════════════════════════════════════════════
--- Veille automatique de l'agenda (scripts/veille-agenda.ts, lancé par
--- .github/workflows/veille-agenda.yml). Le script écrit avec la clé
--- service_role, qui contourne la RLS : aucune policy d'écriture n'est
--- ouverte aux clients.
--- ═════════════════════════════════════════════════════════════
-
--- 'manuel' = saisi à la main (ce fichier), 'veille' = ajouté par la veille.
-alter table public.events add column if not exists origin text not null default 'manuel';
-alter table public.events add column if not exists last_checked_at timestamptz;
-
-do $$ begin
-  alter table public.events add constraint events_origin_check check (origin in ('manuel', 'veille'));
-exception when duplicate_object then null; end $$;
-
--- Journal des passages de la veille (lecture via le dashboard Supabase).
-create table if not exists public.agenda_sync_runs (
-  id          bigint generated always as identity primary key,
-  started_at  timestamptz not null default now(),
-  finished_at timestamptz,
-  status      text not null default 'en_cours' check (status in ('en_cours', 'ok', 'erreur')),
-  inserted    int not null default 0,
-  updated     int not null default 0,
-  rejected    jsonb not null default '[]'::jsonb,
-  summary     text,
-  error       text
-);
-
--- RLS activée sans policy : invisible pour anon/authenticated.
-alter table public.agenda_sync_runs enable row level security;

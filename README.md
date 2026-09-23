@@ -68,36 +68,6 @@ npm install
 npm run dev
 ```
 
-## 6. Automatic agenda updates (veille)
-
-`scripts/veille-agenda.ts` searches the web for new 2027 campaign events (débats,
-interviews, meetings, primaries, announcements) with Claude and its web search tool,
-then writes them to `events` / `candidates` / `event_candidates`. The Agenda tab reads
-those tables through the `agenda` view, so new events show up without a redeploy.
-
-It runs twice a day through GitHub Actions (`.github/workflows/veille-agenda.yml`,
-07:00 and 19:00 Paris time in summer), and can be started by hand from the
-**Actions → Veille agenda → Run workflow** page, with a "dry run" box that only logs what
-it would write.
-
-Setup:
-
-1. Re-run `supabase/schema.sql`. It adds `events.origin` (`manuel` / `veille`),
-   `events.last_checked_at` and the `agenda_sync_runs` log table.
-2. In the GitHub repo, go to **Settings → Secrets and variables → Actions** and add:
-   - `ANTHROPIC_API_KEY`: a key from console.anthropic.com
-   - `SUPABASE_URL`: the project URL
-   - `SUPABASE_SERVICE_ROLE_KEY`: **Project Settings → API → service_role**. It bypasses
-     RLS, so it only goes in GitHub secrets, never in `.env.local` or the front end.
-
-Write rules: every event needs an https source. Updates only fill in or correct fields
-and never clear one. Participants are only ever added, and nothing is deleted. Events
-added by the veille have `origin = 'veille'`, so you can review them in one place:
-`select * from events where origin = 'veille' order by created_at desc`. Each run, with
-what it rejected and why, is logged in `agenda_sync_runs`.
-
-Run it locally with `DRY_RUN=1 npm run veille`, with the three variables above set.
-
 ## Structure
 
 ```
