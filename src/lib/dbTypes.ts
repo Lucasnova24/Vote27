@@ -17,6 +17,8 @@ export interface ProfileRow {
   code_postal: string | null
   telephone: string | null
   interets: string | null
+  date_naissance: string | null
+  sexe: string | null
   created_at: string
 }
 

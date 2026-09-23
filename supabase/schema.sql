@@ -21,6 +21,8 @@ create table if not exists public.profiles (
   code_postal text,
   telephone text,
   interets text,
+  date_naissance date,
+  sexe text,
   created_at timestamptz not null default now()
 );
 
@@ -35,6 +37,10 @@ alter table public.profiles add column if not exists pays text;
 alter table public.profiles add column if not exists code_postal text;
 alter table public.profiles add column if not exists telephone text;
 alter table public.profiles add column if not exists interets text;
+-- Collected at signup for form validation but never actually persisted
+-- until now — added so "Compléter mon profil" can show/edit them too.
+alter table public.profiles add column if not exists date_naissance date;
+alter table public.profiles add column if not exists sexe text;
 
 alter table public.profiles enable row level security;
 

@@ -84,6 +84,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     authFirst: profile?.first_name ?? '',
     authLast: profile?.last_name ?? '',
     authPseudo: profile?.pseudo ?? '',
+    authDob: profile?.date_naissance ?? '',
+    authSex: profile?.sexe ?? '',
     profileVille: profile?.ville ?? '',
     profileRegion: profile?.region ?? '',
     profilePays: profile?.pays ?? '',
@@ -293,7 +295,10 @@ export function useAppState() {
         if (data.user) {
           await supabase
             .from('profiles')
-            .upsert({ id: data.user.id, email: s.authEmail, first_name: s.authFirst, last_name: s.authLast, pseudo: s.authPseudo })
+            .upsert({
+              id: data.user.id, email: s.authEmail, first_name: s.authFirst, last_name: s.authLast, pseudo: s.authPseudo,
+              date_naissance: s.authDob, sexe: s.authSex,
+            })
         }
         update({ authBusy: false, authPass: '' })
       } else {
@@ -329,6 +334,11 @@ export function useAppState() {
       supabase
         .from('profiles')
         .update({
+          first_name: s.authFirst || null,
+          last_name: s.authLast || null,
+          pseudo: s.authPseudo || null,
+          date_naissance: s.authDob || null,
+          sexe: s.authSex || null,
           ville: s.profileVille || null,
           region: s.profileRegion || null,
           pays: s.profilePays || null,
