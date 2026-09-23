@@ -1,6 +1,7 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, CANDS, DAYS_LEFT, EVENTS, EVENT_TAGS } from '../data'
+import { ACCENT, CANDS, EVENTS, EVENT_TAGS } from '../data'
+import { firstRoundCountdownLabel, relativeDayLabel, todayLabelFr } from '../lib/countdown'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
@@ -31,7 +32,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const doneCount = todos.filter((t) => t.done).length
   const ringOffset = (157.08 * (1 - doneCount / todos.length)).toFixed(2)
 
-  const todays = EVENTS.filter((e) => e.day.indexOf("Aujourd'hui") === 0).slice().sort((a, b) => toMin(a.time) - toMin(b.time))
+  const todays = EVENTS.filter((e) => e.dayOffset === 0).slice().sort((a, b) => toMin(a.time) - toMin(b.time))
   const nextEvt = todays[0] ?? null
   const nextTg = nextEvt ? EVENT_TAGS[nextEvt.tag] : null
   const nextLive = !!(nextEvt && nextEvt.live)
@@ -117,7 +118,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
             <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextEvt.tag}</span>
           </span>
           <span className="dsp" style={{ display: 'block', fontSize: 26, lineHeight: 1.05, fontWeight: 700, marginTop: 12, color: nextTitleColor }}>{nextEvt.title}</span>
-          <span className="num" style={{ display: 'block', fontSize: 14.5, color: nextInk, marginTop: 6 }}>{nextEvt.day.replace("Aujourd'hui · ", '') + ' · ' + nextEvt.time}</span>
+          <span className="num" style={{ display: 'block', fontSize: 14.5, color: nextInk, marginTop: 6 }}>{relativeDayLabel(nextEvt.dayOffset) + ' · ' + nextEvt.time}</span>
           <span className="btn" style={{ marginTop: 16, background: nextBtnBg }}>{nextCta}<ChevronRight size={16} /></span>
         </button>
       )}
@@ -150,7 +151,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   return (
     <div className="rise stk" style={{ gap }}>
       <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
-        <div className="eyebrow">{'Jeudi 15 avril · J-' + DAYS_LEFT + ' avant le 1er tour'}</div>
+        <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />

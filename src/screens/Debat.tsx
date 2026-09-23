@@ -1,6 +1,7 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { CANDS, DEBATE_STEPS } from '../data'
+import { todayLabelFr } from '../lib/countdown'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
 
@@ -21,7 +22,7 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
           <span className="live" aria-hidden="true" />Session live
         </span>
         <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Débat télévisé — France 2</h1>
-        <div className="num" style={{ fontSize: 15, color: '#454A66' }}>Jeudi 15 avril · 21:00 · Candidats déclarés</div>
+        <div className="num" style={{ fontSize: 15, color: '#454A66' }}>{todayLabelFr() + ' · 21:00 · Candidats déclarés'}</div>
       </div>
 
       <section className="card" aria-label="Pronostic avant débat">

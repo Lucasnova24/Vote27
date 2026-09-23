@@ -3,7 +3,6 @@ import type { AgendaEvent, BoussoleStatement, Candidate, QuizQuestion } from './
 export const ACCENT = '#3B4FD8'
 export const SHOW_POINTS = true
 export const LIVE_DEBATE = true
-export const DAYS_LEFT = 3
 
 // Real candidates for the 2027 French presidential election (1st round:
 // 18 April 2027; 2nd round: 2 May 2027), one per party — when a party has
@@ -124,20 +123,20 @@ export const EVENT_TAGS: Record<string, { soft: string; ink: string }> = {
 // movements rather than to a specific real person and a specific claimed
 // event, since we have no verified real schedule to source that to.
 export const EVENTS: AgendaEvent[] = [
-  { day: "Aujourd'hui · jeudi 15 avril", time: '18:30', title: 'Interview — France Inter', who: 'Candidat RN', tag: 'Presse' },
-  { day: "Aujourd'hui · jeudi 15 avril", time: '21:00', title: 'Débat télévisé — France 2', who: 'Candidats déclarés', tag: 'Débat', live: true },
-  { day: 'Vendredi 16 avril', time: '11:00', title: 'Conférence de presse — Paris', who: 'Renaissance', tag: 'Presse' },
-  { day: 'Vendredi 16 avril', time: '19:00', title: 'Meeting — Lyon', who: 'La France insoumise', tag: 'Meeting' },
-  { day: 'Samedi 17 avril', time: '08:15', title: 'Interview — RTL', who: 'Les Républicains', tag: 'Presse' },
-  { day: 'Samedi 17 avril', time: '15:00', title: 'Meeting — Marseille', who: 'Horizons', tag: 'Meeting' },
+  { dayOffset: 0, time: '18:30', title: 'Interview — France Inter', who: 'Candidat RN', tag: 'Presse' },
+  { dayOffset: 0, time: '21:00', title: 'Débat télévisé — France 2', who: 'Candidats déclarés', tag: 'Débat', live: true },
+  { dayOffset: 1, time: '11:00', title: 'Conférence de presse — Paris', who: 'Renaissance', tag: 'Presse' },
+  { dayOffset: 1, time: '19:00', title: 'Meeting — Lyon', who: 'La France insoumise', tag: 'Meeting' },
+  { dayOffset: 2, time: '08:15', title: 'Interview — RTL', who: 'Les Républicains', tag: 'Presse' },
+  { dayOffset: 2, time: '15:00', title: 'Meeting — Marseille', who: 'Horizons', tag: 'Meeting' },
 ]
 
 export const AGENDA_FILTERS = ['Tout', 'Débat', 'Meeting', 'Presse']
 
 export const CALENDAR = [
   { label: 'Clôture du vote hebdomadaire', when: 'dimanche', dot: '#F4B860' },
-  { label: '1er tour', when: '18 avril', dot: '#8E9BFF' },
-  { label: '2nd tour', when: '2 mai', dot: '#5FD3BF' },
+  { label: '1er tour', when: '18 avril 2027', dot: '#8E9BFF' },
+  { label: '2nd tour', when: '2 mai 2027', dot: '#5FD3BF' },
 ]
 
 export const SETTINGS_ROWS = ['Notifications', 'Données et confidentialité', 'Sources et méthodologie']

@@ -31,7 +31,7 @@ export interface BoussoleStatement {
 }
 
 export interface AgendaEvent {
-  day: string
+  dayOffset: number // 0 = today, 1 = tomorrow, ...
   time: string
   title: string
   who: string

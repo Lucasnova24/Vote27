@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useAppState } from './useAppState'
 import { useIsWeb } from './useIsWeb'
 import { ACCENT, SHOW_POINTS } from './data'
+import { firstRoundCountdownLabel, todayLabelFr } from './lib/countdown'
 import { getDisplayName, getInitials } from './lib/displayName'
 import { levelFromPoints, levelProgress } from './lib/leveling'
 import Auth from './screens/Auth'
@@ -86,8 +87,8 @@ export default function App() {
           )}
           {isWeb && (
             <div className="row" style={{ gap: 10 }}>
-              <span className="eyebrow">Jeudi 15 avril</span>
-              <span className="tag" style={{ background: '#FFDFD8', color: '#8A1F0E' }}>{'J-3 avant le 1er tour'}</span>
+              <span className="eyebrow">{todayLabelFr()}</span>
+              <span className="tag" style={{ background: '#FFDFD8', color: '#8A1F0E' }}>{firstRoundCountdownLabel()}</span>
             </div>
           )}
           <div className="row" style={{ gap: 8 }}>

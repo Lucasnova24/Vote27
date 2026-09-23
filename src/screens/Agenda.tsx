@@ -1,6 +1,7 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { AGENDA_FILTERS, CALENDAR, EVENTS, EVENT_TAGS } from '../data'
+import { relativeDayLabel } from '../lib/countdown'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 
@@ -13,11 +14,11 @@ interface Props {
 export default function Agenda({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
   const filtered = EVENTS.filter((e) => s.filter === 'Tout' || e.tag === s.filter)
-  const days: { label: string; events: typeof filtered }[] = []
+  const days: { offset: number; label: string; events: typeof filtered }[] = []
   filtered.forEach((e) => {
-    let d = days.find((x) => x.label === e.day)
+    let d = days.find((x) => x.offset === e.dayOffset)
     if (!d) {
-      d = { label: e.day, events: [] }
+      d = { offset: e.dayOffset, label: relativeDayLabel(e.dayOffset), events: [] }
       days.push(d)
     }
     d.events.push(e)
