@@ -1,0 +1,39 @@
+name: Veille agenda
+
+# Cherche les nouveaux événements de campagne et les ajoute dans Supabase
+# (tables events / candidates / event_candidates, lues par l'onglet Agenda).
+on:
+  schedule:
+    # 5h et 17h UTC = 7h et 19h à Paris (heure d'été), 6h et 18h en hiver.
+    - cron: '0 5,17 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulation : afficher ce qui serait écrit sans rien écrire"
+        type: boolean
+        default: false
+
+concurrency:
+  group: veille-agenda
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run veille
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
