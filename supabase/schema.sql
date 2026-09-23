@@ -146,6 +146,52 @@ create policy "debate_predictions: owner all" on public.debate_predictions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
+-- leagues / league_members — private groups ("Classements" on the Quiz tab).
+-- A league is created with a random invite code; anyone with the code can
+-- join. All writes go through the security-definer RPCs below, so there
+-- are no insert/update/delete policies on these tables — a member can only
+-- ever *read* their own leagues and fellow members.
+-- ─────────────────────────────────────────────────────────────
+create extension if not exists pgcrypto;
+
+create table if not exists public.leagues (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  code text not null unique,
+  owner_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+alter table public.leagues enable row level security;
+
+drop policy if exists "leagues: select member" on public.leagues;
+create policy "leagues: select member" on public.leagues
+  for select using (
+    exists (
+      select 1 from public.league_members m
+      where m.league_id = leagues.id and m.user_id = auth.uid()
+    )
+  );
+
+create table if not exists public.league_members (
+  league_id uuid not null references public.leagues (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  joined_at timestamptz not null default now(),
+  primary key (league_id, user_id)
+);
+
+alter table public.league_members enable row level security;
+
+drop policy if exists "league_members: select fellow member" on public.league_members;
+create policy "league_members: select fellow member" on public.league_members
+  for select using (
+    exists (
+      select 1 from public.league_members m2
+      where m2.league_id = league_members.league_id and m2.user_id = auth.uid()
+    )
+  );
+
+-- ─────────────────────────────────────────────────────────────
 -- Auto-create a profile row whenever a new auth user is created
 -- (covers email/password, anonymous/guest, and OAuth sign-ups alike)
 -- ─────────────────────────────────────────────────────────────
@@ -233,7 +279,100 @@ as $$
   limit limit_n;
 $$;
 
+-- ─────────────────────────────────────────────────────────────
+-- RPCs — leagues (create with a fresh invite code, join by code, list mine,
+-- list a league's members, leave)
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.create_league(p_name text)
+returns public.leagues
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_code text;
+  v_league public.leagues;
+begin
+  if p_name is null or length(trim(p_name)) = 0 then
+    raise exception 'Le nom de la ligue est requis.';
+  end if;
+  loop
+    v_code := upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+    exit when not exists (select 1 from public.leagues where code = v_code);
+  end loop;
+  insert into public.leagues (name, code, owner_id)
+    values (trim(p_name), v_code, auth.uid())
+    returning * into v_league;
+  insert into public.league_members (league_id, user_id) values (v_league.id, auth.uid());
+  return v_league;
+end;
+$$;
+
+create or replace function public.join_league(p_code text)
+returns public.leagues
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_league public.leagues;
+begin
+  select * into v_league from public.leagues where code = upper(trim(p_code));
+  if v_league.id is null then
+    raise exception 'Code de ligue invalide.';
+  end if;
+  insert into public.league_members (league_id, user_id)
+    values (v_league.id, auth.uid())
+    on conflict do nothing;
+  return v_league;
+end;
+$$;
+
+create or replace function public.leave_league(p_league_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  delete from public.league_members where league_id = p_league_id and user_id = auth.uid();
+end;
+$$;
+
+-- The leagues the caller belongs to, with a live member count.
+create or replace function public.get_my_leagues()
+returns table (id uuid, name text, code text, owner_id uuid, member_count bigint)
+language sql
+security definer set search_path = public
+as $$
+  select l.id, l.name, l.code, l.owner_id, count(m2.user_id) as member_count
+  from public.leagues l
+  join public.league_members m on m.league_id = l.id and m.user_id = auth.uid()
+  join public.league_members m2 on m2.league_id = l.id
+  group by l.id, l.name, l.code, l.owner_id
+  order by l.created_at desc;
+$$;
+
+-- A league's members ranked by points — only callable by a member of it.
+create or replace function public.get_league_members(p_league_id uuid)
+returns table (pseudo text, points integer)
+language sql
+security definer set search_path = public
+as $$
+  select coalesce(nullif(trim(p.pseudo), ''), 'Citoyen') as pseudo, p.points
+  from public.league_members m
+  join public.profiles p on p.id = m.user_id
+  where m.league_id = p_league_id
+    and exists (
+      select 1 from public.league_members me
+      where me.league_id = p_league_id and me.user_id = auth.uid()
+    )
+  order by p.points desc;
+$$;
+
 grant execute on function public.increment_points(integer) to authenticated;
 grant execute on function public.increment_quiz_stat(boolean) to authenticated;
 grant execute on function public.reset_progress() to authenticated;
 grant execute on function public.get_leaderboard(integer) to authenticated;
+grant execute on function public.create_league(text) to authenticated;
+grant execute on function public.join_league(text) to authenticated;
+grant execute on function public.leave_league(uuid) to authenticated;
+grant execute on function public.get_my_leagues() to authenticated;
+grant execute on function public.get_league_members(uuid) to authenticated;

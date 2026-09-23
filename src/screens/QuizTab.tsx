@@ -1,9 +1,9 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { LEAGUES } from '../data'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
-import { ChevronRight, QuizIcon } from '../components/Icons'
+import Leagues from '../components/Leagues'
+import { QuizIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -14,10 +14,6 @@ interface Props {
 export default function QuizTab({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
   const rate = s.quizAttemptsTotal > 0 ? Math.round((s.quizCorrectTotal / s.quizAttemptsTotal) * 100) : 0
-
-  const leagues = LEAGUES.concat(
-    s.leagueCreated ? [{ badge: 'MOI', name: 'Ma nouvelle ligue', meta: '1 joueur', bg: '#171B3C', fg: '#FFFFFF' }] : [],
-  )
 
   const colA = (
     <>
@@ -61,30 +57,9 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
   )
 
   const colB = (
-    <section style={{ order: 3 }} aria-label="Classements">
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', margin: '6px 0 12px' }}>
-        <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Classements</h2>
-        <span style={{ fontSize: 13, color: '#5C617B' }}>mis à jour à minuit</span>
-      </div>
-      <div className="card" style={{ padding: 6 }}>
-        {leagues.map((l) => (
-          <button key={l.name} type="button" className="row sep rowh" style={{ width: '100%', gap: 12, minHeight: 66, padding: '10px 12px', borderRadius: 18 }}>
-            <span style={{ width: 44, height: 44, borderRadius: 14, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, background: l.bg, color: l.fg }}>{l.badge}</span>
-            <span style={{ flex: 1, minWidth: 0, display: 'block', textAlign: 'left' }}>
-              <span style={{ display: 'block', fontSize: 15.5, fontWeight: 700, letterSpacing: '-.01em' }}>{l.name}</span>
-              <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 1 }}>{l.meta}</span>
-            </span>
-            <ChevronRight size={18} color="#5C617B" />
-          </button>
-        ))}
-      </div>
-      <button
-        type="button" onClick={actions.createLeague} disabled={s.leagueCreated} className="btn"
-        style={{ marginTop: 12, background: s.leagueCreated ? '#EFEBE2' : '#14162B', color: s.leagueCreated ? '#5C617B' : '#FFFFFF' }}
-      >
-        {s.leagueCreated ? 'Ligue créée ✓' : 'Créer une ligue'}
-      </button>
-    </section>
+    <div style={{ order: 3 }}>
+      <Leagues />
+    </div>
   )
 
   return (

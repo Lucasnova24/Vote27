@@ -55,3 +55,16 @@ export interface LeaderboardRow {
   pseudo: string
   points: number
 }
+
+export interface LeagueRow {
+  id: string
+  name: string
+  code: string
+  owner_id: string
+  member_count: number
+}
+
+export interface LeagueMemberRow {
+  pseudo: string
+  points: number
+}
