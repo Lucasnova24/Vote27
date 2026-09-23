@@ -194,15 +194,6 @@ create table if not exists public.leagues (
 
 alter table public.leagues enable row level security;
 
-drop policy if exists "leagues: select member" on public.leagues;
-create policy "leagues: select member" on public.leagues
-  for select using (
-    exists (
-      select 1 from public.league_members m
-      where m.league_id = leagues.id and m.user_id = auth.uid()
-    )
-  );
-
 create table if not exists public.league_members (
   league_id uuid not null references public.leagues (id) on delete cascade,
   user_id uuid not null references public.profiles (id) on delete cascade,
@@ -211,6 +202,16 @@ create table if not exists public.league_members (
 );
 
 alter table public.league_members enable row level security;
+
+-- Policies below reference league_members, so they must come after it exists.
+drop policy if exists "leagues: select member" on public.leagues;
+create policy "leagues: select member" on public.leagues
+  for select using (
+    exists (
+      select 1 from public.league_members m
+      where m.league_id = leagues.id and m.user_id = auth.uid()
+    )
+  );
 
 drop policy if exists "league_members: select fellow member" on public.league_members;
 create policy "league_members: select fellow member" on public.league_members
