@@ -7,9 +7,10 @@ import type {
 } from './lib/dbTypes'
 import type { AppState, AuthProvider, Route, Tab } from './types'
 import { BOUSSOLE, QUIZ } from './data'
+import { currentWeekStart } from './lib/week'
 
 const initialState: AppState = {
-  loading: false, authBusy: false,
+  loading: true, authBusy: false,
   tab: 'accueil', route: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null,
   quizDoneToday: false, quizScore: 0,
@@ -20,8 +21,8 @@ const initialState: AppState = {
   bMode: null, bI: 0,
   reminders: [],
   quizCorrectTotal: 0, quizAttemptsTotal: 0,
-  authed: true, authView: 'signup', authProvider: 'email',
-  authFirst: 'Léa', authLast: 'Martin', authPseudo: 'lea_m', authEmail: 'lea@example.com', authPass: '', authDob: '', authSex: '', authError: null,
+  authed: false, authView: 'signup', authProvider: null,
+  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authDob: '', authSex: '', authError: null,
 }
 
 function providerFromUser(user: User): AuthProvider {
@@ -50,7 +51,7 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     supabase.from('quiz_attempts').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('boussole_responses').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('debate_predictions').select('*').eq('user_id', uid).maybeSingle(),
-    supabase.from('first_round_picks').select('*').eq('user_id', uid).maybeSingle(),
+    supabase.from('first_round_picks').select('*').eq('user_id', uid).eq('week_start', currentWeekStart()).maybeSingle(),
   ])
 
   let profile = profileRes.data as ProfileRow | null
@@ -237,7 +238,7 @@ export function useAppState() {
     if (uid) {
       supabase
         .from('first_round_picks')
-        .upsert({ user_id: uid, candidate_index: i })
+        .upsert({ user_id: uid, week_start: currentWeekStart(), candidate_index: i }, { onConflict: 'user_id,week_start' })
         .then(logIfError('first_round_picks upsert'))
     }
   }

@@ -5,12 +5,43 @@ export const SHOW_POINTS = true
 export const LIVE_DEBATE = true
 export const DAYS_LEFT = 3
 
+// Real candidates for the 2027 French presidential election (1st round:
+// 18 April 2027; 2nd round: 2 May 2027), split between those who have
+// officially declared and those only reported/expected as likely
+// ("pressenti"). Compiled from public reporting as of September 2026 —
+// this is a fast-moving list (declarations, primaries, legal rulings on
+// eligibility), so re-check it periodically rather than trusting it as
+// frozen fact.
 export const CANDS: Candidate[] = [
-  { name: 'Camille Aubry', party: 'Parti fictif A', pct: 26, color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'CA' },
-  { name: 'Théo Marchand', party: 'Parti fictif B', pct: 23, color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'TM' },
-  { name: 'Nadia Belkacem', party: 'Parti fictif C', pct: 19, color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'NB' },
-  { name: 'Paul Rivière', party: 'Parti fictif D', pct: 17, color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'PR' },
-  { name: 'Élise Fontaine', party: 'Parti fictif E', pct: 15, color: '#C2385A', ink: '#8C1F3D', soft: '#FFDCE5', initials: 'EF' },
+  { name: 'Nathalie Arthaud', party: 'Lutte ouvrière', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'NA' },
+  { name: 'François Asselineau', party: 'Union populaire républicaine', status: 'déclaré', color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'FA' },
+  { name: 'Gabriel Attal', party: 'Renaissance', status: 'déclaré', color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'GA' },
+  { name: 'Delphine Batho', party: 'Génération écologie', status: 'déclaré', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'DB' },
+  { name: 'Xavier Bertrand', party: 'Nous, France', status: 'déclaré', color: '#C2385A', ink: '#8C1F3D', soft: '#FFDCE5', initials: 'XB' },
+  { name: 'Karim Bouamrane', party: 'Parti socialiste', status: 'déclaré', color: '#0B6BB8', ink: '#0A4577', soft: '#D8EBFB', initials: 'KB' },
+  { name: 'Bernard Cazeneuve', party: 'La Convention', status: 'déclaré', color: '#1F7A3E', ink: '#14532D', soft: '#DDF3E3', initials: 'BC' },
+  { name: 'Nicolas Dupont-Aignan', party: 'Debout la France', status: 'déclaré', color: '#B8541F', ink: '#7A3512', soft: '#FCE3D3', initials: 'ND' },
+  { name: 'Sylvain Durif', party: 'Elvita', status: 'déclaré', color: '#7A3E9D', ink: '#4E2766', soft: '#EFE0FA', initials: 'SD' },
+  { name: 'Anasse Kazib', party: 'Révolution permanente', status: 'déclaré', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'AK' },
+  { name: 'Selma Labib', party: 'NPA – Révolutionnaires', status: 'déclaré', color: '#2C7DA0', ink: '#1B4E63', soft: '#D6ECF5', initials: 'SL' },
+  { name: 'Francis Lalanne', party: 'France Libre', status: 'déclaré', color: '#6E5B3E', ink: '#443923', soft: '#EDE6D8', initials: 'FL' },
+  { name: 'Marine Le Pen', party: 'Rassemblement national', status: 'déclaré', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'ML' },
+  { name: 'Jean-Luc Mélenchon', party: 'La France insoumise', status: 'déclaré', color: '#C8341C', ink: '#8A1F0E', soft: '#FFDFD8', initials: 'JM' },
+  { name: 'Édouard Philippe', party: 'Horizons', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'EP' },
+  { name: 'Florian Philippot', party: 'Les Patriotes', status: 'déclaré', color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'FP' },
+  { name: 'Bruno Retailleau', party: 'Les Républicains', status: 'déclaré', color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'BR' },
+  { name: 'Fabien Roussel', party: 'Parti communiste français', status: 'déclaré', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'FR' },
+  { name: 'Éric Zemmour', party: 'Reconquête', status: 'déclaré', color: '#C2385A', ink: '#8C1F3D', soft: '#FFDCE5', initials: 'EZ' },
+
+  { name: 'Jordan Bardella', party: 'Rassemblement national', status: 'pressenti', color: '#0B6BB8', ink: '#0A4577', soft: '#D8EBFB', initials: 'JB' },
+  { name: 'Raphaël Glucksmann', party: 'Place publique', status: 'pressenti', color: '#1F7A3E', ink: '#14532D', soft: '#DDF3E3', initials: 'RG' },
+  { name: 'Olivier Faure', party: 'Parti socialiste', status: 'pressenti', color: '#B8541F', ink: '#7A3512', soft: '#FCE3D3', initials: 'OF' },
+  { name: 'Ségolène Royal', party: 'Parti socialiste', status: 'pressenti', color: '#7A3E9D', ink: '#4E2766', soft: '#EFE0FA', initials: 'SR' },
+  { name: 'David Lisnard', party: 'Nouvelle Énergie', status: 'pressenti', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'DL' },
+  { name: 'Dominique de Villepin', party: 'Sans étiquette', status: 'pressenti', color: '#2C7DA0', ink: '#1B4E63', soft: '#D6ECF5', initials: 'DV' },
+  { name: 'François Hollande', party: 'Parti socialiste', status: 'pressenti', color: '#6E5B3E', ink: '#443923', soft: '#EDE6D8', initials: 'FH' },
+  { name: 'François Baroin', party: 'Les Républicains', status: 'pressenti', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'FB' },
+  { name: 'Jean Lassalle', party: 'Résistons !', status: 'pressenti', color: '#C8341C', ink: '#8A1F0E', soft: '#FFDFD8', initials: 'JL' },
 ]
 
 export const QUIZ: QuizQuestion[] = [
@@ -85,64 +116,22 @@ export const EVENT_TAGS: Record<string, { soft: string; ink: string }> = {
   Presse: { soft: '#FFEBC6', ink: '#6E3A00' },
 }
 
-export const POSITIONS: Record<string, string[]> = {
-  Institutions: [
-    'Proportionnelle intégrale aux législatives, mandat unique renouvelable.',
-    "Référendum d'initiative citoyenne à partir de 700 000 signatures.",
-    "Vote obligatoire assorti d'une reconnaissance du vote blanc.",
-    'Réduction du nombre de parlementaires de 30 %.',
-    'Maintien du scrutin actuel, renforcement du contrôle parlementaire.',
-  ],
-  Économie: [
-    'Baisse des cotisations sur les bas salaires, financée par la fiscalité du capital.',
-    'Réduction de 40 Md€ de dépense publique sur le quinquennat.',
-    'Conditionnalité écologique et sociale des aides aux entreprises.',
-    'TVA réduite sur les produits de première nécessité.',
-    'Impôt plancher de 2 % sur les très hauts patrimoines.',
-  ],
-  Écologie: [
-    'Sortie du charbon en 2030 et plan ferroviaire de 15 Md€.',
-    "Relance du nucléaire : six réacteurs d'ici 2040.",
-    "Moratoire sur l'artificialisation des sols.",
-    'Rénovation thermique de 700 000 logements par an.',
-    "Objectifs européens conservés, calendrier assoupli pour l'industrie.",
-  ],
-  Europe: [
-    'Budget commun de défense et emprunt européen pour la transition.',
-    'Renégociation des règles budgétaires du pacte de stabilité.',
-    'Élargissement conditionné à une réforme du droit de veto.',
-    "Priorité aux coopérations à quelques États plutôt qu'à 27.",
-    'Traité social européen : salaire minimum de référence.',
-  ],
-  Social: [
-    'Retraite à 62 ans pour les carrières longues, 64 ans sinon.',
-    'Indexation des pensions sur les salaires plutôt que sur les prix.',
-    'Revenu minimum garanti versé automatiquement.',
-    "Conditionnalité du RSA à 15 heures d'activité hebdomadaires.",
-    'Grande loi sur le grand âge financée par une cotisation dédiée.',
-  ],
-  Sécurité: [
-    '10 000 policiers supplémentaires, redéploiement en zone rurale.',
-    'Police de proximité rétablie dans 200 quartiers.',
-    'Doublement du budget de la justice de proximité.',
-    'Peines planchers pour les récidives violentes.',
-    'Plan national contre les violences intrafamiliales.',
-  ],
-}
-
+// Illustrative campaign calendar. Deliberately attributed to parties/
+// movements rather than to a specific real person and a specific claimed
+// event, since we have no verified real schedule to source that to.
 export const EVENTS: AgendaEvent[] = [
-  { day: "Aujourd'hui · jeudi 15 avril", time: '18:30', title: 'Interview — France Inter', who: 'Paul Rivière', tag: 'Presse' },
-  { day: "Aujourd'hui · jeudi 15 avril", time: '21:00', title: 'Débat télévisé — France 2', who: 'Les 5 candidats', tag: 'Débat', live: true },
-  { day: 'Vendredi 16 avril', time: '11:00', title: 'Conférence de presse — Paris', who: 'Camille Aubry', tag: 'Presse' },
-  { day: 'Vendredi 16 avril', time: '19:00', title: 'Meeting — Lyon', who: 'Théo Marchand', tag: 'Meeting' },
-  { day: 'Samedi 17 avril', time: '08:15', title: 'Interview — RTL', who: 'Nadia Belkacem', tag: 'Presse' },
-  { day: 'Samedi 17 avril', time: '15:00', title: 'Meeting — Marseille', who: 'Élise Fontaine', tag: 'Meeting' },
+  { day: "Aujourd'hui · jeudi 15 avril", time: '18:30', title: 'Interview — France Inter', who: 'Candidat RN', tag: 'Presse' },
+  { day: "Aujourd'hui · jeudi 15 avril", time: '21:00', title: 'Débat télévisé — France 2', who: 'Candidats déclarés', tag: 'Débat', live: true },
+  { day: 'Vendredi 16 avril', time: '11:00', title: 'Conférence de presse — Paris', who: 'Renaissance', tag: 'Presse' },
+  { day: 'Vendredi 16 avril', time: '19:00', title: 'Meeting — Lyon', who: 'La France insoumise', tag: 'Meeting' },
+  { day: 'Samedi 17 avril', time: '08:15', title: 'Interview — RTL', who: 'Les Républicains', tag: 'Presse' },
+  { day: 'Samedi 17 avril', time: '15:00', title: 'Meeting — Marseille', who: 'Horizons', tag: 'Meeting' },
 ]
 
 export const AGENDA_FILTERS = ['Tout', 'Débat', 'Meeting', 'Presse']
 
 export const CALENDAR = [
-  { label: 'Clôture des votes du 1er tour', when: 'dimanche 8h', dot: '#F4B860' },
+  { label: 'Clôture du vote hebdomadaire', when: 'dimanche', dot: '#F4B860' },
   { label: '1er tour', when: '18 avril', dot: '#8E9BFF' },
   { label: '2nd tour', when: '2 mai', dot: '#5FD3BF' },
 ]
@@ -163,15 +152,11 @@ export const VOTE_RESULTS = (accent: string) => [
   { label: 'Non', pct: '42%', color: '#C26A00' },
 ]
 
-export const DEBATE_PCTS = [31, 24, 18, 15, 12]
-
 export const DEBATE_STEPS = [
   { time: '20:50', label: 'Ouverture du pronostic avant débat', dot: '#F4B860' },
   { time: '21:00', label: 'Votes en direct, séquence par séquence', dot: '#8E9BFF' },
   { time: '23:15', label: 'Vote final et comparaison des écarts', dot: '#5FD3BF' },
 ]
-
-export const BOUSSOLE_SEED = [78, 64, 59, 47, 33]
 
 export const BOUSSOLE_SCALE = [
   { label: "Tout à fait d'accord", v: 2, color: '#1F7A3E' },
@@ -179,13 +164,6 @@ export const BOUSSOLE_SCALE = [
   { label: 'Sans avis', v: 0, color: '#B4B0A3' },
   { label: "Plutôt pas d'accord", v: -1, color: '#E39A8F' },
   { label: 'Pas du tout d\'accord', v: -2, color: '#C8341C' },
-]
-
-// Static demo flavor text, matching the prototype: this app is fictional and
-// the "history" shown here isn't computed from real past submissions.
-export const FIRST_ROUND_HISTORY = [
-  { month: 'Mars 2027', name: 'Camille Aubry', color: '#3B4FD8' },
-  { month: 'Février 2027', name: 'Nadia Belkacem', color: '#A85400' },
 ]
 
 export const BADGES = [

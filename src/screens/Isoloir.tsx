@@ -22,7 +22,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
       icon: <VoteIcon />, onClick: actions.openRoute('vote'),
     },
     {
-      key: 'firstround', title: 'Mon vote du 1er tour', sub: "Sondage mensuel d'actualisation", tileBg: '#FFEBC6', tileFg: '#6E3A00',
+      key: 'firstround', title: 'Mon vote du 1er tour', sub: "Sondage hebdomadaire, chaque dimanche", tileBg: '#FFEBC6', tileFg: '#6E3A00',
       tag: s.firstRoundPick !== null ? 'répondu' : 'à répondre', tagBg: s.firstRoundPick !== null ? '#DDF3E3' : '#FFEBC6', tagFg: s.firstRoundPick !== null ? '#14532D' : '#6E3A00',
       icon: <FirstRoundIcon />, onClick: actions.openRoute('firstround'),
     },

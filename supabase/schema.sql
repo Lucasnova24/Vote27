@@ -115,14 +115,38 @@ create policy "estimations: owner all" on public.estimations
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
--- first_round_picks — "Mon vote du 1er tour" monthly poll (one row per
--- user, overwritten each time they change their pick)
+-- first_round_picks — "Mon vote du 1er tour" weekly poll: one row per user
+-- *per week* (week_start = the Sunday the pick belongs to, computed
+-- client-side by src/lib/week.ts), so past weeks are kept as real history
+-- instead of being overwritten.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.first_round_picks (
-  user_id uuid primary key references public.profiles (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  week_start date not null,
   candidate_index integer not null,
-  updated_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  primary key (user_id, week_start)
 );
+
+-- Migrate a project created from an earlier version of this schema, where
+-- first_round_picks had a single row per user (primary key user_id, no
+-- week_start) — best-effort: any existing row is kept as this week's pick.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'first_round_picks' and column_name = 'updated_at'
+  ) then
+    alter table public.first_round_picks add column if not exists week_start date;
+    update public.first_round_picks
+      set week_start = (current_date - extract(dow from current_date)::int)
+      where week_start is null;
+    alter table public.first_round_picks alter column week_start set not null;
+    alter table public.first_round_picks rename column updated_at to created_at;
+    alter table public.first_round_picks drop constraint if exists first_round_picks_pkey;
+    alter table public.first_round_picks add primary key (user_id, week_start);
+  end if;
+end $$;
 
 alter table public.first_round_picks enable row level security;
 

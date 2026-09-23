@@ -3,7 +3,8 @@ import type { AppState } from '../types'
 import { ACCENT, CANDS, DAYS_LEFT, EVENTS, EVENT_TAGS } from '../data'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
-import { BellIcon, BoussoleIcon, ChevronRight, CheckIcon, QuizIcon, VoteIcon } from '../components/Icons'
+import StatusTag from '../components/StatusTag'
+import { BellIcon, BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -23,6 +24,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const rawTodos = [
     { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
     { k: 'quiz' as const, title: 'Quiz du jour', sub: '5 questions · 2 min', done: s.quizDoneToday, onClick: actions.openRoute('quiz'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
+    { k: 'fr' as const, title: 'Mon vote du 1er tour', sub: 'Sondage hebdomadaire', done: s.firstRoundPick !== null, onClick: actions.openRoute('firstround'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
     { k: 'bou' as const, title: 'Mes affinités', sub: '20 ou 100 questions', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
   ]
   const todos = rawTodos.slice().sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1))
@@ -68,6 +70,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
               <span style={{ width: t.done ? 30 : 44, height: t.done ? 30 : 44, borderRadius: t.done ? 10 : 14, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: t.done ? '#DDF3E3' : t.chipBg, color: t.done ? '#14532D' : t.chipFg }}>
                 {t.k === 'vote' && <VoteIcon size={t.done ? 16 : 22} />}
                 {t.k === 'quiz' && <QuizIcon size={t.done ? 16 : 22} />}
+                {t.k === 'fr' && <FirstRoundIcon size={t.done ? 16 : 22} />}
                 {t.k === 'bou' && <BoussoleIcon size={t.done ? 16 : 22} />}
               </span>
               <span style={{ flex: 1, minWidth: 0, display: 'block', textAlign: 'left' }}>
@@ -84,15 +87,12 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         </div>
       </section>
 
-      <section className="card" style={{ order: 4 }} aria-label="Sondage national">
+      <section className="card" style={{ order: 4 }} aria-label="Candidats">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-          <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Sondage national</h2>
-          <span style={{ fontSize: 13, color: '#5C617B' }}>Avril 2027</span>
+          <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Candidats à la présidentielle</h2>
+          <span style={{ fontSize: 13, color: '#5C617B' }}>{CANDS.length}</span>
         </div>
-        <div style={{ display: 'flex', gap: 3, height: 14, marginBottom: 8 }} aria-hidden="true">
-          {CANDS.map((c) => <div key={c.name} style={{ borderRadius: 99, flex: c.pct, background: c.color }} />)}
-        </div>
-        <div className="stk">
+        <div className="stk" style={{ maxHeight: 360, overflowY: 'auto' }}>
           {CANDS.map((c) => (
             <div key={c.name} className="row sep" style={{ gap: 12, padding: '11px 0' }}>
               <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
@@ -100,7 +100,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
                 <span style={{ display: 'block', fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
                 <span style={{ display: 'block', fontSize: 13, color: '#5C617B' }}>{c.party}</span>
               </span>
-              <span className="dsp num" style={{ fontSize: 24, fontWeight: 700, color: c.color }}>{c.pct + '%'}</span>
+              <StatusTag status={c.status} />
             </div>
           ))}
         </div>
@@ -126,10 +126,10 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
           <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
-            {CANDS.map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
+            {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
           </span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, cinq candidats, une source vérifiable pour chaque position.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats déclarés, une source vérifiable pour chaque position.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
       </button>
 

@@ -5,10 +5,12 @@ export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'pro
 export type AuthView = 'signup' | 'login'
 export type AuthProvider = 'apple' | 'google' | 'anonymous' | 'email' | null
 
+export type CandidateStatus = 'déclaré' | 'pressenti'
+
 export interface Candidate {
   name: string
   party: string
-  pct: number
+  status: CandidateStatus
   color: string
   ink: string
   soft: string

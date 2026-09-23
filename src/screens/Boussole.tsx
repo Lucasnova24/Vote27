@@ -1,6 +1,6 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, BOUSSOLE, BOUSSOLE_SCALE, BOUSSOLE_SEED, CANDS, THEME_STYLE } from '../data'
+import { BOUSSOLE, BOUSSOLE_SCALE, THEME_STYLE } from '../data'
 import { backLink, flowWrap, h1Size, qSize } from '../styles'
 import { ChevronLeft } from '../components/Icons'
 
@@ -16,11 +16,12 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
   const bq = BOUSSOLE[Math.min(s.bI, BOUSSOLE.length - 1)]
   const bts = THEME_STYLE[bq.t]
 
-  const bias = s.bAnswers.reduce((a, b) => a + b, 0)
-  const bMatches = CANDS.map((c, i) => ({
-    name: c.name, color: c.color, initials: c.initials,
-    pct: Math.max(18, Math.min(94, BOUSSOLE_SEED[i] + bias * (i % 2 === 0 ? 2 : -2))),
-  })).sort((a, b) => b.pct - a.pct)
+  const results = BOUSSOLE.map((stmt, i) => ({
+    theme: stmt.t,
+    statement: stmt.s,
+    answer: BOUSSOLE_SCALE.find((o) => o.v === s.bAnswers[i]) ?? BOUSSOLE_SCALE[2],
+    style: THEME_STYLE[stmt.t],
+  }))
 
   return (
     <div className="rise" style={flowWrap(isWeb)}>
@@ -36,7 +37,7 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
           <div style={{ background: '#E8E0FF', borderRadius: 20, padding: 16 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#2E1A70', marginBottom: 6 }}>Comment ça marche</div>
             <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>
-              Vous répondez à des affirmations. Vos positions sont comparées à celles des candidats, extraites de leurs prises de position publiques et sourcées une par une. Ce n'est pas une recommandation de vote.
+              Vous répondez à des affirmations sur six thèmes. Ce test décrit votre propre positionnement, thème par thème — il ne vous rapproche pas d'un candidat en particulier et n'est pas une recommandation de vote.
             </div>
           </div>
           <button type="button" onClick={actions.bStart} className="lift" style={{ display: 'block', width: '100%', background: '#fff', border: '1.5px solid #D3C6FA', borderRadius: 22, padding: 18, textAlign: 'left' }}>
@@ -90,27 +91,28 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
         <div className="stk" style={{ gap: 16 }}>
           <div className="stk" style={{ gap: 8 }}>
             <div className="eyebrow" style={{ color: '#3F238F' }}>Résultat</div>
-            <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Proximité par candidat</h1>
-            <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Sur les six affirmations. Ce n'est pas une recommandation de vote.</div>
+            <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Ton profil politique</h1>
+            <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Ta position sur les six thèmes, à partir de tes réponses. Ce n'est pas une recommandation de vote.</div>
           </div>
           <div className="card pop stk" style={{ gap: 16 }}>
-            {bMatches.map((m) => (
-              <div key={m.name} className="row" style={{ gap: 12, alignItems: 'center' }}>
-                <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: m.color }}>{m.initials}</span>
+            {results.map((r) => (
+              <div key={r.theme} className="row" style={{ gap: 12, alignItems: 'center' }}>
+                <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.style.soft, color: r.style.ink }} aria-hidden="true">
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: r.answer.color }} />
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700 }}>{m.name}</span>
-                    <span className="dsp num" style={{ fontSize: 22, fontWeight: 700, color: m.color }}>{m.pct + '%'}</span>
+                  <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700 }}>{r.theme}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: r.answer.color }}>{r.answer.label}</span>
                   </div>
-                  <div className="bar"><i style={{ width: m.pct + '%', background: m.color }} /></div>
+                  <div style={{ fontSize: 13, color: '#5C617B' }}>{r.statement}</div>
                 </div>
               </div>
             ))}
           </div>
           <div style={{ background: '#E8E0FF', borderRadius: 20, padding: '14px 16px', fontSize: 14.5, lineHeight: 1.55, color: '#3F238F' }}>
-            Chaque position de candidat renvoie à sa source dans les programmes. Refaites le test quand vous voulez : rien n'est envoyé.
+            Ce résultat ne compare pas tes réponses à celles des candidats : on n'a pas encore leurs positions sourcées sur ces thèmes. Refais le test quand tu veux : rien n'est envoyé.
           </div>
-          <button type="button" onClick={actions.openRoute('programmes')} className="btn" style={{ background: ACCENT }}>Comparer les programmes</button>
           <button type="button" onClick={actions.bRestart} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>Refaire le test</button>
         </div>
       )}

@@ -29,7 +29,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
           </div>
           <div className="stk" style={{ gap: 32 }}>
             <div className="dsp" style={{ fontSize: 50, lineHeight: 1.04, fontWeight: 700, maxWidth: 520 }}>
-              Six thèmes, cinq candidats, une source vérifiable pour chaque position.
+              Six thèmes, tous les candidats déclarés, une source vérifiable pour chaque position.
             </div>
             <div style={{ display: 'flex', gap: 6, height: 16, maxWidth: 520 }} aria-hidden="true">
               <div style={{ flex: 26, borderRadius: 99, background: '#5B6DF0' }} />
@@ -40,7 +40,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
             </div>
           </div>
           <div style={{ fontSize: 13, lineHeight: 1.55, color: '#A7ADD3', maxWidth: 460 }}>
-            Vote 2027 est une application civique indépendante. Les candidats et sondages affichés ici sont fictifs.
+            Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
           </div>
         </div>
       )}

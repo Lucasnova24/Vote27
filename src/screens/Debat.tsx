@@ -1,6 +1,6 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { CANDS, DEBATE_PCTS, DEBATE_STEPS } from '../data'
+import { CANDS, DEBATE_STEPS } from '../data'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
 
@@ -9,6 +9,8 @@ interface Props {
   actions: AppActions
   isWeb: boolean
 }
+
+const DECLARED = CANDS.filter((c) => c.status === 'déclaré')
 
 export default function Debat({ state: s, actions, isWeb }: Props) {
   return (
@@ -19,19 +21,20 @@ export default function Debat({ state: s, actions, isWeb }: Props) {
           <span className="live" aria-hidden="true" />Session live
         </span>
         <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Débat télévisé — France 2</h1>
-        <div className="num" style={{ fontSize: 15, color: '#454A66' }}>Jeudi 15 avril · 21:00 · Les 5 candidats</div>
+        <div className="num" style={{ fontSize: 15, color: '#454A66' }}>Jeudi 15 avril · 21:00 · Candidats déclarés</div>
       </div>
 
       <section className="card" aria-label="Pronostic avant débat">
         <h2 className="dsp" style={{ margin: '0 0 14px', fontSize: 21, lineHeight: 1.15, fontWeight: 700 }}>Avant le débat — qui sera le plus convaincant ?</h2>
         <div className="stk" style={{ gap: 9 }}>
-          {CANDS.map((c, i) => {
+          {DECLARED.map((c) => {
+            const i = CANDS.indexOf(c)
             const active = s.debPick === i
             return (
               <button key={c.name} type="button" onClick={actions.setDebPick(i)} aria-pressed={active} className="row lift" style={{ width: '100%', gap: 12, minHeight: 60, padding: '10px 14px', border: '1.5px solid', borderRadius: 18, background: active ? c.soft : '#fff', borderColor: active ? c.color : '#E7E2D6' }}>
                 <span style={{ width: 36, height: 36, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
                 <span style={{ flex: 1, fontSize: 15.5, fontWeight: 600, textAlign: 'left' }}>{c.name}</span>
-                <span className="dsp num" style={{ fontSize: 18, fontWeight: 700, color: c.color }}>{DEBATE_PCTS[i] + '%'}</span>
+                {active && <span className="tag" style={{ background: c.color, color: '#fff' }}>Ton choix</span>}
               </button>
             )
           })}

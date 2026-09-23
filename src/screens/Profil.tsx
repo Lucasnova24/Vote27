@@ -121,7 +121,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
         <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
         <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
         <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.55, padding: '8px 12px 0', maxWidth: 420 }}>
-          Vote 2027 est une application civique indépendante. Les candidats et sondages affichés ici sont fictifs.
+          Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
         </div>
       </div>
     </>

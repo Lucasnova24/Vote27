@@ -41,8 +41,9 @@ export interface BoussoleResponseRow {
 
 export interface FirstRoundPickRow {
   user_id: string
+  week_start: string
   candidate_index: number
-  updated_at: string
+  created_at: string
 }
 
 export interface DebatePredictionRow {
