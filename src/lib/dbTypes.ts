@@ -63,6 +63,38 @@ export interface LeaderboardRow {
   points: number
 }
 
+// Matches the public.get_daily_quiz(date) RPC (20260923120000_quiz_quotidien.sql).
+export interface DailyQuizChoice {
+  id: string
+  label: string
+  position: number
+}
+
+export interface DailyQuizRow {
+  quiz_date: string
+  slot: number
+  question_id: string
+  theme_label: string
+  prompt: string
+  mode: 'qcm' | 'libre'
+  choices: DailyQuizChoice[]
+  my_choice_id: string | null
+  my_is_correct: boolean | null
+  my_answered_at: string | null
+  answer: string | null
+  explanation: string | null
+}
+
+// Matches the public.get_my_quiz_stats() RPC.
+export interface QuizStatsRow {
+  answered: number
+  correct: number
+  points: number
+  current_streak: number
+  best_streak: number
+  perfect_days: number
+}
+
 export interface LeagueRow {
   id: string
   name: string

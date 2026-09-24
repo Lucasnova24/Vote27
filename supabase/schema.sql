@@ -341,6 +341,12 @@ begin
   delete from public.estimations where user_id = auth.uid();
   delete from public.debate_predictions where user_id = auth.uid();
   delete from public.first_round_picks where user_id = auth.uid();
+  -- quiz_answers belongs to the daily-quiz migration (applied separately,
+  -- not tracked in this file) — guarded so reset_progress still works on a
+  -- database where it hasn't been run yet.
+  if to_regclass('public.quiz_answers') is not null then
+    execute 'delete from public.quiz_answers where user_id = $1' using auth.uid();
+  end if;
   update public.profiles
     set points = 0, notif_read = false, quiz_correct_total = 0, quiz_attempts_total = 0
     where id = auth.uid();

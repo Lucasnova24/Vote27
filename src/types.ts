@@ -1,3 +1,5 @@
+import type { DailyQuizRow } from './lib/dbTypes'
+
 export type Tab = 'accueil' | 'isoloir' | 'agenda' | 'quiz' | 'profil'
 
 export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | null
@@ -15,14 +17,6 @@ export interface Candidate {
   ink: string
   soft: string
   initials: string
-}
-
-export interface QuizQuestion {
-  q: string
-  o: string[]
-  a: number
-  e: string
-  s: string
 }
 
 export interface BoussoleStatement {
@@ -51,6 +45,9 @@ export interface AppState {
   voteSaved: number
   quizDoneToday: boolean
   quizScore: number
+  // today's 5 questions from get_daily_quiz(), with the caller's own answer
+  // state merged in server-side
+  dailyQuiz: DailyQuizRow[]
   bDone: boolean
   bAnswers: number[]
   // tonight's debate vote: agenda event slug + chosen member's candidate slug
@@ -67,7 +64,9 @@ export interface AppState {
 
   // quiz run — client-only while a run is in progress
   quizI: number
-  quizSel: number | null
+  // the choice id submitted for the current question, while awaiting/after
+  // the submit_answer() RPC response
+  quizSel: string | null
   quizFinished: boolean
 
   // boussole run — client-only while a run is in progress
@@ -77,7 +76,7 @@ export interface AppState {
   // client-only cosmetic state (not backed by Supabase)
   reminders: string[]
 
-  // real cumulative quiz accuracy, backed by Supabase
+  // cumulative quiz accuracy, from get_my_quiz_stats()
   quizCorrectTotal: number
   quizAttemptsTotal: number
 

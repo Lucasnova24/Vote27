@@ -3,10 +3,10 @@ import type { ChangeEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabaseClient'
 import type {
-  BoussoleResponseRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizAttemptRow, VoteRow,
+  BoussoleResponseRow, DailyQuizRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizStatsRow, VoteRow,
 } from './lib/dbTypes'
 import type { AppState, AuthProvider, Route, Tab } from './types'
-import { BOUSSOLE, QUIZ } from './data'
+import { BOUSSOLE } from './data'
 import { currentWeekStart } from './lib/week'
 import { currentDayStart } from './lib/day'
 
@@ -14,7 +14,7 @@ const initialState: AppState = {
   loading: true, authBusy: false,
   tab: 'accueil', route: null, debateSlug: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
-  quizDoneToday: false, quizScore: 0,
+  quizDoneToday: false, quizScore: 0, dailyQuiz: [],
   bDone: false, bAnswers: [],
   debEvent: null, debPick: null, firstRoundPick: null,
   profileVille: '', profileRegion: '', profilePays: '', profileCP: '', profileTel: '', profileInterets: '',
@@ -44,12 +44,26 @@ function mapAuthError(message: string): string {
   return message
 }
 
+function quizStateFromDaily(dailyQuiz: DailyQuizRow[]): Pick<AppState, 'dailyQuiz' | 'quizI' | 'quizSel' | 'quizScore' | 'quizDoneToday' | 'quizFinished'> {
+  const firstUnanswered = dailyQuiz.findIndex((q) => !q.my_answered_at)
+  const doneToday = dailyQuiz.length > 0 && firstUnanswered === -1
+  return {
+    dailyQuiz,
+    quizI: firstUnanswered === -1 ? Math.max(dailyQuiz.length - 1, 0) : firstUnanswered,
+    quizSel: null,
+    quizScore: dailyQuiz.filter((q) => q.my_is_correct).length,
+    quizDoneToday: doneToday,
+    quizFinished: doneToday,
+  }
+}
+
 async function loadUserData(user: User): Promise<Partial<AppState>> {
   const uid = user.id
-  const [profileRes, voteRes, quizRes, bousRes, debRes, frRes] = await Promise.all([
+  const [profileRes, voteRes, dailyQuizRes, quizStatsRes, bousRes, debRes, frRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
     supabase.from('votes').select('*').eq('user_id', uid).eq('vote_date', currentDayStart()).maybeSingle(),
-    supabase.from('quiz_attempts').select('*').eq('user_id', uid).eq('quiz_date', currentDayStart()).maybeSingle(),
+    supabase.rpc('get_daily_quiz'),
+    supabase.rpc('get_my_quiz_stats'),
     supabase.from('boussole_responses').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('debate_predictions').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('first_round_picks').select('*').eq('user_id', uid).eq('week_start', currentWeekStart()).maybeSingle(),
@@ -68,7 +82,10 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
   }
 
   const vote = voteRes.data as VoteRow | null
-  const quiz = quizRes.data as QuizAttemptRow | null
+  logIfError('get_daily_quiz')(dailyQuizRes)
+  const dailyQuiz = (dailyQuizRes.data ?? []) as DailyQuizRow[]
+  logIfError('get_my_quiz_stats')(quizStatsRes)
+  const quizStats = (quizStatsRes.data?.[0] ?? null) as QuizStatsRow | null
   const bous = bousRes.data as BoussoleResponseRow | null
   const deb = debRes.data as DebatePredictionRow | null
   const fr = frRes.data as FirstRoundPickRow | null
@@ -78,8 +95,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     tab: 'accueil', route: null,
     points: profile?.points ?? 0,
     notifRead: profile?.notif_read ?? false,
-    quizCorrectTotal: profile?.quiz_correct_total ?? 0,
-    quizAttemptsTotal: profile?.quiz_attempts_total ?? 0,
+    quizCorrectTotal: quizStats?.correct ?? 0,
+    quizAttemptsTotal: quizStats?.answered ?? 0,
     authProvider: providerFromUser(user),
     authEmail: user.email ?? '',
     authFirst: profile?.first_name ?? '',
@@ -94,9 +111,7 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     profileTel: profile?.telephone ?? '',
     profileInterets: profile?.interets ?? '',
     voteChoice: vote?.choice ?? null,
-    quizDoneToday: !!quiz,
-    quizScore: quiz?.score ?? 0,
-    quizI: 0, quizSel: null, quizFinished: false,
+    ...quizStateFromDaily(dailyQuiz),
     bDone: !!bous,
     bAnswers: bous?.answers ?? [],
     bMode: null, bI: 0,
@@ -116,7 +131,6 @@ export function useAppState() {
   const [state, setState] = useState<AppState>(initialState)
   const stateRef = useRef(state)
   const userIdRef = useRef<string | null>(null)
-  const quizAnswersRef = useRef<number[]>([])
 
   useEffect(() => {
     stateRef.current = state
@@ -170,36 +184,38 @@ export function useAppState() {
     if (!wasVoted) supabase.rpc('increment_points', { delta: 15 }).then(logIfError('increment_points'))
   }
 
-  const answer = (i: number) => () => {
+  // Only QCM questions are in play today (every seeded question has 4
+  // choices) — a "réponse libre" question would need reveal_answer() first,
+  // which the UI doesn't build for since no such question currently exists.
+  const answer = (choiceId: string) => () => {
+    const s = stateRef.current
+    const item = s.dailyQuiz[s.quizI]
     const uid = userIdRef.current
-    update((s) => {
-      if (s.quizSel !== null) return null
-      const ok = i === QUIZ[s.quizI].a
-      if (uid) {
-        if (ok) supabase.rpc('increment_points', { delta: 20 }).then(logIfError('increment_points'))
-        supabase.rpc('increment_quiz_stat', { is_correct: ok }).then(logIfError('increment_quiz_stat'))
-      }
-      return {
-        quizSel: i, quizScore: s.quizScore + (ok ? 1 : 0), points: s.points + (ok ? 20 : 0),
-        quizAttemptsTotal: s.quizAttemptsTotal + 1, quizCorrectTotal: s.quizCorrectTotal + (ok ? 1 : 0),
+    if (!item || item.my_answered_at || !uid) return
+    update({ quizSel: choiceId })
+    supabase.rpc('submit_answer', { p_question_id: item.question_id, p_choice_id: choiceId }).then(({ data, error }) => {
+      if (error) { logIfError('submit_answer')({ error }); return }
+      const row = (data as { is_correct: boolean; on_time: boolean; answer: string; explanation: string | null }[])[0]
+      update((s2) => {
+        const dailyQuiz = s2.dailyQuiz.map((q, idx) => idx === s2.quizI
+          ? { ...q, my_choice_id: choiceId, my_is_correct: row.is_correct, my_answered_at: new Date().toISOString(), answer: row.answer, explanation: row.explanation }
+          : q)
+        return { dailyQuiz, quizScore: dailyQuiz.filter((q) => q.my_is_correct).length }
+      })
+      if (row.is_correct) {
+        const delta = row.on_time ? 10 : 5
+        update((s3) => ({ points: s3.points + delta, quizCorrectTotal: s3.quizCorrectTotal + 1, quizAttemptsTotal: s3.quizAttemptsTotal + 1 }))
+        supabase.rpc('increment_points', { delta }).then(logIfError('increment_points'))
+      } else {
+        update((s3) => ({ quizAttemptsTotal: s3.quizAttemptsTotal + 1 }))
       }
     })
   }
 
   const next = () => {
     const s = stateRef.current
-    quizAnswersRef.current = [...quizAnswersRef.current, s.quizSel ?? -1]
-    if (s.quizI >= QUIZ.length - 1) {
-      const uid = userIdRef.current
-      const finalAnswers = quizAnswersRef.current
-      quizAnswersRef.current = []
+    if (s.quizI >= s.dailyQuiz.length - 1) {
       update({ quizFinished: true, quizDoneToday: true })
-      if (uid) {
-        supabase
-          .from('quiz_attempts')
-          .upsert({ user_id: uid, score: s.quizScore, answers: finalAnswers, quiz_date: currentDayStart() }, { onConflict: 'user_id,quiz_date' })
-          .then(logIfError('quiz_attempts upsert'))
-      }
     } else {
       update({ quizI: s.quizI + 1, quizSel: null })
     }
@@ -364,14 +380,15 @@ export function useAppState() {
 
   const resetAll = () => {
     const uid = userIdRef.current
-    update({
+    update((s) => ({
       voteChoice: null, points: 0,
       quizI: 0, quizSel: null, quizScore: 0, quizFinished: false, quizDoneToday: false,
+      dailyQuiz: s.dailyQuiz.map((q) => ({ ...q, my_choice_id: null, my_is_correct: null, my_answered_at: null, answer: null, explanation: null })),
       notifRead: false, filter: 'Tout',
       bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debEvent: null, debPick: null,
       firstRoundPick: null, reminders: [], quizCorrectTotal: 0, quizAttemptsTotal: 0,
       tab: 'accueil', route: null,
-    })
+    }))
     if (uid) supabase.rpc('reset_progress').then(logIfError('reset_progress'))
   }
 

@@ -1,6 +1,6 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { BADGES, QUIZ } from '../data'
+import { BADGES } from '../data'
 import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
 import { gapPage, h1Size } from '../styles'
@@ -28,7 +28,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
   const badgeUnlocked: Record<string, boolean> = {
     'Première voix': s.voteChoice !== null,
     'Vote de débat': s.debPick !== null,
-    'Sans faute': s.quizDoneToday && s.quizScore === QUIZ.length,
+    'Sans faute': s.quizDoneToday && s.dailyQuiz.length > 0 && s.quizScore === s.dailyQuiz.length,
     'Affinités faites': s.bDone,
   }
 
