@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import type { AgendaRow } from '../lib/dbTypes'
@@ -7,6 +8,7 @@ import { useAgenda } from '../lib/useAgenda'
 import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
+import ProgrammesGrid from '../components/ProgrammesGrid'
 
 interface Props {
   state: AppState
@@ -58,8 +60,14 @@ function WhenBox({ e }: { e: AgendaRow }) {
   )
 }
 
+const VIEWS: { id: 'agenda' | 'programmes'; label: string }[] = [
+  { id: 'agenda', label: 'Agenda' },
+  { id: 'programmes', label: 'Programmes' },
+]
+
 export default function Agenda({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
+  const [view, setView] = useState<'agenda' | 'programmes'>('agenda')
   const events = useAgenda()
   const now = useNow()
   const tonight = tonightDebate(events, now)
@@ -219,11 +227,29 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
   return (
     <div className="rise stk" style={{ gap }}>
       <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
-        <div className="eyebrow">Agenda</div>
-        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Campagne en direct</h1>
-        <div style={{ fontSize: 15, color: '#454A66' }}>Meetings, interviews, débats.</div>
+        <div className="eyebrow">Agenda et Programme</div>
+        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>
+          {view === 'agenda' ? 'Campagne en direct' : 'Les programmes, côte à côte'}
+        </h1>
+        <div style={{ fontSize: 15, color: '#454A66' }}>
+          {view === 'agenda' ? 'Meetings, interviews, débats.' : 'Six thèmes, tous les candidats.'}
+        </div>
       </div>
-      <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
+
+      <div role="group" aria-label="Afficher" style={{ display: 'flex', gap: 8 }}>
+        {VIEWS.map((v) => {
+          const active = view === v.id
+          return (
+            <button key={v.id} type="button" onClick={() => setView(v.id)} className="chip" aria-pressed={active} style={{ background: active ? '#14162B' : '#fff', color: active ? '#fff' : '#454A66', borderColor: active ? '#14162B' : '#DDD7C9' }}>
+              {v.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {view === 'agenda'
+        ? <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
+        : <ProgrammesGrid state={s} actions={actions} isWeb={isWeb} />}
     </div>
   )
 }
