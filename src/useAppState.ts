@@ -8,6 +8,7 @@ import type {
 import type { AppState, AuthProvider, Route, Tab } from './types'
 import { BOUSSOLE, QUIZ } from './data'
 import { currentWeekStart } from './lib/week'
+import { currentDayStart } from './lib/day'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
@@ -47,8 +48,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
   const uid = user.id
   const [profileRes, voteRes, quizRes, bousRes, debRes, frRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
-    supabase.from('votes').select('*').eq('user_id', uid).maybeSingle(),
-    supabase.from('quiz_attempts').select('*').eq('user_id', uid).maybeSingle(),
+    supabase.from('votes').select('*').eq('user_id', uid).eq('vote_date', currentDayStart()).maybeSingle(),
+    supabase.from('quiz_attempts').select('*').eq('user_id', uid).eq('quiz_date', currentDayStart()).maybeSingle(),
     supabase.from('boussole_responses').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('debate_predictions').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('first_round_picks').select('*').eq('user_id', uid).eq('week_start', currentWeekStart()).maybeSingle(),
@@ -162,7 +163,7 @@ export function useAppState() {
     const uid = userIdRef.current
     update((s) => ({ voteChoice: choice, points: wasVoted ? s.points : s.points + 15 }))
     if (!uid) return
-    supabase.from('votes').upsert({ user_id: uid, choice }).then((res) => {
+    supabase.from('votes').upsert({ user_id: uid, choice, vote_date: currentDayStart() }, { onConflict: 'user_id,vote_date' }).then((res) => {
       logIfError('votes upsert')(res)
       update((s) => ({ voteSaved: s.voteSaved + 1 }))
     })
@@ -196,7 +197,7 @@ export function useAppState() {
       if (uid) {
         supabase
           .from('quiz_attempts')
-          .upsert({ user_id: uid, score: s.quizScore, answers: finalAnswers })
+          .upsert({ user_id: uid, score: s.quizScore, answers: finalAnswers, quiz_date: currentDayStart() }, { onConflict: 'user_id,quiz_date' })
           .then(logIfError('quiz_attempts upsert'))
       }
     } else {
