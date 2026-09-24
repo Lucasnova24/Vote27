@@ -2,17 +2,7 @@
 // the most recent Sunday (or today, if today is a Sunday) as 'YYYY-MM-DD',
 // used as the period key for a given week's pick. Computed on the Paris
 // calendar, like the server-side rule on first_round_picks.
-const PARIS_DAY = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
-
-function parisDate(date: Date): Date {
-  const p: Record<string, string> = {}
-  PARIS_DAY.formatToParts(date).forEach((x) => { p[x.type] = x.value })
-  return new Date(Number(p.year), Number(p.month) - 1, Number(p.day))
-}
-
-function isoDay(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+import { parisDate, isoDay } from './day'
 
 export function currentWeekStart(date = new Date()): string {
   const d = parisDate(date)

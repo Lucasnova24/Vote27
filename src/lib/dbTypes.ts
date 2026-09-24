@@ -25,6 +25,7 @@ export interface ProfileRow {
 export interface VoteRow {
   user_id: string
   choice: 'oui' | 'non'
+  vote_date: string
   created_at: string
 }
 
@@ -32,6 +33,7 @@ export interface QuizAttemptRow {
   user_id: string
   score: number
   answers: number[]
+  quiz_date: string
   created_at: string
 }
 

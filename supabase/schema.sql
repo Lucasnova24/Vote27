@@ -57,13 +57,35 @@ create policy "profiles: update own" on public.profiles
   for update using (auth.uid() = id);
 
 -- ─────────────────────────────────────────────────────────────
--- votes — the daily "vote obligatoire" question (one row per user)
+-- votes — the daily "vote obligatoire" question: one row per user *per day*
+-- (vote_date = the Europe/Paris calendar day, computed client-side by
+-- src/lib/day.ts), so the "Vote du jour" To do item resets every day
+-- instead of staying "Fait" forever once a user has voted once.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.votes (
-  user_id uuid primary key references public.profiles (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
   choice text not null check (choice in ('oui', 'non')),
-  created_at timestamptz not null default now()
+  vote_date date not null default (now() at time zone 'Europe/Paris')::date,
+  created_at timestamptz not null default now(),
+  primary key (user_id, vote_date)
 );
+
+-- Migrate a project created from an earlier version of this schema, where
+-- votes had a single row per user (primary key user_id, no vote_date).
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'votes' and column_name = 'vote_date'
+  ) then
+    alter table public.votes add column vote_date date;
+    update public.votes set vote_date = (created_at at time zone 'Europe/Paris')::date;
+    alter table public.votes alter column vote_date set not null;
+    alter table public.votes alter column vote_date set default (now() at time zone 'Europe/Paris')::date;
+    alter table public.votes drop constraint votes_pkey;
+    alter table public.votes add primary key (user_id, vote_date);
+  end if;
+end $$;
 
 alter table public.votes enable row level security;
 
@@ -72,14 +94,37 @@ create policy "votes: owner all" on public.votes
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
--- quiz_attempts — daily quiz result (one row per user)
+-- quiz_attempts — daily quiz result: one row per user *per day* (quiz_date
+-- = the Europe/Paris calendar day, computed client-side by src/lib/day.ts),
+-- so the "Quiz du jour" To do item resets every day instead of staying
+-- "Fait" forever once a user has done the quiz once.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists public.quiz_attempts (
-  user_id uuid primary key references public.profiles (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
   score integer not null,
   answers integer[] not null,
-  created_at timestamptz not null default now()
+  quiz_date date not null default (now() at time zone 'Europe/Paris')::date,
+  created_at timestamptz not null default now(),
+  primary key (user_id, quiz_date)
 );
+
+-- Migrate a project created from an earlier version of this schema, where
+-- quiz_attempts had a single row per user (primary key user_id, no
+-- quiz_date).
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'quiz_attempts' and column_name = 'quiz_date'
+  ) then
+    alter table public.quiz_attempts add column quiz_date date;
+    update public.quiz_attempts set quiz_date = (created_at at time zone 'Europe/Paris')::date;
+    alter table public.quiz_attempts alter column quiz_date set not null;
+    alter table public.quiz_attempts alter column quiz_date set default (now() at time zone 'Europe/Paris')::date;
+    alter table public.quiz_attempts drop constraint quiz_attempts_pkey;
+    alter table public.quiz_attempts add primary key (user_id, quiz_date);
+  end if;
+end $$;
 
 alter table public.quiz_attempts enable row level security;
 
@@ -437,7 +482,9 @@ language sql
 stable
 security definer set search_path = public
 as $$
-  select v.choice, count(*)::bigint from public.votes v group by v.choice;
+  select v.choice, count(*)::bigint from public.votes v
+  where v.vote_date = (now() at time zone 'Europe/Paris')::date
+  group by v.choice;
 $$;
 
 grant execute on function public.get_vote_results() to authenticated;
