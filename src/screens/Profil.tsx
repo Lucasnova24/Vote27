@@ -73,7 +73,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
           </span>
           <span style={{ flex: 'none' }}><BoussoleIcon size={44} /></span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#E4DBFF', marginTop: 10 }}>6 affirmations, une par thème. Tes réponses restent privées.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#E4DBFF', marginTop: 10 }}>Compare tes positions à celles des candidats, thème par thème. Tes réponses restent privées.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#3F238F' }}>{s.bDone ? 'Voir mon résultat' : 'Commencer'}<ChevronRight size={16} /></span>
       </button>
 

@@ -25,7 +25,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
     { k: 'vote' as const, title: 'Vote du jour', sub: '1 min', done: voteDone, onClick: actions.openRoute('vote'), chipBg: '#E3E7FF', chipFg: '#1F2A8A' },
     { k: 'quiz' as const, title: 'Quiz du jour', sub: '5 questions · 2 min', done: s.quizDoneToday, onClick: actions.openRoute('quiz'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
     { k: 'fr' as const, title: 'Mon vote du 1er tour', sub: 'Sondage hebdomadaire', done: s.firstRoundPick !== null, onClick: actions.openRoute('firstround'), chipBg: '#FFEBC6', chipFg: '#6E3A00' },
-    { k: 'bou' as const, title: 'Mes affinités', sub: '6 affirmations · 1 min', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
+    { k: 'bou' as const, title: 'Mes affinités', sub: '20 ou 100 affirmations', done: s.bDone, onClick: actions.openRoute('boussole'), chipBg: '#E8E0FF', chipFg: '#3F238F' },
   ]
   const todos = rawTodos.slice().sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1))
   const doneCount = todos.filter((t) => t.done).length

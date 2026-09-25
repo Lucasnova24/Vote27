@@ -3,10 +3,10 @@ import type { ChangeEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabaseClient'
 import type {
-  BoussoleResponseRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizAttemptRow, VoteRow,
+  AffiniteResponseRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizAttemptRow, VoteRow,
 } from './lib/dbTypes'
 import type { AppState, AuthProvider, Route, Tab } from './types'
-import { BOUSSOLE, QUIZ } from './data'
+import { QUIZ } from './data'
 import { currentWeekStart } from './lib/week'
 import { currentDayStart } from './lib/day'
 
@@ -15,7 +15,7 @@ const initialState: AppState = {
   tab: 'accueil', route: null, debateSlug: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0,
-  bDone: false, bAnswers: [],
+  bDone: false, bAnswers: {},
   debEvent: null, debPick: null, firstRoundPick: null,
   profileVille: '', profileRegion: '', profilePays: '', profileCP: '', profileTel: '', profileInterets: '',
   quizI: 0, quizSel: null, quizFinished: false,
@@ -46,11 +46,11 @@ function mapAuthError(message: string): string {
 
 async function loadUserData(user: User): Promise<Partial<AppState>> {
   const uid = user.id
-  const [profileRes, voteRes, quizRes, bousRes, debRes, frRes] = await Promise.all([
+  const [profileRes, voteRes, quizRes, affRes, debRes, frRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
     supabase.from('votes').select('*').eq('user_id', uid).eq('vote_date', currentDayStart()).maybeSingle(),
     supabase.from('quiz_attempts').select('*').eq('user_id', uid).eq('quiz_date', currentDayStart()).maybeSingle(),
-    supabase.from('boussole_responses').select('*').eq('user_id', uid).maybeSingle(),
+    supabase.from('affinite_responses').select('question_id,reponse').eq('user_id', uid),
     supabase.from('debate_predictions').select('*').eq('user_id', uid).maybeSingle(),
     supabase.from('first_round_picks').select('*').eq('user_id', uid).eq('week_start', currentWeekStart()).maybeSingle(),
   ])
@@ -69,7 +69,9 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
 
   const vote = voteRes.data as VoteRow | null
   const quiz = quizRes.data as QuizAttemptRow | null
-  const bous = bousRes.data as BoussoleResponseRow | null
+  const affRows = (affRes.data as Pick<AffiniteResponseRow, 'question_id' | 'reponse'>[] | null) ?? []
+  const bAnswers: Record<string, number> = {}
+  affRows.forEach((r) => { bAnswers[r.question_id] = r.reponse })
   const deb = debRes.data as DebatePredictionRow | null
   const fr = frRes.data as FirstRoundPickRow | null
 
@@ -97,8 +99,8 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     quizDoneToday: !!quiz,
     quizScore: quiz?.score ?? 0,
     quizI: 0, quizSel: null, quizFinished: false,
-    bDone: !!bous,
-    bAnswers: bous?.answers ?? [],
+    bDone: Object.keys(bAnswers).length >= 20,
+    bAnswers,
     bMode: null, bI: 0,
     debEvent: deb?.event_slug ?? null,
     debPick: deb?.candidate_slug ?? null,
@@ -205,20 +207,26 @@ export function useAppState() {
     }
   }
 
-  const bAnswer = (v: number) => () => {
+  // `total` is the length of whichever question list is currently being run
+  // (20 for the short quiz, 100 for the long one) — the component knows it
+  // since it's the one that fetched the question bank.
+  const bAnswer = (questionId: string, v: number, total: number) => () => {
     const uid = userIdRef.current
     update((s) => {
-      const a = s.bAnswers.concat([v])
-      const done = a.length >= BOUSSOLE.length
-      if (done && uid) {
-        supabase.from('boussole_responses').upsert({ user_id: uid, answers: a }).then(logIfError('boussole_responses upsert'))
+      const a = { ...s.bAnswers, [questionId]: v }
+      const done = s.bI + 1 >= total
+      if (uid) {
+        supabase
+          .from('affinite_responses')
+          .upsert({ user_id: uid, question_id: questionId, reponse: v }, { onConflict: 'user_id,question_id' })
+          .then(logIfError('affinite_responses upsert'))
       }
-      return done ? { bAnswers: a, bDone: true } : { bAnswers: a, bI: s.bI + 1 }
+      return done ? { bAnswers: a, bDone: true, bMode: null } : { bAnswers: a, bI: s.bI + 1 }
     })
   }
 
-  const bStart = () => update({ bMode: 'court', bI: 0, bAnswers: [] })
-  const bRestart = () => update({ bMode: null, bI: 0, bAnswers: [], bDone: false })
+  const bStart = (mode: 'court' | 'complet') => () => update({ bMode: mode, bI: 0, bAnswers: {} })
+  const bRestart = () => update({ bMode: null, bI: 0, bAnswers: {}, bDone: false })
 
   const markRead = () => {
     update({ notifRead: true })
@@ -368,7 +376,7 @@ export function useAppState() {
       voteChoice: null, points: 0,
       quizI: 0, quizSel: null, quizScore: 0, quizFinished: false, quizDoneToday: false,
       notifRead: false, filter: 'Tout',
-      bMode: null, bI: 0, bAnswers: [], bDone: false, theme: 'Institutions', debEvent: null, debPick: null,
+      bMode: null, bI: 0, bAnswers: {}, bDone: false, theme: 'Institutions', debEvent: null, debPick: null,
       firstRoundPick: null, reminders: [], quizCorrectTotal: 0, quizAttemptsTotal: 0,
       tab: 'accueil', route: null,
     })

@@ -25,11 +25,6 @@ export interface QuizQuestion {
   s: string
 }
 
-export interface BoussoleStatement {
-  t: string
-  s: string
-}
-
 export interface AppState {
   // session / sync
   loading: boolean
@@ -51,8 +46,11 @@ export interface AppState {
   voteSaved: number
   quizDoneToday: boolean
   quizScore: number
+  // "Mes affinités" — bDone once at least the short quiz's 20 statements are
+  // answered; bAnswers maps affinite_questions.id to the user's -2..2 answer
+  // (both the short and long quiz share the same ids, so this covers either).
   bDone: boolean
-  bAnswers: number[]
+  bAnswers: Record<string, number>
   // tonight's debate vote: agenda event slug + chosen member's candidate slug
   debEvent: string | null
   debPick: string | null
@@ -71,7 +69,7 @@ export interface AppState {
   quizFinished: boolean
 
   // boussole run — client-only while a run is in progress
-  bMode: string | null
+  bMode: 'court' | 'complet' | null
   bI: number
 
   // client-only cosmetic state (not backed by Supabase)

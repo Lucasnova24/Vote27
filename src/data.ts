@@ -1,4 +1,4 @@
-import type { BoussoleStatement, Candidate, QuizQuestion } from './types'
+import type { Candidate, QuizQuestion } from './types'
 
 export const ACCENT = '#3B4FD8'
 export const SHOW_POINTS = true
@@ -85,15 +85,6 @@ export const QUIZ: QuizQuestion[] = [
   },
 ]
 
-export const BOUSSOLE: BoussoleStatement[] = [
-  { t: 'Institutions', s: 'Le vote devrait être obligatoire à toutes les élections nationales.' },
-  { t: 'Économie', s: "L'État doit réduire la dépense publique même si cela touche certains services." },
-  { t: 'Écologie', s: 'Les objectifs climatiques doivent primer sur la compétitivité à court terme.' },
-  { t: 'Europe', s: "Davantage de décisions devraient être prises à l'échelle européenne." },
-  { t: 'Social', s: "L'âge légal de départ à la retraite doit être abaissé." },
-  { t: 'Sécurité', s: 'Il faut renforcer les effectifs de police plutôt que la prévention.' },
-]
-
 export const THEMES = ['Institutions', 'Économie', 'Écologie', 'Europe', 'Social', 'Sécurité']
 
 export const TABS: Record<string, { soft: string; ink: string; dark: string }> = {
@@ -111,6 +102,22 @@ export const THEME_STYLE: Record<string, { solid: string; soft: string; ink: str
   Europe: { solid: '#0B6BB8', soft: '#D8EBFB', ink: '#0A4577' },
   Social: { solid: '#C2385A', soft: '#FFDCE5', ink: '#8C1F3D' },
   Sécurité: { solid: '#6B45D9', soft: '#E8E0FF', ink: '#3F238F' },
+}
+
+// Styling for the 10 "Mes affinités" themes (public.affinite_themes, keyed
+// by theme code) — a separate, wider palette from THEME_STYLE above, which
+// stays tied to the older 6-theme "Programmes" comparison screen.
+export const AFFINITE_THEME_STYLE: Record<string, { solid: string; soft: string; ink: string }> = {
+  INST:  { solid: '#3B4FD8', soft: '#E3E7FF', ink: '#1F2A8A' },
+  ECO:   { solid: '#A85400', soft: '#FFEBC6', ink: '#6E3A00' },
+  TRAV:  { solid: '#C2385A', soft: '#FFDCE5', ink: '#8C1F3D' },
+  ECOL:  { solid: '#1F7A3E', soft: '#DDF3E3', ink: '#14532D' },
+  EUR:   { solid: '#0B6BB8', soft: '#D8EBFB', ink: '#0A4577' },
+  SEC:   { solid: '#6B45D9', soft: '#E8E0FF', ink: '#3F238F' },
+  IMMI:  { solid: '#B8175A', soft: '#FBDCE9', ink: '#7A0F3C' },
+  EDU:   { solid: '#2C7DA0', soft: '#D6ECF5', ink: '#1B4E63' },
+  SANTE: { solid: '#7A3E9D', soft: '#EFE0FA', ink: '#4E2766' },
+  LOG:   { solid: '#B8541F', soft: '#FCE3D3', ink: '#7A3512' },
 }
 
 // Styling per real event category (public.event_category) and per

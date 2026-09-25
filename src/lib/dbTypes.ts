@@ -43,6 +43,48 @@ export interface BoussoleResponseRow {
   created_at: string
 }
 
+// "Mes affinités" v2 — supabase/affinites_schema.sql
+export interface AffiniteThemeRow {
+  code: string
+  label: string
+  ordre: number
+}
+
+export interface AffiniteQuestionRow {
+  id: string
+  ordre: number
+  theme_code: string
+  enonce: string
+  poids: number
+  dans_quiz_20: boolean
+  dans_quiz_100: boolean
+}
+
+export interface AffiniteResponseRow {
+  user_id: string
+  question_id: string
+  reponse: number
+  created_at: string
+}
+
+// Matches public.get_affinite_scores()
+export interface AffiniteScoreRow {
+  candidate_id: string
+  candidate_slug: string
+  candidate_name: string
+  party: string
+  score: number | null
+  nb_questions_communes: number
+}
+
+// Matches public.get_affinite_scores_par_theme(p_candidate_id)
+export interface AffiniteThemeScoreRow {
+  theme_code: string
+  theme_label: string
+  score: number | null
+  nb_questions: number
+}
+
 export interface FirstRoundPickRow {
   user_id: string
   week_start: string
