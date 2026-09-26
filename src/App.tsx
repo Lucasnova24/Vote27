@@ -16,6 +16,7 @@ import QuizRun from './screens/QuizRun'
 import Boussole from './screens/Boussole'
 import FirstRound from './screens/FirstRound'
 import Debat from './screens/Debat'
+import AgendaEvent from './screens/AgendaEvent'
 import Programmes from './screens/Programmes'
 import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
@@ -56,6 +57,7 @@ export default function App() {
   else if (s.route === 'boussole') screen = <Boussole state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'firstround') screen = <FirstRound state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'debat') screen = <Debat state={s} actions={actions} isWeb={isWeb} />
+  else if (s.route === 'agendaEvent') screen = <AgendaEvent state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'programmes') screen = <Programmes state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'completeprofile') screen = <CompleteProfile state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} />

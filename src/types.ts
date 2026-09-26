@@ -1,6 +1,6 @@
 export type Tab = 'accueil' | 'isoloir' | 'agenda' | 'quiz' | 'profil'
 
-export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | null
+export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | null
 
 export type AuthView = 'signup' | 'login'
 export type AuthProvider = 'apple' | 'google' | 'anonymous' | 'email' | null
@@ -17,14 +17,6 @@ export interface Candidate {
   initials: string
 }
 
-export interface QuizQuestion {
-  q: string
-  o: string[]
-  a: number
-  e: string
-  s: string
-}
-
 export interface AppState {
   // session / sync
   loading: boolean
@@ -35,6 +27,8 @@ export interface AppState {
   route: Route
   // agenda slug of the debate opened on the 'debat' route
   debateSlug: string | null
+  // agenda slug of the event opened on the 'agendaEvent' route (its detail page)
+  agendaSlug: string | null
   filter: string
   theme: string
 

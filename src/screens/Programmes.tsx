@@ -1,6 +1,7 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { CANDS, THEMES, THEME_STYLE } from '../data'
+import { useCandidatePositions } from '../lib/useCandidatePositions'
 import { backLink, h1Size, wideWidth } from '../styles'
 import StatusTag from '../components/StatusTag'
 import { ChevronLeft } from '../components/Icons'
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export default function Programmes({ state: s, actions, isWeb }: Props) {
+  const positions = useCandidatePositions()
+
   return (
     <div className="rise stk" style={{ gap: 18, width: '100%', margin: '0 auto', maxWidth: wideWidth(isWeb) }}>
       <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Retour</button>
@@ -32,21 +35,34 @@ export default function Programmes({ state: s, actions, isWeb }: Props) {
         })}
       </div>
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: isWeb ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)' }}>
-        {CANDS.map((c) => (
-          <article key={c.name} className="card" style={{ padding: 16 }}>
-            <div className="row" style={{ gap: 12, marginBottom: 12 }}>
-              <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: 700 }}>{c.name}</div>
-                <div style={{ fontSize: 13, color: '#5C617B' }}>{c.party}</div>
+        {CANDS.map((c) => {
+          const pos = positions?.find((p) => p.candidate_name === c.name && p.theme === s.theme) ?? null
+          return (
+            <article key={c.name} className="card" style={{ padding: 16 }}>
+              <div className="row" style={{ gap: 12, marginBottom: 12 }}>
+                <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15.5, fontWeight: 700 }}>{c.name}</div>
+                  <div style={{ fontSize: 13, color: '#5C617B' }}>{c.party}</div>
+                </div>
+                <StatusTag status={c.status} />
               </div>
-              <StatusTag status={c.status} />
-            </div>
-            <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#5C617B', fontStyle: 'italic' }}>
-              {'Position sur « ' + s.theme + ' » — programme pas encore renseigné dans l\'app.'}
-            </div>
-          </article>
-        ))}
+              {pos ? (
+                <div className="stk" style={{ gap: 8 }}>
+                  <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#14162B' }}>{pos.resume}</div>
+                  <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                    <span className="tag" style={{ background: '#EFEBE2', color: '#454A66' }}>{'Programme ' + pos.annee_programme}</span>
+                    <a href={pos.source_url} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Source</a>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#5C617B', fontStyle: 'italic' }}>
+                  {'Position sur « ' + s.theme + ' » — programme pas encore renseigné dans l\'app.'}
+                </div>
+              )}
+            </article>
+          )
+        })}
       </div>
     </div>
   )

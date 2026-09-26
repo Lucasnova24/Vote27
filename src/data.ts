@@ -1,4 +1,4 @@
-import type { Candidate, QuizQuestion } from './types'
+import type { Candidate } from './types'
 
 export const ACCENT = '#3B4FD8'
 export const SHOW_POINTS = true
@@ -47,43 +47,12 @@ export const CANDS: Candidate[] = [
   { name: 'Dominique de Villepin', party: 'Sans étiquette', status: 'pressenti', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'DV' },
 ]
 
-export const QUIZ: QuizQuestion[] = [
-  {
-    q: 'Quelle est la durée du mandat présidentiel ?',
-    o: ['5 ans', '6 ans', '7 ans'],
-    a: 0,
-    e: 'Depuis le référendum de 2000, le mandat présidentiel est de cinq ans, renouvelable une fois consécutivement.',
-    s: 'Constitution, art. 6',
-  },
-  {
-    q: "Qui peut dissoudre l'Assemblée nationale ?",
-    o: ['Le Premier ministre', 'Le Président de la République', 'Le Sénat'],
-    a: 1,
-    e: 'Le Président peut prononcer la dissolution après consultation du Premier ministre et des présidents des assemblées.',
-    s: 'Constitution, art. 12',
-  },
-  {
-    q: "Combien de députés siègent à l'Assemblée nationale ?",
-    o: ['348', '500', '577'],
-    a: 2,
-    e: '577 députés élus au scrutin uninominal majoritaire à deux tours. Le Sénat compte 348 sénateurs.',
-    s: 'Code électoral, art. L.121',
-  },
-  {
-    q: 'Qui nomme le Premier ministre ?',
-    o: ['Le Président de la République', "L'Assemblée nationale", 'Le Conseil constitutionnel'],
-    a: 0,
-    e: "Le Président nomme le Premier ministre, mais celui-ci doit disposer d'une majorité à l'Assemblée pour gouverner.",
-    s: 'Constitution, art. 8',
-  },
-  {
-    q: 'Combien de membres nommés compte le Conseil constitutionnel ?',
-    o: ['7', '9', '12'],
-    a: 1,
-    e: "Neuf membres nommés pour neuf ans, renouvelés par tiers, auxquels s'ajoutent les anciens présidents de la République.",
-    s: 'Constitution, art. 56',
-  },
-]
+// The quiz question bank now lives in public.quiz_questions (supabase/
+// quiz_bank_schema.sql, 1650 questions across 11 themes) — a new set of 5
+// is picked deterministically each day by public.get_daily_quiz(), fetched
+// via src/lib/useDailyQuiz.ts. This constant is just the daily question
+// count, used for progress/scoring copy ("Sans faute", "Score X / 5"…).
+export const QUIZ_DAILY_COUNT = 5
 
 export const THEMES = ['Institutions', 'Économie', 'Écologie', 'Europe', 'Social', 'Sécurité']
 

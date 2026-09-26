@@ -26,15 +26,45 @@ export interface VoteRow {
   user_id: string
   choice: 'oui' | 'non'
   vote_date: string
+  question_code: string | null
   created_at: string
+}
+
+// supabase/vote_bank_schema.sql
+export interface VoteQuestionRow {
+  code: string
+  question: string
+  oui_label: string
+  non_label: string
 }
 
 export interface QuizAttemptRow {
   user_id: string
   score: number
   answers: number[]
+  question_codes: string[] | null
   quiz_date: string
   created_at: string
+}
+
+// supabase/quiz_bank_schema.sql
+export interface QuizThemeRow {
+  slug: string
+  label: string
+  ordre: number
+  is_time_sensitive: boolean
+}
+
+// Matches public.get_daily_quiz()
+export interface DailyQuizRow {
+  code: string
+  theme_label: string
+  question: string
+  bonne_reponse: string
+  mauvaise_1: string
+  mauvaise_2: string
+  mauvaise_3: string
+  explication: string | null
 }
 
 export interface BoussoleResponseRow {
@@ -129,6 +159,17 @@ export interface AgendaCandidateRef {
   name: string
   party: string
   role: 'participant' | 'invite' | 'organisateur'
+}
+
+// supabase/candidate_positions_schema.sql
+export interface CandidatePositionRow {
+  id: string
+  candidate_id: string
+  theme: string
+  resume: string
+  annee_programme: number
+  source_url: string
+  updated_at: string
 }
 
 // Matches the public.agenda view (supabase/schema.sql).

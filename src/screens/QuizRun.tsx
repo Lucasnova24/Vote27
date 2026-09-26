@@ -1,8 +1,9 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
-import { ACCENT, QUIZ } from '../data'
+import { ACCENT } from '../data'
+import { useDailyQuiz } from '../lib/useDailyQuiz'
 import { backLink, flowWrap, qSize } from '../styles'
-import { ChevronLeft, SourceIcon } from '../components/Icons'
+import { ChevronLeft } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -11,7 +12,18 @@ interface Props {
 }
 
 export default function QuizRun({ state: s, actions, isWeb }: Props) {
-  const q = QUIZ[Math.min(s.quizI, QUIZ.length - 1)]
+  const quiz = useDailyQuiz()
+
+  if (!quiz) {
+    return (
+      <div className="rise" style={flowWrap(isWeb)}>
+        <button type="button" onClick={actions.back} style={backLink}><ChevronLeft />Quitter</button>
+        <div style={{ fontSize: 14, color: '#5C617B' }}>Chargement du quiz du jour…</div>
+      </div>
+    )
+  }
+
+  const q = quiz[Math.min(s.quizI, quiz.length - 1)]
   const revealed = s.quizSel !== null
 
   return (
@@ -22,26 +34,29 @@ export default function QuizRun({ state: s, actions, isWeb }: Props) {
         <div className="stk" style={{ gap: 20 }}>
           <div>
             <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
-              <span className="eyebrow" style={{ color: '#6E3A00' }}>{'Question ' + (s.quizI + 1) + ' / 5'}</span>
-              <span className="tag num" style={{ background: '#FFEBC6', color: '#6E3A00' }}>{'Score ' + s.quizScore + ' / 5'}</span>
+              <span className="eyebrow" style={{ color: '#6E3A00' }}>{'Question ' + (s.quizI + 1) + ' / ' + quiz.length}</span>
+              <span className="tag num" style={{ background: '#FFEBC6', color: '#6E3A00' }}>{'Score ' + s.quizScore + ' / ' + quiz.length}</span>
             </div>
             <div style={{ display: 'flex', gap: 6 }} aria-hidden="true">
-              {QUIZ.map((_, i) => (
+              {quiz.map((_, i) => (
                 <span key={i} style={{ flex: 1, height: 8, borderRadius: 99, transition: 'background-color .3s ease', background: i < s.quizI + (revealed ? 1 : 0) ? '#A85400' : i === s.quizI ? '#F0C27A' : '#E7E2D6' }} />
               ))}
             </div>
           </div>
-          <h1 className="dsp" style={{ margin: 0, fontSize: qSize(isWeb), lineHeight: 1.08, fontWeight: 700 }}>{q.q}</h1>
+          <div>
+            <span className="tag" style={{ background: '#EFEBE2', color: '#454A66', marginBottom: 8 }}>{q.themeLabel}</span>
+            <h1 className="dsp" style={{ margin: '8px 0 0', fontSize: qSize(isWeb), lineHeight: 1.08, fontWeight: 700 }}>{q.question}</h1>
+          </div>
           <div className="stk" style={{ gap: 10 }}>
-            {q.o.map((label, i) => {
-              const correct = i === q.a
+            {q.choices.map((label, i) => {
+              const correct = i === q.correctIndex
               const picked = s.quizSel === i
               let bg = '#FFFFFF', bc = '#E7E2D6', markBg = '#EFEBE2', markFg = '#454A66', mark = String.fromCharCode(65 + i)
               if (revealed && correct) { bg = '#EAF6EE'; bc = '#8CC9A0'; markBg = '#1F7A3E'; markFg = '#FFFFFF'; mark = '✓' }
               else if (revealed && picked) { bg = '#FDEBE7'; bc = '#EFA99C'; markBg = '#C8341C'; markFg = '#FFFFFF'; mark = '✕' }
               else if (revealed) { bg = '#FBFAF6' }
               return (
-                <button key={i} type="button" onClick={actions.answer(i)} disabled={revealed} className="row lift" style={{ width: '100%', gap: 14, minHeight: 64, padding: '12px 16px', border: '1.5px solid', borderRadius: 18, background: bg, borderColor: bc }}>
+                <button key={i} type="button" onClick={actions.answer(i, q.correctIndex, q.code)} disabled={revealed} className="row lift" style={{ width: '100%', gap: 14, minHeight: 64, padding: '12px 16px', border: '1.5px solid', borderRadius: 18, background: bg, borderColor: bc }}>
                   <span style={{ width: 34, height: 34, borderRadius: 11, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, background: markBg, color: markFg }}>{mark}</span>
                   <span style={{ flex: 1, fontSize: 16.5, fontWeight: 600, letterSpacing: '-.01em', lineHeight: 1.3, textAlign: 'left' }}>{label}</span>
                 </button>
@@ -50,12 +65,13 @@ export default function QuizRun({ state: s, actions, isWeb }: Props) {
           </div>
           {revealed && (
             <div className="rise stk" style={{ gap: 14 }}>
-              <div className="card" style={{ background: '#FFF4DA', borderColor: '#F2DFAE', boxShadow: 'none' }}>
-                <div style={{ fontSize: 15, lineHeight: 1.55, color: '#14162B' }}>{q.e}</div>
-                <div className="row" style={{ gap: 8, fontSize: 13, fontWeight: 600, color: '#6E3A00', marginTop: 10 }}><SourceIcon />{'Source · ' + q.s}</div>
-              </div>
-              <button type="button" onClick={actions.next} className="btn" style={{ background: '#A85400' }}>
-                {s.quizI >= QUIZ.length - 1 ? 'Voir mon score' : 'Question suivante'}
+              {q.explication && (
+                <div className="card" style={{ background: '#FFF4DA', borderColor: '#F2DFAE', boxShadow: 'none' }}>
+                  <div style={{ fontSize: 15, lineHeight: 1.55, color: '#14162B' }}>{q.explication}</div>
+                </div>
+              )}
+              <button type="button" onClick={actions.next(quiz.length)} className="btn" style={{ background: '#A85400' }}>
+                {s.quizI >= quiz.length - 1 ? 'Voir mon score' : 'Question suivante'}
               </button>
             </div>
           )}
@@ -66,7 +82,7 @@ export default function QuizRun({ state: s, actions, isWeb }: Props) {
         <div className="stk" style={{ gap: 14 }}>
           <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 26, padding: '28px 24px', textAlign: 'center' }}>
             <div className="eyebrow" style={{ color: '#A7ADD3' }}>Quiz terminé</div>
-            <div className="dsp num" style={{ fontSize: 72, fontWeight: 800, lineHeight: 1, margin: '14px 0 10px', color: '#F0A03C' }}>{s.quizScore + ' / 5'}</div>
+            <div className="dsp num" style={{ fontSize: 72, fontWeight: 800, lineHeight: 1, margin: '14px 0 10px', color: '#F0A03C' }}>{s.quizScore + ' / ' + quiz.length}</div>
             <span className="tag" style={{ background: 'rgba(255,255,255,.12)', color: '#fff', fontSize: 13.5, padding: '6px 14px' }}>{'+' + s.quizScore * 20 + ' ◆ crédités'}</span>
           </div>
           <div className="card">

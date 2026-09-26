@@ -100,13 +100,15 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
       <div key={e.id} className="row lift" style={{ gap: 14, padding: 14, background: '#fff', border: '1px solid #E7E2D6', borderRadius: 22, alignItems: 'flex-start' }}>
         <WhenBox e={e} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-            <span className="tag" style={{ background: cat.soft, color: cat.ink }}>{cat.label}</span>
-            {rel && <span className="tag" style={{ background: rel.soft, color: rel.ink }}>{rel.label}</span>}
-            {(who || e.city) && <span style={{ fontSize: 13.5, color: '#5C617B' }}>{[who, e.city].filter(Boolean).join(' · ')}</span>}
-          </div>
-          {e.description && <div style={{ fontSize: 13.5, color: '#5C617B', marginTop: 6, lineHeight: 1.4 }}>{e.description}</div>}
+          <button type="button" onClick={actions.openAgendaEvent(e.slug)} style={{ display: 'block', width: '100%', textAlign: 'left' }}>
+            <div style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-.01em' }}>{e.title}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+              <span className="tag" style={{ background: cat.soft, color: cat.ink }}>{cat.label}</span>
+              {rel && <span className="tag" style={{ background: rel.soft, color: rel.ink }}>{rel.label}</span>}
+              {(who || e.city) && <span style={{ fontSize: 13.5, color: '#5C617B' }}>{[who, e.city].filter(Boolean).join(' · ')}</span>}
+            </div>
+            {e.description && <div style={{ fontSize: 13.5, color: '#5C617B', marginTop: 6, lineHeight: 1.4 }}>{e.description}</div>}
+          </button>
           {isLiveNow && (
             <button type="button" onClick={actions.openDebate(e.slug)} className="row" style={{ gap: 8, marginTop: 6, minHeight: 44, fontSize: 14, fontWeight: 700, color: '#8A1F0E' }}>
               <span className="live" aria-hidden="true" />En direct · ouvrir la session

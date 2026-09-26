@@ -5,6 +5,7 @@ import { CANDS } from '../data'
 import { supabase } from '../lib/supabaseClient'
 import { formatWeekLabel } from '../lib/week'
 import { useAgenda } from '../lib/useAgenda'
+import { useDailyVoteQuestion } from '../lib/useDailyVoteQuestion'
 import { debateStarted, debateStartLabel, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
@@ -21,6 +22,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
   const now = useNow()
   const agenda = useAgenda()
+  const voteQuestion = useDailyVoteQuestion()
   const debate = tonightDebate(agenda, now)
   const debateOpen = debateStarted(debate, now)
   const debateStart = debateStartLabel(debate)
@@ -44,7 +46,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
   const debEvt = s.debEvent ? agenda?.find((e) => e.slug === s.debEvent) ?? null : null
   const debName = debEvt?.candidates.find((c) => c.slug === s.debPick)?.name ?? null
   const myVotes: { key: string; title: string; result: string }[] = []
-  if (s.voteChoice) myVotes.push({ key: 'vote', title: 'Vote du jour · Le vote devrait-il être obligatoire ?', result: s.voteChoice === 'oui' ? 'Oui' : 'Non' })
+  if (s.voteChoice) myVotes.push({ key: 'vote', title: 'Vote du jour · ' + (voteQuestion?.question ?? '…'), result: s.voteChoice === 'oui' ? 'Oui' : 'Non' })
   if (debEvt && debName) myVotes.push({ key: 'debat', title: 'Débat · ' + debEvt.title, result: debName })
   ;(weekly ?? []).forEach((w) => {
     const c = CANDS[w.candidate_index]

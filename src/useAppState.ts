@@ -6,13 +6,12 @@ import type {
   AffiniteResponseRow, DebatePredictionRow, FirstRoundPickRow, ProfileRow, QuizAttemptRow, VoteRow,
 } from './lib/dbTypes'
 import type { AppState, AuthProvider, Route, Tab } from './types'
-import { QUIZ } from './data'
 import { currentWeekStart } from './lib/week'
 import { currentDayStart } from './lib/day'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
-  tab: 'accueil', route: null, debateSlug: null, filter: 'Tout', theme: 'Institutions',
+  tab: 'accueil', route: null, debateSlug: null, agendaSlug: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0,
   bDone: false, bAnswers: {},
@@ -119,6 +118,7 @@ export function useAppState() {
   const stateRef = useRef(state)
   const userIdRef = useRef<string | null>(null)
   const quizAnswersRef = useRef<number[]>([])
+  const quizCodesRef = useRef<string[]>([])
 
   useEffect(() => {
     stateRef.current = state
@@ -159,28 +159,35 @@ export function useAppState() {
   const openRoute = (route: Route) => () => update({ route })
   const back = () => update({ route: null })
   const openDebate = (slug: string) => () => update({ route: 'debat', debateSlug: slug })
+  const openAgendaEvent = (slug: string) => () => update({ route: 'agendaEvent', agendaSlug: slug })
 
-  const vote = (choice: 'oui' | 'non') => () => {
+  const vote = (choice: 'oui' | 'non', questionCode: string) => () => {
     const wasVoted = stateRef.current.voteChoice !== null
     const uid = userIdRef.current
     update((s) => ({ voteChoice: choice, points: wasVoted ? s.points : s.points + 15 }))
     if (!uid) return
-    supabase.from('votes').upsert({ user_id: uid, choice, vote_date: currentDayStart() }, { onConflict: 'user_id,vote_date' }).then((res) => {
-      logIfError('votes upsert')(res)
-      update((s) => ({ voteSaved: s.voteSaved + 1 }))
-    })
+    supabase
+      .from('votes')
+      .upsert({ user_id: uid, choice, question_code: questionCode, vote_date: currentDayStart() }, { onConflict: 'user_id,vote_date' })
+      .then((res) => {
+        logIfError('votes upsert')(res)
+        update((s) => ({ voteSaved: s.voteSaved + 1 }))
+      })
     if (!wasVoted) supabase.rpc('increment_points', { delta: 15 }).then(logIfError('increment_points'))
   }
 
-  const answer = (i: number) => () => {
+  // `correctIndex` describes today's daily quiz, fetched by the component
+  // (useDailyQuiz) — this action stays generic and just compares.
+  const answer = (i: number, correctIndex: number, questionCode: string) => () => {
     const uid = userIdRef.current
     update((s) => {
       if (s.quizSel !== null) return null
-      const ok = i === QUIZ[s.quizI].a
+      const ok = i === correctIndex
       if (uid) {
         if (ok) supabase.rpc('increment_points', { delta: 20 }).then(logIfError('increment_points'))
         supabase.rpc('increment_quiz_stat', { is_correct: ok }).then(logIfError('increment_quiz_stat'))
       }
+      quizCodesRef.current = [...quizCodesRef.current, questionCode]
       return {
         quizSel: i, quizScore: s.quizScore + (ok ? 1 : 0), points: s.points + (ok ? 20 : 0),
         quizAttemptsTotal: s.quizAttemptsTotal + 1, quizCorrectTotal: s.quizCorrectTotal + (ok ? 1 : 0),
@@ -188,18 +195,23 @@ export function useAppState() {
     })
   }
 
-  const next = () => {
+  const next = (total: number) => () => {
     const s = stateRef.current
     quizAnswersRef.current = [...quizAnswersRef.current, s.quizSel ?? -1]
-    if (s.quizI >= QUIZ.length - 1) {
+    if (s.quizI >= total - 1) {
       const uid = userIdRef.current
       const finalAnswers = quizAnswersRef.current
+      const finalCodes = quizCodesRef.current
       quizAnswersRef.current = []
+      quizCodesRef.current = []
       update({ quizFinished: true, quizDoneToday: true })
       if (uid) {
         supabase
           .from('quiz_attempts')
-          .upsert({ user_id: uid, score: s.quizScore, answers: finalAnswers, quiz_date: currentDayStart() }, { onConflict: 'user_id,quiz_date' })
+          .upsert(
+            { user_id: uid, score: s.quizScore, answers: finalAnswers, question_codes: finalCodes, quiz_date: currentDayStart() },
+            { onConflict: 'user_id,quiz_date' },
+          )
           .then(logIfError('quiz_attempts upsert'))
       }
     } else {
@@ -386,7 +398,7 @@ export function useAppState() {
   return {
     state,
     actions: {
-      go, openRoute, openDebate, back, vote, answer, next, bAnswer, bStart, bRestart,
+      go, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
       authApple, authGoogle, authGuest, submitAuth, toggleAuthView,
