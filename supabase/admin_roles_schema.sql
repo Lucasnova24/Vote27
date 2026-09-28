@@ -35,8 +35,9 @@ $$;
 grant execute on function public.is_admin() to authenticated;
 
 -- Contenu éditorial : lecture publique déjà en place (schema.sql /
--- affinites_schema.sql / quiz_bank_schema.sql / vote_bank_schema.sql) ;
--- on ajoute ici les policies d'écriture réservées aux admins.
+-- affinites_schema.sql / vote_bank_schema.sql ; le vrai système de quiz
+-- vit directement dans Supabase, sans fichier ici) ; on ajoute ici les
+-- policies d'écriture réservées aux admins.
 do $$
 declare
   t text;

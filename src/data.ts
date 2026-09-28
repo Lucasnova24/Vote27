@@ -47,12 +47,12 @@ export const CANDS: Candidate[] = [
   { name: 'Dominique de Villepin', party: 'Sans étiquette', status: 'pressenti', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'DV' },
 ]
 
-// The quiz question bank now lives in public.quiz_questions (supabase/
-// quiz_bank_schema.sql, 1650 questions across 11 themes) — a new set of 5
-// is picked deterministically each day by public.get_daily_quiz(), fetched
-// via src/lib/useDailyQuiz.ts. This constant is just the daily question
-// count, used for progress/scoring copy ("Sans faute", "Score X / 5"…).
-export const QUIZ_DAILY_COUNT = 5
+// The quiz question bank (1650 questions across 11 themes) lives entirely in
+// Supabase — public.quiz_questions/quiz_themes/quiz_question_choices/
+// quiz_daily_sets, served through get_daily_quiz()/submit_answer(). It was
+// built directly against the project by another Claude Code session, so
+// there is no schema file for it in this repo; see src/lib/dbTypes.ts for
+// the RPC shapes the app relies on.
 
 export const THEMES = ['Institutions', 'Économie', 'Écologie', 'Europe', 'Social', 'Sécurité']
 

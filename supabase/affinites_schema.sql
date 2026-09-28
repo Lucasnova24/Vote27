@@ -386,6 +386,12 @@ grant execute on function public.get_affinite_scores_par_theme(uuid) to authenti
 -- 7. reset_progress() — remplace la version de supabase/schema.sql pour
 --    purger aussi les réponses d'affinités lors d'une réinitialisation
 --    complète du profil (« Réinitialiser ma progression »).
+--
+--    quiz_answers appartient au vrai système de quiz (get_daily_quiz /
+--    submit_answer), construit directement dans Supabase par une autre
+--    session Claude Code — pas de fichier de schéma pour lui dans ce dépôt.
+--    Le nettoyage est protégé par to_regclass pour ne pas casser
+--    reset_progress() sur une base où cette table n'existe pas (encore).
 -- ─────────────────────────────────────────────────────────────
 create or replace function public.reset_progress()
 returns void
@@ -400,6 +406,9 @@ begin
   delete from public.debate_predictions where user_id = auth.uid();
   delete from public.first_round_picks where user_id = auth.uid();
   delete from public.affinite_responses where user_id = auth.uid();
+  if to_regclass('public.quiz_answers') is not null then
+    execute 'delete from public.quiz_answers where user_id = $1' using auth.uid();
+  end if;
   update public.profiles
     set points = 0, notif_read = false, quiz_correct_total = 0, quiz_attempts_total = 0
     where id = auth.uid();

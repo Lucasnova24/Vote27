@@ -1,3 +1,5 @@
+import type { DailyQuizRow } from './lib/dbTypes'
+
 export type Tab = 'accueil' | 'isoloir' | 'agenda' | 'quiz' | 'profil'
 
 export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | null
@@ -40,6 +42,10 @@ export interface AppState {
   voteSaved: number
   quizDoneToday: boolean
   quizScore: number
+  // today's 5 questions from get_daily_quiz(), with the caller's own answer
+  // state merged in server-side (real quiz bank, built directly in Supabase
+  // by another Claude Code session — see src/lib/dbTypes.ts)
+  dailyQuiz: DailyQuizRow[]
   // "Mes affinités" — bDone once at least the short quiz's 20 statements are
   // answered; bAnswers maps affinite_questions.id to the user's -2..2 answer
   // (both the short and long quiz share the same ids, so this covers either).
@@ -59,7 +65,9 @@ export interface AppState {
 
   // quiz run — client-only while a run is in progress
   quizI: number
-  quizSel: number | null
+  // the choice id submitted for the current question, while awaiting/after
+  // the submit_answer() RPC response
+  quizSel: string | null
   quizFinished: boolean
 
   // boussole run — client-only while a run is in progress
@@ -69,7 +77,7 @@ export interface AppState {
   // client-only cosmetic state (not backed by Supabase)
   reminders: string[]
 
-  // real cumulative quiz accuracy, backed by Supabase
+  // cumulative quiz accuracy, from get_my_quiz_stats()
   quizCorrectTotal: number
   quizAttemptsTotal: number
 

@@ -38,33 +38,51 @@ export interface VoteQuestionRow {
   non_label: string
 }
 
+// quiz_attempts predates the real quiz bank below and is no longer written
+// to by the app (kept only for any pre-existing historical rows).
 export interface QuizAttemptRow {
   user_id: string
   score: number
   answers: number[]
-  question_codes: string[] | null
   quiz_date: string
   created_at: string
 }
 
-// supabase/quiz_bank_schema.sql
-export interface QuizThemeRow {
-  slug: string
+// The real quiz bank (quiz_themes/quiz_questions/quiz_question_choices/
+// quiz_daily_sets/quiz_answers + get_daily_quiz/submit_answer/reveal_answer/
+// get_my_quiz_stats/get_quiz_leaderboard) was built directly against this
+// Supabase project by another Claude Code session — there is no schema file
+// for it in this repo. These types match its RPC contracts.
+export interface DailyQuizChoice {
+  id: string
   label: string
-  ordre: number
-  is_time_sensitive: boolean
+  position: number
 }
 
-// Matches public.get_daily_quiz()
+// Matches public.get_daily_quiz(date)
 export interface DailyQuizRow {
-  code: string
+  quiz_date: string
+  slot: number
+  question_id: string
   theme_label: string
-  question: string
-  bonne_reponse: string
-  mauvaise_1: string
-  mauvaise_2: string
-  mauvaise_3: string
-  explication: string | null
+  prompt: string
+  mode: 'qcm' | 'libre'
+  choices: DailyQuizChoice[]
+  my_choice_id: string | null
+  my_is_correct: boolean | null
+  my_answered_at: string | null
+  answer: string | null
+  explanation: string | null
+}
+
+// Matches public.get_my_quiz_stats()
+export interface QuizStatsRow {
+  answered: number
+  correct: number
+  points: number
+  current_streak: number
+  best_streak: number
+  perfect_days: number
 }
 
 export interface BoussoleResponseRow {
