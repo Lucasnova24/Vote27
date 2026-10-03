@@ -96,6 +96,29 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     profile = data as ProfileRow | null
   }
 
+  // OAuth sign-ups (Google/Apple) only get an email in the profile row:
+  // fill first/last name and pseudo from the provider's metadata and save them.
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+  const fullName = str(meta.full_name) || str(meta.name)
+  const [fullFirst, ...fullRest] = fullName.split(/\s+/).filter(Boolean)
+  const metaFirst = str(meta.given_name) || str(meta.first_name) || fullFirst || ''
+  const metaLast = str(meta.family_name) || str(meta.last_name) || fullRest.join(' ')
+  const metaPseudo = str(meta.pseudo) || str(meta.preferred_username) || str(meta.user_name)
+    || (user.email ? user.email.split('@')[0] : '') || metaFirst
+  const filled = {
+    first_name: profile?.first_name || metaFirst || null,
+    last_name: profile?.last_name || metaLast || null,
+    pseudo: profile?.pseudo || metaPseudo || null,
+  }
+  if (profile && user.app_metadata?.provider !== 'anonymous'
+    && (filled.first_name !== (profile.first_name ?? null)
+      || filled.last_name !== (profile.last_name ?? null)
+      || filled.pseudo !== (profile.pseudo ?? null))) {
+    supabase.from('profiles').update(filled).eq('id', uid).then(logIfError('profiles oauth prefill'))
+    profile = { ...profile, ...filled }
+  }
+
   const vote = voteRes.data as VoteRow | null
   logIfError('get_daily_quiz')(dailyQuizRes)
   const dailyQuiz = shuffleChoices((dailyQuizRes.data ?? []) as DailyQuizRow[])
