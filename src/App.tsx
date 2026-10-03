@@ -23,6 +23,7 @@ import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
+import InstallHint from './components/InstallHint'
 
 export default function App() {
   const { state: s, actions } = useAppState()
@@ -110,6 +111,7 @@ export default function App() {
         </div>
 
         {!isWeb && <BottomNav activeTab={s.tab} hasRoute={!!s.route} go={actions.go} />}
+        {!isWeb && <InstallHint />}
       </div>
     </div>
   )
