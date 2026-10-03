@@ -43,6 +43,20 @@ function mapAuthError(message: string): string {
   return message
 }
 
+// get_daily_quiz always returns choices in the same order (the right answer
+// was always first), so shuffle them once per load (Fisher-Yates). Done here,
+// not in render, so the order stays stable while the quiz is being played.
+function shuffleChoices(rows: DailyQuizRow[]): DailyQuizRow[] {
+  return rows.map((row) => {
+    const choices = [...row.choices]
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[choices[i], choices[j]] = [choices[j], choices[i]]
+    }
+    return { ...row, choices }
+  })
+}
+
 // Real quiz bank (public.get_daily_quiz/get_my_quiz_stats) — quizI resumes
 // at the first unanswered slot, or the last one if today's set is done.
 function quizStateFromDaily(dailyQuiz: DailyQuizRow[]): Pick<AppState, 'dailyQuiz' | 'quizI' | 'quizSel' | 'quizScore' | 'quizDoneToday' | 'quizFinished'> {
@@ -84,7 +98,7 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
 
   const vote = voteRes.data as VoteRow | null
   logIfError('get_daily_quiz')(dailyQuizRes)
-  const dailyQuiz = (dailyQuizRes.data ?? []) as DailyQuizRow[]
+  const dailyQuiz = shuffleChoices((dailyQuizRes.data ?? []) as DailyQuizRow[])
   logIfError('get_my_quiz_stats')(quizStatsRes)
   const quizStats = (quizStatsRes.data?.[0] ?? null) as QuizStatsRow | null
   const affRows = (affRes.data as Pick<AffiniteResponseRow, 'question_id' | 'reponse'>[] | null) ?? []
