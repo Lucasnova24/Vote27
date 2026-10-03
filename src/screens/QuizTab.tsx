@@ -3,7 +3,7 @@ import type { AppState } from '../types'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import Leagues from '../components/Leagues'
-import { QuizIcon } from '../components/Icons'
+import { ChevronRight, QuizIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -53,11 +53,19 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
           {s.quizDoneToday ? 'Revoir mes réponses' : 'Commencer'}
         </button>
       </section>
+
+      <button type="button" onClick={actions.openRoute('quizhistory')} className="card lift row" style={{ order: 3, width: '100%', gap: 12, textAlign: 'left' }}>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: 15.5, fontWeight: 700 }}>Historique de mes réponses</span>
+          <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 2 }}>Revoir les quiz des jours précédents</span>
+        </span>
+        <ChevronRight size={18} color="#5C617B" />
+      </button>
     </>
   )
 
   const colB = (
-    <div style={{ order: 3 }}>
+    <div style={{ order: 4 }}>
       <Leagues />
     </div>
   )

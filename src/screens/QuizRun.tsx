@@ -2,6 +2,7 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import { backLink, flowWrap, qSize } from '../styles'
+import QuizReview from '../components/QuizReview'
 import { ChevronLeft } from '../components/Icons'
 
 interface Props {
@@ -98,6 +99,9 @@ export default function QuizRun({ state: s, actions, isWeb }: Props) {
             </div>
             <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#454A66' }}>Une seule tentative : c'est ce qui rend le classement comparable.</div>
           </div>
+          <h2 className="dsp" style={{ margin: '10px 0 0', fontSize: 22, fontWeight: 700 }}>Mes réponses</h2>
+          <QuizReview items={s.dailyQuiz} />
+          <button type="button" onClick={actions.openRoute('quizhistory')} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>Historique des jours précédents</button>
           <button type="button" onClick={actions.go('quiz')} className="btn" style={{ background: ACCENT }}>Voir le classement</button>
         </div>
       )}

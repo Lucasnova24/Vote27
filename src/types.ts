@@ -2,7 +2,7 @@ import type { DailyQuizRow } from './lib/dbTypes'
 
 export type Tab = 'accueil' | 'isoloir' | 'agenda' | 'quiz' | 'profil'
 
-export type Route = 'vote' | 'quiz' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | null
+export type Route = 'vote' | 'quiz' | 'quizhistory' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | null
 
 export type AuthView = 'signup' | 'login'
 export type AuthProvider = 'apple' | 'google' | 'anonymous' | 'email' | null

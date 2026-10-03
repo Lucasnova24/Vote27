@@ -13,6 +13,7 @@ import QuizTab from './screens/QuizTab'
 import Profil from './screens/Profil'
 import VoteScreen from './screens/VoteScreen'
 import QuizRun from './screens/QuizRun'
+import QuizHistory from './screens/QuizHistory'
 import Boussole from './screens/Boussole'
 import FirstRound from './screens/FirstRound'
 import Debat from './screens/Debat'
@@ -54,6 +55,7 @@ export default function App() {
   let screen
   if (s.route === 'vote') screen = <VoteScreen state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'quiz') screen = <QuizRun state={s} actions={actions} isWeb={isWeb} />
+  else if (s.route === 'quizhistory') screen = <QuizHistory state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'boussole') screen = <Boussole state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'firstround') screen = <FirstRound state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'debat') screen = <Debat state={s} actions={actions} isWeb={isWeb} />
