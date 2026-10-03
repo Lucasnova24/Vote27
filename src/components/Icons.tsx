@@ -157,15 +157,6 @@ export function NavProfilIcon({ size = 19 }: IProps) {
   )
 }
 
-export function AppleLogo({ size = 16 }: IProps) {
-  return (
-    <svg width={size} height={size * 1.13} viewBox="0 0 15 17" fill="none" aria-hidden="true">
-      <path d="M10.4 8.9c0-2 1.6-3 1.7-3.1-.9-1.4-2.4-1.5-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.3 0-2.6.8-3.3 2-1.4 2.5-.4 6.1 1 8.1.7 1 1.5 2.1 2.5 2 1-.1 1.4-.6 2.6-.6s1.5.6 2.6.6c1.1 0 1.8-1 2.4-2 .8-1.1 1.1-2.2 1.1-2.3-.1 0-2.1-.8-2.1-3.1Z" fill="currentColor" />
-      <path d="M8.9 2.9c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.2 1.2-.5.6-.9 1.5-.8 2.3.9.1 1.7-.5 2.2-1.1Z" fill="currentColor" />
-    </svg>
-  )
-}
-
 export function GoogleLogo({ size = 17 }: IProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 18 18" aria-hidden="true">

@@ -2,7 +2,7 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import Brand from '../components/Brand'
-import { AppleLogo, GoogleLogo } from '../components/Icons'
+import { GoogleLogo } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -63,9 +63,6 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
           </div>
 
           <div className="stk" style={{ gap: 10 }}>
-            <button type="button" onClick={actions.authApple} className="btn" style={{ background: '#14162B' }}>
-              <AppleLogo size={16} />Continuer avec Apple
-            </button>
             <button type="button" onClick={actions.authGoogle} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>
               <GoogleLogo size={17} />Continuer avec Google
             </button>

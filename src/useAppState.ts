@@ -307,13 +307,6 @@ export function useAppState() {
     return { reminders: on ? s.reminders.filter((t) => t !== title) : s.reminders.concat([title]) }
   })
 
-  const authApple = () => {
-    update({ authBusy: true, authError: null })
-    supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin } }).then(({ error }) => {
-      if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
-    })
-  }
-
   const authGoogle = () => {
     update({ authBusy: true, authError: null })
     supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }).then(({ error }) => {
@@ -431,7 +424,7 @@ export function useAppState() {
       go, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
-      authApple, authGoogle, authGuest, submitAuth, toggleAuthView,
+      authGoogle, authGuest, submitAuth, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
