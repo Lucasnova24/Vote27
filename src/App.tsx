@@ -23,6 +23,7 @@ import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
+import LoadingScreen from './components/LoadingScreen'
 
 export default function App() {
   const { state: s, actions } = useAppState()
@@ -55,13 +56,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop)
   })
 
-  if (s.loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#F6F4EE', color: '#5C617B', fontSize: 13 }}>
-        Chargement…
-      </div>
-    )
-  }
+  if (s.loading) return <LoadingScreen />
 
   const displayName = getDisplayName(s)
   const initials = getInitials(displayName)
