@@ -210,6 +210,7 @@ export function useAppState() {
   const go = (tab: Tab) => () => update({ tab, route: null })
   const openRoute = (route: Route) => () => update({ route })
   const back = () => update({ route: null })
+  const restore = (patch: Partial<AppState>) => update(patch)
   const openDebate = (slug: string) => () => update({ route: 'debat', debateSlug: slug })
   const openAgendaEvent = (slug: string) => () => update({ route: 'agendaEvent', agendaSlug: slug })
 
@@ -437,7 +438,7 @@ export function useAppState() {
   return {
     state,
     actions: {
-      go, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
+      go, restore, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
       authGoogle, submitAuth, toggleAuthView,

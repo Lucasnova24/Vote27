@@ -33,6 +33,28 @@ export default function App() {
     scrollRef.current?.scrollTo({ top: 0 })
   }, [s.tab, s.route])
 
+  // Mirror in-app navigation into the browser history so the back button /
+  // swipe-back moves between screens instead of leaving the app.
+  const navKey = s.route ? `${s.route}:${s.debateSlug ?? ''}:${s.agendaSlug ?? ''}` : s.tab
+  const lastNav = useRef<string | null>(null)
+  useEffect(() => {
+    if (!s.authed) return
+    const entry = { tab: s.tab, route: s.route, debateSlug: s.debateSlug, agendaSlug: s.agendaSlug }
+    if (lastNav.current === null) history.replaceState(entry, '')
+    else if (lastNav.current !== navKey) history.pushState(entry, '')
+    lastNav.current = navKey
+  }, [s.authed, navKey])
+  useEffect(() => {
+    const onPop = (e: PopStateEvent) => {
+      const h = e.state
+      if (!h || !('tab' in h)) return
+      lastNav.current = h.route ? `${h.route}:${h.debateSlug ?? ''}:${h.agendaSlug ?? ''}` : h.tab
+      actions.restore(h)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  })
+
   if (s.loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#F6F4EE', color: '#5C617B', fontSize: 13 }}>
@@ -105,7 +127,7 @@ export default function App() {
 
         <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none' }}>
           <div style={{ width: '100%', margin: '0 auto', padding: isWeb ? '20px 40px 56px' : '10px 16px 28px', maxWidth: isWeb ? 1100 : 'none' }}>
-            {screen}
+            <div key={navKey} className={s.route ? 'screen-in-route' : 'screen-in'}>{screen}</div>
           </div>
         </div>
 

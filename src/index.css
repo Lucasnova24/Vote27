@@ -108,7 +108,8 @@ a:hover { color: #1F2A8A; }
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   min-height: 58px; font-size: 11.5px; font-weight: 700; text-align: center; transition: color .15s ease;
 }
-.tab .pill { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: 999px; transition: background-color .2s ease; }
+.tab .pill { display: flex; align-items: center; justify-content: center; width: 36px; height: 30px; border-radius: 999px; transition: background-color .2s ease, width .28s cubic-bezier(.2,.8,.2,1); }
+.tab[aria-current=page] .pill { width: 56px; }
 
 .rowh { transition: background-color .15s ease; }
 .rowh:hover { background: #F6F3EC; }
@@ -134,6 +135,11 @@ input[type=range]::-webkit-slider-thumb {
 .rise { animation: rise .4s cubic-bezier(.2,.8,.2,1) both; }
 .pop { animation: pop .45s cubic-bezier(.2,.8,.2,1) both; }
 .live { width: 8px; height: 8px; border-radius: 50%; background: #C8341C; display: inline-block; animation: pulse 1.6s infinite; }
+
+@keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes screenInRoute { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+.screen-in { animation: screenIn .26s cubic-bezier(.2,.8,.2,1) both; }
+.screen-in-route { animation: screenInRoute .3s cubic-bezier(.2,.8,.2,1) both; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
