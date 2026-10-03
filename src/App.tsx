@@ -80,7 +80,7 @@ export default function App() {
 
         <div style={{ flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: isWeb ? '20px 40px 4px' : '12px 16px 6px' }}>
           {!isWeb && (
-            <Brand size={38} />
+            <Brand size={38} onClick={actions.go('accueil')} />
           )}
           {isWeb && (
             <div className="row" style={{ gap: 10 }}>

@@ -27,7 +27,7 @@ export default function Sidebar({ activeTab, hasRoute, go, name, initials, level
   return (
     <nav aria-label="Navigation principale" style={{ flex: 'none', width: 236, background: '#171B3C', color: '#fff', padding: '24px 14px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{ padding: '0 6px 22px' }}>
-        <Brand size={44} dark />
+        <Brand size={44} dark onClick={go('accueil')} />
       </div>
 
       {ORDER.map(({ id, label, Icon }) => {

@@ -37,17 +37,24 @@ export function LogoMouton({ size = 40 }: LogoProps) {
 interface BrandProps {
   size?: number
   dark?: boolean
+  onClick?: () => void
 }
 
 // Logo + name. `dark` is for use on the navy sidebar/panel.
-export default function Brand({ size = 40, dark = false }: BrandProps) {
-  return (
-    <span className="row" style={{ gap: 10 }}>
+export default function Brand({ size = 40, dark = false, onClick }: BrandProps) {
+  const content = (
+    <>
       <LogoMouton size={size} />
       <span className="dsp" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1, fontWeight: 800 }}>
         <span style={{ fontSize: Math.round(size * 0.46), whiteSpace: 'nowrap' }}>Mon Petit Vote</span>
         <span style={{ fontSize: Math.round(size * 0.46), marginTop: 3, color: dark ? '#B8C0F5' : '#3B4FD8' }}>2027</span>
       </span>
-    </span>
+    </>
+  )
+  if (!onClick) return <span className="row" style={{ gap: 10 }}>{content}</span>
+  return (
+    <button type="button" onClick={onClick} className="row" style={{ gap: 10, textAlign: 'left', minHeight: 44 }} aria-label="Mon Petit Vote 2027, retour à l'accueil">
+      {content}
+    </button>
   )
 }
