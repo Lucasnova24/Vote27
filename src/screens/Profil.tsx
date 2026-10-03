@@ -21,7 +21,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
   const accountLine =
     s.authProvider === 'apple' ? 'Connectée avec Apple'
-    : s.authProvider === 'google' ? 'Connectée avec Google Play'
+    : s.authProvider === 'google' ? 'Connectée avec Google'
     : s.authProvider === 'anonymous' ? 'Session invitée'
     : s.authEmail || 'Compte e-mail'
 

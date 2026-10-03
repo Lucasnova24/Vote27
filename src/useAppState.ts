@@ -309,14 +309,14 @@ export function useAppState() {
 
   const authApple = () => {
     update({ authBusy: true, authError: null })
-    supabase.auth.signInWithOAuth({ provider: 'apple' }).then(({ error }) => {
+    supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin } }).then(({ error }) => {
       if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
     })
   }
 
   const authGoogle = () => {
     update({ authBusy: true, authError: null })
-    supabase.auth.signInWithOAuth({ provider: 'google' }).then(({ error }) => {
+    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }).then(({ error }) => {
       if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
     })
   }

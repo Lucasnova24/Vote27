@@ -67,7 +67,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
               <AppleLogo size={16} />Continuer avec Apple
             </button>
             <button type="button" onClick={actions.authGoogle} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>
-              <GoogleLogo size={17} />Continuer avec Google Play
+              <GoogleLogo size={17} />Continuer avec Google
             </button>
           </div>
 
