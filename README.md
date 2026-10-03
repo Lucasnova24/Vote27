@@ -1,4 +1,4 @@
-# Vote2027 — Supabase edition
+# Mon Petit Vote 2027 — Supabase edition
 
 Same app as the local [Vote27](../Vote27) prototype, but with a real backend: Supabase
 Auth for accounts and Postgres (via Supabase) for every piece of durable state that used

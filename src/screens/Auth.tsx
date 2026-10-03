@@ -1,7 +1,8 @@
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
-import { AppleLogo, GoogleLogo, LogoDiamond } from '../components/Icons'
+import Brand from '../components/Brand'
+import { AppleLogo, GoogleLogo } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -21,12 +22,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
     <div style={{ position: 'relative', display: 'flex', minHeight: '100dvh', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
       {isWeb && (
         <div style={{ flex: 1, minWidth: 0, background: '#171B3C', color: '#fff', padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div className="row" style={{ gap: 10 }}>
-            <span style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ACCENT }}>
-              <LogoDiamond size={18} />
-            </span>
-            <span className="dsp" style={{ fontSize: 24, fontWeight: 800 }}>Vote<span style={{ color: '#B8C0F5' }}>2027</span></span>
-          </div>
+          <Brand size={48} dark />
           <div className="stk" style={{ gap: 32 }}>
             <div className="dsp" style={{ fontSize: 50, lineHeight: 1.04, fontWeight: 700, maxWidth: 520 }}>
               Six thèmes, tous les candidats déclarés, une source vérifiable pour chaque position.
@@ -40,7 +36,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
             </div>
           </div>
           <div style={{ fontSize: 13, lineHeight: 1.55, color: '#A7ADD3', maxWidth: 460 }}>
-            Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
+            Mon Petit Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
           </div>
         </div>
       )}
@@ -50,12 +46,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
 
           {!isWeb && (
             <div className="stk" style={{ gap: 16 }}>
-              <div className="row" style={{ gap: 10 }}>
-                <span style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ACCENT }}>
-                  <LogoDiamond size={18} />
-                </span>
-                <span className="dsp" style={{ fontSize: 24, fontWeight: 800 }}>Vote<span style={{ color: ACCENT }}>2027</span></span>
-              </div>
+              <Brand size={48} />
               <div style={{ display: 'flex', gap: 5, height: 8 }} aria-hidden="true">
                 <div style={{ flex: 26, borderRadius: 99, background: '#3B4FD8' }} />
                 <div style={{ flex: 23, borderRadius: 99, background: '#0E7A6B' }} />
