@@ -314,13 +314,6 @@ export function useAppState() {
     })
   }
 
-  const authGuest = () => {
-    update({ authBusy: true, authError: null })
-    supabase.auth.signInAnonymously().then(({ error }) => {
-      if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
-    })
-  }
-
   const submitAuth = () => {
     const s = stateRef.current
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.authEmail)) return update({ authError: 'Adresse e-mail invalide.' })
@@ -424,7 +417,7 @@ export function useAppState() {
       go, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
-      authGoogle, authGuest, submitAuth, toggleAuthView,
+      authGoogle, submitAuth, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,

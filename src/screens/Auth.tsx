@@ -129,9 +129,6 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
                 {isSignup ? 'Se connecter' : "S'inscrire"}
               </button>
             </div>
-            <button type="button" onClick={actions.authGuest} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>
-              Continuer sans compte
-            </button>
           </div>
           <div style={{ fontSize: 12, color: '#5C617B', lineHeight: 1.55, textAlign: 'center' }}>
             En continuant, tu acceptes les conditions d'utilisation et la politique de confidentialité. Tes données sont stockées de façon sécurisée via Supabase.
