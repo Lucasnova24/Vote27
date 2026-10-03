@@ -11,10 +11,6 @@ interface Props {
   isWeb: boolean
 }
 
-function scaleFor(v: number) {
-  return BOUSSOLE_SCALE.find((o) => o.v === Math.round(v)) ?? BOUSSOLE_SCALE[2]
-}
-
 function candidateStyle(name: string) {
   const c = CANDS.find((x) => x.name === name)
   if (c) return { color: c.color, initials: c.initials }
@@ -34,27 +30,6 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
   const progressPct = activeList.length ? Math.round((s.bI / activeList.length) * 100) : 0
 
   const scores = useAffiniteScores(s.bDone)
-
-  // "Ton profil" — the user's own average position per theme, from every
-  // affinite_questions answered so far (court quiz alone, or the full one).
-  const byTheme = new Map<string, { sum: number; n: number; label: string }>()
-  if (bank) {
-    bank.questions.forEach((q) => {
-      const v = s.bAnswers[q.id]
-      if (v === undefined) return
-      const themeInfo = bank.themes.find((t) => t.code === q.theme_code)
-      const entry = byTheme.get(q.theme_code) ?? { sum: 0, n: 0, label: themeInfo?.label ?? q.theme_code }
-      entry.sum += v
-      entry.n += 1
-      byTheme.set(q.theme_code, entry)
-    })
-  }
-  const themeProfile = (bank?.themes ?? [])
-    .filter((t) => byTheme.has(t.code))
-    .map((t) => {
-      const e = byTheme.get(t.code)!
-      return { code: t.code, label: t.label, avg: e.sum / e.n, n: e.n, style: AFFINITE_THEME_STYLE[t.code] }
-    })
 
   return (
     <div className="rise" style={flowWrap(isWeb)}>
@@ -136,27 +111,7 @@ export default function Boussole({ state: s, actions, isWeb }: Props) {
           <div className="stk" style={{ gap: 8 }}>
             <div className="eyebrow" style={{ color: '#3F238F' }}>Résultat</div>
             <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Ton profil politique</h1>
-            <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Ta position par thème, et les candidats les plus proches de tes réponses.</div>
-          </div>
-
-          <div className="card pop stk" style={{ gap: 16 }}>
-            {themeProfile.map((r) => {
-              const sc = scaleFor(r.avg)
-              return (
-                <div key={r.code} className="row" style={{ gap: 12, alignItems: 'center' }}>
-                  <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.style.soft, color: r.style.ink }} aria-hidden="true">
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: sc.color }} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 2 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>{r.label}</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: sc.color }}>{sc.label}</span>
-                    </div>
-                    <div style={{ fontSize: 13, color: '#5C617B' }}>{r.n + (r.n > 1 ? ' affirmations répondues' : ' affirmation répondue')}</div>
-                  </div>
-                </div>
-              )
-            })}
+            <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Les candidats les plus proches de tes réponses.</div>
           </div>
 
           <div className="stk" style={{ gap: 10 }}>
