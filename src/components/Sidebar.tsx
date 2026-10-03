@@ -1,6 +1,7 @@
 import type { Tab } from '../types'
 import { TABS } from '../data'
-import { LogoDiamond, NavAgendaIcon, NavHomeIcon, NavIsoloirIcon, NavProfilIcon, QuizIcon } from './Icons'
+import Brand from './Brand'
+import { NavAgendaIcon, NavHomeIcon, NavIsoloirIcon, NavProfilIcon, QuizIcon } from './Icons'
 
 interface Props {
   activeTab: Tab
@@ -22,14 +23,11 @@ const ORDER: { id: Tab; label: string; Icon: (p: { size?: number }) => JSX.Eleme
   { id: 'profil', label: 'Profil', Icon: NavProfilIcon },
 ]
 
-export default function Sidebar({ activeTab, hasRoute, go, accent, name, initials, level, levelPct, levelLabel }: Props) {
+export default function Sidebar({ activeTab, hasRoute, go, name, initials, level, levelPct, levelLabel }: Props) {
   return (
     <nav aria-label="Navigation principale" style={{ flex: 'none', width: 236, background: '#171B3C', color: '#fff', padding: '24px 14px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div className="row" style={{ gap: 10, padding: '0 6px 22px' }}>
-        <span style={{ width: 36, height: 36, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: accent }}>
-          <LogoDiamond size={18} />
-        </span>
-        <span className="dsp" style={{ fontSize: 22, fontWeight: 800 }}>Vote<span style={{ color: '#B8C0F5' }}>2027</span></span>
+      <div style={{ padding: '0 6px 22px' }}>
+        <Brand size={44} dark />
       </div>
 
       {ORDER.map(({ id, label, Icon }) => {

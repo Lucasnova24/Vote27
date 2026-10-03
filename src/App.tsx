@@ -21,7 +21,7 @@ import Programmes from './screens/Programmes'
 import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
-import { LogoDiamond } from './components/Icons'
+import Brand from './components/Brand'
 
 export default function App() {
   const { state: s, actions } = useAppState()
@@ -80,12 +80,7 @@ export default function App() {
 
         <div style={{ flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: isWeb ? '20px 40px 4px' : '12px 16px 6px' }}>
           {!isWeb && (
-            <div className="row" style={{ gap: 9 }}>
-              <span style={{ width: 34, height: 34, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ACCENT }}>
-                <LogoDiamond size={17} />
-              </span>
-              <span className="dsp" style={{ fontSize: 21, fontWeight: 800 }}>Vote<span style={{ color: ACCENT }}>2027</span></span>
-            </div>
+            <Brand size={38} />
           )}
           {isWeb && (
             <div className="row" style={{ gap: 10 }}>
