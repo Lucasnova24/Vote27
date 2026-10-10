@@ -424,6 +424,16 @@ export function useAppState() {
     supabase.auth.signOut().then(logIfError('signOut'))
   }
 
+  const deleteAccount = async () => {
+    const { error } = await supabase.rpc('delete_account')
+    if (error) {
+      logIfError('delete_account')({ error })
+      return false
+    }
+    await supabase.auth.signOut()
+    return true
+  }
+
   const resetAll = () => {
     const uid = userIdRef.current
     update((s) => ({
@@ -448,7 +458,7 @@ export function useAppState() {
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
-      logout, resetAll,
+      logout, resetAll, deleteAccount,
     },
   }
 }

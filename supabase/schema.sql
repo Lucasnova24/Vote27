@@ -347,6 +347,21 @@ begin
 end;
 $$;
 
+-- Permanent account deletion (RGPD / store requirement). Deleting the auth
+-- user cascades to profiles and every per-user table.
+create or replace function public.delete_account()
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
 -- Cumulative quiz accuracy — called once per answered question (the "Taux de
 -- bonne réponse" / "Bonnes réponses" tiles on the Quiz tab read these back).
 create or replace function public.increment_quiz_stat(is_correct boolean)
@@ -467,6 +482,7 @@ $$;
 grant execute on function public.increment_points(integer) to authenticated;
 grant execute on function public.increment_quiz_stat(boolean) to authenticated;
 grant execute on function public.reset_progress() to authenticated;
+grant execute on function public.delete_account() to authenticated;
 grant execute on function public.get_leaderboard(integer) to authenticated;
 grant execute on function public.create_league(text) to authenticated;
 grant execute on function public.join_league(text) to authenticated;

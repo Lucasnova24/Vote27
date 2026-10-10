@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { BADGES } from '../data'
@@ -15,6 +16,15 @@ interface Props {
 
 export default function Profil({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(false)
+  const onDelete = async () => {
+    if (!window.confirm('Supprimer définitivement ton compte et toutes tes données ? Cette action est irréversible.')) return
+    setDeleting(true)
+    setDeleteError(false)
+    const ok = await actions.deleteAccount()
+    if (!ok) { setDeleting(false); setDeleteError(true) }
+  }
   const level = levelFromPoints(s.points)
   const { xpIntoLevel, xpTarget, pct } = levelProgress(s.points)
   const levelOffset = (201.06 * (1 - pct / 100)).toFixed(2)
@@ -112,6 +122,8 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
         <div style={{ fontSize: 13, color: '#5C617B', paddingBottom: 4 }}>{accountLine}</div>
         <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
         <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
+        <button type="button" onClick={onDelete} disabled={deleting} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>{deleting ? 'Suppression…' : 'Supprimer mon compte'}</button>
+        {deleteError && <div role="alert" style={{ fontSize: 12.5, color: '#B0301A' }}>La suppression a échoué. Réessaie plus tard.</div>}
         <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.55, padding: '8px 12px 0', maxWidth: 420 }}>
           Mon Petit Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
         </div>
