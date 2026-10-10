@@ -10,33 +10,6 @@ interface Props {
   isWeb: boolean
 }
 
-function isStandalone() {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
-}
-
-function InstallHint() {
-  if (isStandalone()) return null
-  const ua = navigator.userAgent
-  const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
-  const steps = isIOS
-    ? ['Ouvre cette page dans Safari.', 'Appuie sur le bouton Partager (le carré avec une flèche vers le haut).', 'Choisis « Sur l\'écran d\'accueil », puis « Ajouter ».']
-    : ['Ouvre cette page dans Chrome.', 'Appuie sur le menu ⋮ en haut à droite.', 'Choisis « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».']
-  return (
-    <details className="card" style={{ padding: 14 }}>
-      <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, minHeight: 24 }}>📲 Ajouter l'app à ton écran d'accueil</summary>
-      <div style={{ fontSize: 13, color: '#454A66', lineHeight: 1.5, marginTop: 8 }}>
-        Retrouve Mon Petit Vote en un clic, comme une vraie application.
-        <ol style={{ margin: '8px 0 0', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {steps.map(t => <li key={t}>{t}</li>)}
-        </ol>
-        {isIOS && <div style={{ marginTop: 6 }}>Sur Android : menu ⋮ → « Installer l'application ».</div>}
-        {!isIOS && <div style={{ marginTop: 6 }}>Sur iPhone : Safari → Partager → « Sur l'écran d'accueil ».</div>}
-      </div>
-    </details>
-  )
-}
-
 export default function Auth({ state: s, actions, isWeb }: Props) {
   const isSignup = s.authView === 'signup'
   const busy = s.authBusy
@@ -148,8 +121,6 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
               {busy ? '…' : isSignup ? 'Créer mon compte' : 'Se connecter'}
             </button>
           </div>
-
-          {isSignup && <InstallHint />}
 
           <div className="stk" style={{ alignItems: 'center', gap: 2 }}>
             <div style={{ fontSize: 14, color: '#454A66' }}>
