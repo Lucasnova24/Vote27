@@ -8,8 +8,10 @@ function parisToday(): string {
 }
 
 // An event is past once its last day (end_date, else event_date) is before
-// today. Undated events are kept (they have no day to expire on).
+// today. Undated events are kept (they have no day to expire on), and so are
+// past débats: they stay reachable as history (see purge_past_events.sql).
 function isPast(e: AgendaRow, today: string): boolean {
+  if (e.category === 'debat') return false
   const last = e.end_date ?? e.event_date
   return !!last && last < today
 }
@@ -17,7 +19,7 @@ function isPast(e: AgendaRow, today: string): boolean {
 // Shared by Accueil (next event today) and Agenda (full list) — one fetch
 // pattern, kept local-component-state rather than in useAppState since it's
 // public read-only reference data, not per-user state.
-// Past events are dropped here, so no screen ever shows them; the cutoff is
+// Past non-débat events are dropped here, so no screen ever shows them; the cutoff is
 // re-evaluated every minute so an app left open overnight cleans itself up.
 export function useAgenda() {
   const [rows, setRows] = useState<AgendaRow[] | null>(null)
