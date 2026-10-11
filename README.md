@@ -114,10 +114,10 @@ ligne dont l'heure est dépassée de plus de 6 h n'est jamais envoyée.
    ```bash
    supabase functions deploy send-notifications --no-verify-jwt
    supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... \
-     VAPID_SUBJECT=mailto:toi@exemple.fr CRON_SECRET=<longue-chaine-aleatoire>
+     VAPID_SUBJECT=mailto:toi@exemple.fr
    ```
 5. **Déclencheur chaque minute** : suis la section « pg_cron » en bas de
-   `notifications_schema.sql` (extensions `pg_cron` + `pg_net`, secret dans le Vault).
+   `notifications_schema.sql` (extensions `pg_cron` + `pg_net`, secret généré dans le Vault).
 
 ### Côté utilisateur
 

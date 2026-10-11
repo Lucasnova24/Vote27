@@ -4,7 +4,9 @@
 // Déploiement (le JWT est remplacé par un secret partagé) :
 //   supabase functions deploy send-notifications --no-verify-jwt
 //   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... \
-//     VAPID_SUBJECT=mailto:toi@exemple.fr CRON_SECRET=...
+//     VAPID_SUBJECT=mailto:toi@exemple.fr
+// L'appelant (pg_cron) s'authentifie avec le secret « cron_secret » du Vault,
+// vérifié via la fonction SQL verify_cron_secret().
 //
 // SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont fournis automatiquement.
 
@@ -31,13 +33,6 @@ interface Planning {
   titre: string
   message: string
   lien: string
-}
-
-function sameSecret(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
 }
 
 // Envoie une notification à tous les abonnés ; renvoie le nombre d'appareils atteints.
@@ -79,10 +74,9 @@ async function broadcast(n: Planning): Promise<number> {
 }
 
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('CRON_SECRET') ?? ''
-  if (!secret || !sameSecret(req.headers.get('x-cron-secret') ?? '', secret)) {
-    return new Response('Unauthorized', { status: 401 })
-  }
+  const given = req.headers.get('x-cron-secret') ?? ''
+  const { data: ok } = given ? await supabase.rpc('verify_cron_secret', { p_secret: given }) : { data: false }
+  if (ok !== true) return new Response('Unauthorized', { status: 401 })
 
   const { data, error } = await supabase.rpc('claim_due_notifications')
   if (error) {

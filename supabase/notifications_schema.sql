@@ -95,13 +95,28 @@ $$;
 revoke all on function public.claim_due_notifications() from public, anon, authenticated;
 grant execute on function public.claim_due_notifications() to service_role;
 
+-- Vérifie le secret envoyé par pg_cron à l'Edge Function (stocké dans le Vault,
+-- sous le nom « cron_secret »). Réservé à service_role.
+create or replace function public.verify_cron_secret(p_secret text)
+returns boolean
+language sql
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from vault.decrypted_secrets
+     where name = 'cron_secret' and decrypted_secret = p_secret
+  );
+$$;
+
+revoke all on function public.verify_cron_secret(text) from public, anon, authenticated;
+grant execute on function public.verify_cron_secret(text) to service_role;
+
 -- ── Déclenchement chaque minute (pg_cron + pg_net) ──────────
 -- À faire UNE FOIS, après avoir déployé l'Edge Function (voir README) :
 --
 --   1. Database → Extensions : activer pg_cron et pg_net.
---   2. Choisir un secret (une longue chaîne aléatoire) et le ranger dans le Vault :
---        select vault.create_secret('<TON_SECRET>', 'cron_secret');
---      puis donner la même valeur à la fonction :  CRON_SECRET=<TON_SECRET>
+--   2. Créer le secret dans le Vault (valeur aléatoire, jamais à recopier) :
+--        select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'cron_secret');
 --   3. Planifier l'appel (remplacer <PROJECT_REF>) :
 --
 --   select cron.schedule('send-notifications', '* * * * *', $cron$
