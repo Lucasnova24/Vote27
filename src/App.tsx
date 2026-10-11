@@ -27,6 +27,7 @@ import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
 import LoadingScreen from './components/LoadingScreen'
+import NotificationsPrompt from './components/NotificationsPrompt'
 
 export default function App() {
   const { state: s, actions } = useAppState()
@@ -135,6 +136,8 @@ export default function App() {
 
         {!isWeb && <BottomNav activeTab={s.tab} hasRoute={!!s.route} go={actions.go} />}
       </div>
+
+      {s.tab === 'accueil' && !s.route && <NotificationsPrompt />}
     </div>
   )
 }
