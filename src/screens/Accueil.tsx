@@ -8,6 +8,7 @@ import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
 import HomeBanner from '../components/HomeBanner'
+import ElectionNight from '../components/ElectionNight'
 import { BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
@@ -151,6 +152,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
         <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
+      <ElectionNight />
       <HomeBanner onShowInstall={onShowInstall} />
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
