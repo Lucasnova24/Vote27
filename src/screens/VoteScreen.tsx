@@ -94,9 +94,6 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
                 <div className="bar" style={{ height: 14 }}><i style={{ width: r.pct, background: r.color }} /></div>
               </div>
             ))}
-            {tally !== null && (
-              <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>{total + (total > 1 ? ' bulletins' : ' bulletin') + ' · mis à jour en direct'}</div>
-            )}
           </div>
           <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 22, padding: 22, textAlign: 'center' }}>
             <div className="dsp num" style={{ fontSize: 44, fontWeight: 800, color: '#F0A03C', lineHeight: 1 }}>+15 ◆</div>
