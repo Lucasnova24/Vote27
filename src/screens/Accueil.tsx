@@ -136,7 +136,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
             {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
           </span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats. Les positions sourcées sont ajoutées à mesure que les programmes officiels sont publiés.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats, d'après leur programme 2022 en attendant ceux de 2027. Touchez un candidat pour voir toutes ses mesures.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
       </button>
 
