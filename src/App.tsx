@@ -86,7 +86,7 @@ export default function App() {
   else if (s.route === 'candidat') screen = <Candidat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'programmes') screen = <Programmes state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'completeprofile') screen = <CompleteProfile state={s} actions={actions} isWeb={isWeb} />
-  else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} />
+  else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} onShowInstall={() => setShowInstall(true)} />
   else if (s.tab === 'isoloir') screen = <Isoloir state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'agenda') screen = <Agenda state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'quiz') screen = <QuizTab state={s} actions={actions} isWeb={isWeb} />
