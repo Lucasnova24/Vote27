@@ -1,0 +1,4 @@
+categorie,titre,message,lien,date_envoi,heure_envoi,actif
+question_du_jour,Question du jour,Ta question du jour t'attend : donne ton avis en 10 secondes !,/,2026-10-12,08:30,true
+evenements,À l'agenda aujourd'hui,Un événement politique a lieu aujourd'hui : découvre-le dans l'agenda.,/,2026-10-12,09:00,true
+vote_semaine,Vote de la semaine,C'est dimanche : qui aurait ton vote au 1er tour cette semaine ?,/,2026-10-18,10:00,true
