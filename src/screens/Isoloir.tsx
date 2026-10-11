@@ -9,6 +9,7 @@ import { useDailyVoteQuestion } from '../lib/useDailyVoteQuestion'
 import { debateStarted, debateStartLabel, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
+import ProgrammesComparatif from '../components/ProgrammesComparatif'
 import { ChevronRight, DebatIcon, FirstRoundIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
@@ -125,11 +126,18 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
   return (
     <div className="rise stk" style={{ gap }}>
       <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
-        <div className="eyebrow">Isoloir</div>
+        <div className="eyebrow">Isoloir &amp; Programmes</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Tes votes ouverts</h1>
         <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Ce qui est ouvert aujourd'hui, et ce qui est déjà tranché.</div>
       </div>
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
+      <section className="stk" style={{ gap: 14 }} aria-label="Les programmes, côte à côte">
+        <div className="stk" style={{ gap: 6 }}>
+          <h2 className="dsp" style={{ margin: '6px 0 0', fontSize: 26, fontWeight: 700 }}>Les programmes, côte à côte</h2>
+          <div style={{ fontSize: 14.5, color: '#454A66', lineHeight: 1.5 }}>Six thèmes, tous les candidats, d'après leur programme 2022 en attendant ceux de 2027. Touchez un candidat pour voir toutes ses mesures.</div>
+        </div>
+        <ProgrammesComparatif state={s} actions={actions} isWeb={isWeb} />
+      </section>
     </div>
   )
 }
