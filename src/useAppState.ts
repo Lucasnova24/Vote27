@@ -8,6 +8,7 @@ import type {
 import type { AppState, AuthProvider, Route, Tab } from './types'
 import { currentWeekStart } from './lib/week'
 import { currentDayStart } from './lib/day'
+import { markInstallPending } from './lib/install'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
@@ -332,6 +333,7 @@ export function useAppState() {
   })
 
   const authGoogle = () => {
+    if (stateRef.current.authView === 'signup') markInstallPending()
     update({ authBusy: true, authError: null })
     supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }).then(({ error }) => {
       if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
@@ -357,6 +359,7 @@ export function useAppState() {
           options: { data: { first_name: s.authFirst, last_name: s.authLast, pseudo: s.authPseudo } },
         })
         if (error) return update({ authBusy: false, authError: mapAuthError(error.message) })
+        markInstallPending()
         if (data.user) {
           await supabase
             .from('profiles')
@@ -421,6 +424,16 @@ export function useAppState() {
     supabase.auth.signOut().then(logIfError('signOut'))
   }
 
+  const deleteAccount = async () => {
+    const { error } = await supabase.rpc('delete_account')
+    if (error) {
+      logIfError('delete_account')({ error })
+      return false
+    }
+    await supabase.auth.signOut()
+    return true
+  }
+
   const resetAll = () => {
     const uid = userIdRef.current
     update((s) => ({
@@ -445,7 +458,7 @@ export function useAppState() {
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
-      logout, resetAll,
+      logout, resetAll, deleteAccount,
     },
   }
 }

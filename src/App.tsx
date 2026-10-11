@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppState } from './useAppState'
 import { useIsWeb } from './useIsWeb'
 import { ACCENT, SHOW_POINTS } from './data'
@@ -6,6 +6,8 @@ import { firstRoundCountdownLabel, todayLabelFr } from './lib/countdown'
 import { getDisplayName, getInitials } from './lib/displayName'
 import { levelFromPoints, levelProgress } from './lib/leveling'
 import Auth from './screens/Auth'
+import InstallGuide from './screens/InstallGuide'
+import { installPending, clearInstallPending } from './lib/install'
 import Accueil from './screens/Accueil'
 import Isoloir from './screens/Isoloir'
 import Agenda from './screens/Agenda'
@@ -27,6 +29,7 @@ import LoadingScreen from './components/LoadingScreen'
 
 export default function App() {
   const { state: s, actions } = useAppState()
+  const [showInstall, setShowInstall] = useState(installPending)
   const isWeb = useIsWeb()
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -68,6 +71,8 @@ export default function App() {
   if (!s.authed) {
     return <Auth state={s} actions={actions} isWeb={isWeb} />
   }
+
+  if (showInstall) return <InstallGuide isWeb={isWeb} onDone={() => { clearInstallPending(); setShowInstall(false) }} />
 
   let screen
   if (s.route === 'vote') screen = <VoteScreen state={s} actions={actions} isWeb={isWeb} />
