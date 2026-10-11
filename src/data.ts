@@ -36,7 +36,7 @@ export const CANDS: Candidate[] = [
   { name: 'François Asselineau', party: 'Union populaire républicaine', status: 'déclaré', color: '#6E5B3E', ink: '#443923', soft: '#EDE6D8', initials: 'FA' },
   { name: 'Delphine Batho', party: 'Génération écologie', status: 'déclaré', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'DB' },
   { name: 'Xavier Bertrand', party: 'Nous, France', status: 'déclaré', color: '#C8341C', ink: '#8A1F0E', soft: '#FFDFD8', initials: 'XB' },
-  { name: 'Karim Bouamrane', party: 'Parti socialiste', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'KB' },
+  { name: 'Karim Bouamrane', party: 'La France humaine et forte', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'KB' },
   { name: 'Bernard Cazeneuve', party: 'La Convention', status: 'déclaré', color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'BC' },
   { name: 'Sylvain Durif', party: 'Elvita', status: 'déclaré', color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'SD' },
   { name: 'Anasse Kazib', party: 'Révolution permanente', status: 'déclaré', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'AK' },
