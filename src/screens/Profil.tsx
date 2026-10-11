@@ -6,6 +6,7 @@ import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
+import NotificationsCard from '../components/NotificationsCard'
 import { BoussoleIcon, ChevronRight, LogoDiamond, PersonIcon } from '../components/Icons'
 
 interface Props {
@@ -96,7 +97,9 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
         <ChevronRight size={18} color="#5C617B" />
       </button>
 
-      <section style={{ order: 4 }} aria-label="Badges">
+      <div style={{ order: 4 }}><NotificationsCard /></div>
+
+      <section style={{ order: 5 }} aria-label="Badges">
         <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Badges</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
           {BADGES.map((b) => {
