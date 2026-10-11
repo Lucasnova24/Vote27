@@ -12,7 +12,7 @@ import { markInstallPending } from './lib/install'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
-  tab: 'accueil', route: null, debateSlug: null, agendaSlug: null, filter: 'Tout', theme: 'Institutions',
+  tab: 'accueil', route: null, debateSlug: null, agendaSlug: null, candidateName: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0, dailyQuiz: [],
   bDone: false, bAnswers: {},
@@ -214,6 +214,9 @@ export function useAppState() {
   const restore = (patch: Partial<AppState>) => update(patch)
   const openDebate = (slug: string) => () => update({ route: 'debat', debateSlug: slug })
   const openAgendaEvent = (slug: string) => () => update({ route: 'agendaEvent', agendaSlug: slug })
+  const openCandidate = (name: string) => () => update({ route: 'candidat', candidateName: name })
+  // from a candidate page, go back to the programmes comparison
+  const backToProgrammes = () => update({ route: 'programmes' })
 
   const vote = (choice: 'oui' | 'non', questionCode: string) => () => {
     const wasVoted = stateRef.current.voteChoice !== null
@@ -451,7 +454,7 @@ export function useAppState() {
   return {
     state,
     actions: {
-      go, restore, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
+      go, restore, openRoute, openDebate, openAgendaEvent, openCandidate, backToProgrammes, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
       authGoogle, submitAuth, toggleAuthView,

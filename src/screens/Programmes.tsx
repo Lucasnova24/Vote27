@@ -2,9 +2,10 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { CANDS, THEMES, THEME_STYLE } from '../data'
 import { useCandidatePositions } from '../lib/useCandidatePositions'
+import { PROGRAMMES_2022, KIND_LABEL } from '../programmes2022'
 import { backLink, h1Size, wideWidth } from '../styles'
 import StatusTag from '../components/StatusTag'
-import { ChevronLeft } from '../components/Icons'
+import { ChevronLeft, ChevronRight } from '../components/Icons'
 
 interface Props {
   state: AppState
@@ -21,7 +22,7 @@ export default function Programmes({ state: s, actions, isWeb }: Props) {
       <div className="stk" style={{ gap: 8 }}>
         <div className="eyebrow">Programmes</div>
         <h1 className="dsp" style={{ margin: 0, fontSize: h1Size(isWeb), lineHeight: 1.02, fontWeight: 700 }}>Côte à côte</h1>
-        <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Six thèmes, tous les candidats. Les positions sourcées seront ajoutées au fur et à mesure de la publication des programmes officiels.</div>
+        <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Six thèmes, tous les candidats. En attendant les programmes 2027, on s'appuie sur le programme 2022 du candidat, ou à défaut celui de son parti. Touchez un candidat pour voir toutes ses mesures.</div>
       </div>
       <div role="group" aria-label="Choisir un thème" style={{ display: 'flex', gap: 8, overflowX: 'auto', margin: isWeb ? 0 : '0 -16px', padding: isWeb ? 0 : '0 16px' }}>
         {THEMES.map((t) => {
@@ -37,16 +38,19 @@ export default function Programmes({ state: s, actions, isWeb }: Props) {
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: isWeb ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)' }}>
         {CANDS.map((c) => {
           const pos = positions?.find((p) => p.candidate_name === c.name && p.theme === s.theme) ?? null
+          const prog = PROGRAMMES_2022[c.name]
+          const th = prog?.themes[s.theme]
           return (
             <article key={c.name} className="card" style={{ padding: 16 }}>
-              <div className="row" style={{ gap: 12, marginBottom: 12 }}>
+              <button type="button" onClick={actions.openCandidate(c.name)} className="row" style={{ gap: 12, marginBottom: 12, width: '100%', textAlign: 'left' }} aria-label={'Voir les mesures de ' + c.name}>
                 <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15.5, fontWeight: 700 }}>{c.name}</div>
                   <div style={{ fontSize: 13, color: '#5C617B' }}>{c.party}</div>
                 </div>
                 <StatusTag status={c.status} />
-              </div>
+                <ChevronRight size={16} />
+              </button>
               {pos ? (
                 <div className="stk" style={{ gap: 8 }}>
                   <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#14162B' }}>{pos.resume}</div>
@@ -54,6 +58,21 @@ export default function Programmes({ state: s, actions, isWeb }: Props) {
                     <span className="tag" style={{ background: '#EFEBE2', color: '#454A66' }}>{'Programme ' + pos.annee_programme}</span>
                     <a href={pos.source_url} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Source</a>
                   </div>
+                </div>
+              ) : th && th.resume ? (
+                <div className="stk" style={{ gap: 8 }}>
+                  <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#14162B' }}>{th.resume}</div>
+                  <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                    <span className="tag" style={{ background: '#EFEBE2', color: '#454A66' }}>{'Programme 2022 · ' + KIND_LABEL[prog.kind]}</span>
+                  </div>
+                </div>
+              ) : prog && prog.kind === 'aucun' ? (
+                <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#5C617B', fontStyle: 'italic' }}>
+                  {'Pas de programme 2022 pour ce candidat ni son parti.'}
+                </div>
+              ) : prog ? (
+                <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#5C617B', fontStyle: 'italic' }}>
+                  {'Rien de précis sur « ' + s.theme + ' » dans le programme 2022 retenu.'}
                 </div>
               ) : (
                 <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#5C617B', fontStyle: 'italic' }}>

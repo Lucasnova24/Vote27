@@ -21,6 +21,7 @@ import FirstRound from './screens/FirstRound'
 import Debat from './screens/Debat'
 import AgendaEvent from './screens/AgendaEvent'
 import Programmes from './screens/Programmes'
+import Candidat from './screens/Candidat'
 import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
@@ -39,11 +40,11 @@ export default function App() {
 
   // Mirror in-app navigation into the browser history so the back button /
   // swipe-back moves between screens instead of leaving the app.
-  const navKey = s.route ? `${s.route}:${s.debateSlug ?? ''}:${s.agendaSlug ?? ''}` : s.tab
+  const navKey = s.route ? `${s.route}:${s.debateSlug ?? ''}:${s.agendaSlug ?? ''}:${s.candidateName ?? ''}` : s.tab
   const lastNav = useRef<string | null>(null)
   useEffect(() => {
     if (!s.authed) return
-    const entry = { tab: s.tab, route: s.route, debateSlug: s.debateSlug, agendaSlug: s.agendaSlug }
+    const entry = { tab: s.tab, route: s.route, debateSlug: s.debateSlug, agendaSlug: s.agendaSlug, candidateName: s.candidateName }
     if (lastNav.current === null) history.replaceState(entry, '')
     else if (lastNav.current !== navKey) history.pushState(entry, '')
     lastNav.current = navKey
@@ -52,7 +53,7 @@ export default function App() {
     const onPop = (e: PopStateEvent) => {
       const h = e.state
       if (!h || !('tab' in h)) return
-      lastNav.current = h.route ? `${h.route}:${h.debateSlug ?? ''}:${h.agendaSlug ?? ''}` : h.tab
+      lastNav.current = h.route ? `${h.route}:${h.debateSlug ?? ''}:${h.agendaSlug ?? ''}:${h.candidateName ?? ''}` : h.tab
       actions.restore(h)
     }
     window.addEventListener('popstate', onPop)
@@ -82,6 +83,7 @@ export default function App() {
   else if (s.route === 'firstround') screen = <FirstRound state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'debat') screen = <Debat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'agendaEvent') screen = <AgendaEvent state={s} actions={actions} isWeb={isWeb} />
+  else if (s.route === 'candidat') screen = <Candidat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'programmes') screen = <Programmes state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'completeprofile') screen = <CompleteProfile state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} />
