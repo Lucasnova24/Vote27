@@ -7,15 +7,17 @@ import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
+import HomeBanner from '../components/HomeBanner'
 import { BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
   isWeb: boolean
+  onShowInstall: () => void
 }
 
-export default function Accueil({ state: s, actions, isWeb }: Props) {
+export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
   const agendaEvents = useAgenda()
@@ -149,6 +151,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
+      <HomeBanner onShowInstall={onShowInstall} />
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
   )
