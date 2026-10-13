@@ -10,7 +10,7 @@ interface Props {
 
 const ORDER: { id: Tab; label: string; Icon: (p: { size?: number }) => JSX.Element }[] = [
   { id: 'accueil', label: 'Accueil', Icon: NavHomeIcon },
-  { id: 'isoloir', label: 'Isoloir & Programmes', Icon: NavIsoloirIcon },
+  { id: 'isoloir', label: 'Isoloir & Programme', Icon: NavIsoloirIcon },
   { id: 'agenda', label: 'Agenda', Icon: NavAgendaIcon },
   { id: 'quiz', label: 'Quiz', Icon: QuizIcon },
   { id: 'profil', label: 'Profil', Icon: NavProfilIcon },
