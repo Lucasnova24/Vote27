@@ -1,25 +1,7 @@
 import { useEffect, useState } from 'react'
 import { enablePush, getPushStatus, syncPushSubscription, type PushStatus } from '../lib/push'
 import { isStandalone } from '../lib/install'
-
-type Kind = 'install' | 'push'
-
-// Une bannière fermée (croix) ne revient plus, sur cet appareil.
-const closedKey = (k: Kind) => 'mpv_banner_closed_' + k
-
-function wasClosed(k: Kind): boolean {
-  try {
-    return localStorage.getItem(closedKey(k)) === '1'
-  } catch {
-    return false
-  }
-}
-
-function markClosed(k: Kind) {
-  try {
-    localStorage.setItem(closedKey(k), '1')
-  } catch { /* storage unavailable */ }
-}
+import { markClosed, wasClosed, type PromptKind as Kind } from '../lib/dismissed'
 
 interface Props {
   onShowInstall: () => void
@@ -50,7 +32,7 @@ export default function HomeBanner({ onShowInstall }: Props) {
 
   const kind: Kind | null =
     !isStandalone() && !closed.install ? 'install'
-    : status === 'off' && !closed.push ? 'push'
+    : status === 'off' && !closed.push && !isStandalone() ? 'push'
     : null
   if (!kind) return null
 
