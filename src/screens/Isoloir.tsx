@@ -94,7 +94,18 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
         ))}
       </section>
 
-      <section style={{ order: 2 }} aria-label="Mes votes">
+      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
+        <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
+          <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
+            {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
+          </span>
+        </span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats, d'après leur programme 2022 en attendant ceux de 2027. Touchez un candidat pour voir toutes ses mesures.</span>
+        <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
+      </button>
+
+      <section style={{ order: 3 }} aria-label="Mes votes">
         <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Mes votes</h2>
         <div className="card" style={{ padding: '6px 18px' }}>
           {weekly === null && <div style={{ fontSize: 13, color: '#5C617B', padding: '14px 0' }}>Chargement…</div>}
@@ -111,7 +122,7 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
   )
 
   const colB = (
-    <section className="card" style={{ order: 3, background: '#E8E0FF', borderColor: '#D3C6FA', boxShadow: 'none' }}>
+    <section className="card" style={{ order: 4, background: '#E8E0FF', borderColor: '#D3C6FA', boxShadow: 'none' }}>
       <div className="row" style={{ gap: 10, marginBottom: 8 }}>
         <span style={{ width: 36, height: 36, borderRadius: 12, background: '#6B45D9', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 20.5 12 12 21 3.5 12 12 3Z" /></svg>
@@ -130,16 +141,6 @@ export default function Isoloir({ state: s, actions, isWeb }: Props) {
         <div style={{ fontSize: 15, color: '#454A66', lineHeight: 1.5 }}>Ce qui est ouvert aujourd'hui, et ce qui est déjà tranché.</div>
       </div>
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
-      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
-        <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
-          <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
-            {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
-          </span>
-        </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats, d'après leur programme 2022 en attendant ceux de 2027. Touchez un candidat pour voir toutes ses mesures.</span>
-        <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
-      </button>
     </div>
   )
 }
