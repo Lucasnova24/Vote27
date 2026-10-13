@@ -1,3 +1,5 @@
+import { isoDay, parisDate } from '../lib/day'
+
 // Encart « soirée de vote » : résultat du 1er tour de la primaire (scrutin du 9 au 11 octobre 2026).
 // Pourcentages calculés sur les suffrages exprimés.
 const RESULTS = [
@@ -11,10 +13,14 @@ const EXPRIMES = RESULTS.reduce((n, r) => n + r.votes, 0)
 const fmt = (n: number) => n.toLocaleString('fr-FR')
 const pct = (v: number) => ((v / EXPRIMES) * 100).toFixed(2).replace('.', ',') + ' %'
 
+// Affiché jusqu'à la fin de la semaine du vote (dimanche 18 octobre 2026 inclus, heure de Paris).
+const LAST_DAY = '2026-10-18'
+export const electionNightVisible = (date = new Date()) => isoDay(parisDate(date)) <= LAST_DAY
+
 export default function ElectionNight() {
   const [winner, ...others] = RESULTS
   return (
-    <section className="card stk" style={{ gap: 14, background: '#171B3C', borderColor: '#171B3C', color: '#fff' }} aria-label="Soirée de vote : résultat de la primaire socialiste">
+    <section className="card stk" style={{ order: 2, gap: 14, background: '#171B3C', borderColor: '#171B3C', color: '#fff' }} aria-label="Soirée de vote : résultat de la primaire socialiste">
       <div className="row" style={{ gap: 8 }}>
         <span className="live" aria-hidden="true" />
         <span className="eyebrow" style={{ color: '#FFB4A6' }}>Soirée de vote · Primaire socialiste</span>

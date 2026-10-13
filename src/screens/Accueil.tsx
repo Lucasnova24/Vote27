@@ -8,7 +8,7 @@ import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
 import HomeBanner from '../components/HomeBanner'
-import ElectionNight from '../components/ElectionNight'
+import ElectionNight, { electionNightVisible } from '../components/ElectionNight'
 import { BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
@@ -95,7 +95,9 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
         </div>
       </section>
 
-      <section className="card" style={{ order: 4 }} aria-label="Candidats">
+      {electionNightVisible() && <ElectionNight />}
+
+      <section className="card" style={{ order: 5 }} aria-label="Candidats">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
           <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Candidats à la présidentielle</h2>
           <span style={{ fontSize: 13, color: '#5C617B' }}>{CANDS.length}</span>
@@ -119,7 +121,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
   const colB = (
     <>
       {nextEvt && (
-        <button type="button" onClick={nextClick} className="lift" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
+        <button type="button" onClick={nextClick} className="lift" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
           <span className="row" style={{ gap: 8 }}>
             {nextLive && <span className="live" aria-hidden="true" />}
             <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextCat!.label}</span>
@@ -132,7 +134,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
         </button>
       )}
 
-      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
+      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 4, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
         <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
           <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
@@ -152,7 +154,6 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
         <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
-      <ElectionNight />
       <HomeBanner onShowInstall={onShowInstall} />
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
