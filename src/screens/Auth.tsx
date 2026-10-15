@@ -2,7 +2,8 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import Brand from '../components/Brand'
-import { GoogleLogo } from '../components/Icons'
+import { AppleLogo, GoogleLogo } from '../components/Icons'
+import { isNative, nativePlatform } from '../lib/native'
 
 interface Props {
   state: AppState
@@ -19,7 +20,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
     : 'Connecte-toi pour retrouver ta progression et tes votes enregistrés.'
 
   return (
-    <div style={{ position: 'relative', display: 'flex', minHeight: '100dvh', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
+    <div style={{ position: 'relative', display: 'flex', minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
       {isWeb && (
         <div style={{ flex: 1, minWidth: 0, background: '#171B3C', color: '#fff', padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <Brand size={48} dark />
@@ -66,6 +67,11 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
             <button type="button" onClick={actions.authGoogle} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>
               <GoogleLogo size={17} />Continuer avec Google
             </button>
+            {!(isNative && nativePlatform === 'android') && (
+              <button type="button" onClick={actions.authApple} className="btn" style={{ background: '#000', color: '#fff' }}>
+                <AppleLogo size={17} />Continuer avec Apple
+              </button>
+            )}
           </div>
 
           <div className="row" style={{ gap: 12, color: '#5C617B', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>
@@ -123,6 +129,9 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
           </div>
 
           <div className="stk" style={{ alignItems: 'center', gap: 2 }}>
+            <button type="button" onClick={actions.authGuest} style={{ minHeight: 44, padding: '0 8px', fontSize: 14, fontWeight: 700, color: '#454A66', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+              Continuer sans compte
+            </button>
             <div style={{ fontSize: 14, color: '#454A66' }}>
               {isSignup ? 'Tu as déjà un compte ?' : 'Pas encore de compte ?'}{' '}
               <button type="button" onClick={actions.toggleAuthView} style={{ fontWeight: 700, color: ACCENT, minHeight: 44, padding: '0 4px', textDecoration: 'underline', textUnderlineOffset: '3px' }}>

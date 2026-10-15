@@ -61,6 +61,16 @@ URL under **Authentication → URL Configuration → Redirect URLs** (e.g.
 show a "ce fournisseur n'est pas activé" error — the code path is correct and ready, it
 just needs credentials this repo has no way to obtain on your behalf.
 
+## 4 bis. Suppression de compte (obligatoire pour les stores)
+
+Exécuter [`supabase/account_deletion.sql`](supabase/account_deletion.sql) dans le SQL editor
+(idempotent, à lancer après `schema.sql`). Il crée la RPC `delete_my_account()` (SECURITY DEFINER,
+accessible aux utilisateurs connectés, invités compris) qui supprime l'utilisateur dans `auth.users` ;
+toutes les tables du schéma référencent `profiles`/`auth.users` en `ON DELETE CASCADE`, et les tables
+hors dépôt portant un `user_id` sont nettoyées explicitement. Le bouton « Supprimer mon compte »
+(Profil, avec confirmation) appelle cette RPC. **Ce script n'est appliqué sur aucun projet distant
+automatiquement : à lancer toi-même.**
+
 ## 5. Install and run
 
 ```bash
@@ -80,3 +90,54 @@ src/useAppState.ts          Supabase-backed state + actions (auth, reads, writes
 src/App.tsx                 shell: loading gate, auth gate, nav, header, routing
 src/screens/                same screen-per-route structure as the local version
 ```
+
+## Applications mobiles (Capacitor : Android + iOS)
+
+L'app web est empaquetée avec [Capacitor](https://capacitorjs.com) (`capacitor.config.ts`, projets `android/` et `ios/`).
+
+```bash
+npm run cap:sync      # build web + copie vers android/ et ios/
+npm run cap:android   # ouvre Android Studio
+npm run cap:ios       # ouvre Xcode (macOS ; sinon compilation via Codemagic)
+npm run assets        # régénère icônes/splash depuis resources/
+```
+
+- **Identifiant d'application** : défini **uniquement** dans `app.config.json` (provisoire :
+  `com.novaparticipations.petitvote`, **à confirmer avant publication, définitif sur les stores**).
+  Après modification : `npm run app:set-id` (met à jour Gradle, manifest, Info.plist, projet Xcode, package Java).
+  Le schéma d'URL d'authentification en est dérivé.
+- **Pas de service worker** : le dépôt n'en contient pas (aucun `sw.js`, aucun enregistrement). Si un jour
+  il en faut un pour le web, ne pas l'enregistrer quand `Capacitor.isNativePlatform()` est vrai.
+- **Android** : voir [`store/ANDROID.md`](store/ANDROID.md) (keystore, AAB, workflow GitHub Actions, Play Console).
+- **Fiches stores, captures, politique de confidentialité** : voir [`store/`](store/README.md).
+
+### Connexion OAuth en natif (Google, Apple navigateur)
+
+Google interdit OAuth dans une WebView : en natif, l'app ouvre le navigateur système (`@capacitor/browser`)
+avec un schéma d'URL personnalisé, puis récupère le retour (`@capacitor/app` → `appUrlOpen`) et appelle
+`exchangeCodeForSession` (PKCE, activé uniquement en natif dans `src/lib/supabaseClient.ts`). Sur le web,
+comportement inchangé.
+
+**À faire dans Supabase** — Authentication → URL Configuration → Redirect URLs, ajouter :
+
+```
+com.novaparticipations.petitvote://auth-callback
+```
+(= `<appId>://auth-callback`, voir `OAUTH_REDIRECT_URL` dans `src/lib/native.ts`).
+
+### Sign in with Apple
+
+- **iOS natif** : feuille système via `@capacitor-community/apple-sign-in`, puis
+  `supabase.auth.signInWithIdToken({ provider: 'apple', token, nonce })` (nonce brut → Supabase, son SHA-256 → Apple).
+  L'entitlement est déjà dans `ios/App/App/App.entitlements`.
+- **Web / autres** : flux navigateur `signInWithOAuth({ provider: 'apple' })`. Le bouton est masqué sur Android natif.
+- **Configuration requise (manuelle)** :
+  1. Apple Developer : activer la capacité *Sign in with Apple* sur l'App ID (= bundle ID) ; pour le flux web, créer un *Services ID* et une clé privée `.p8`.
+  2. Supabase → Authentication → Providers → Apple : activer et renseigner **Client IDs** = bundle ID (et Services ID si web ; liste séparée par des virgules), secret généré à partir de la clé `.p8` (expire tous les 6 mois max).
+  3. Redirect URL Apple (web) : `https://<projet>.supabase.co/auth/v1/callback`.
+
+### Éléments natifs / mobile
+
+- Haptique (`@capacitor/haptics`) sur navigation, vote, quiz, pronostics ; partage natif (`@capacitor/share`) dans Profil.
+- Zones sûres (`env(safe-area-inset-*)`), StatusBar et SplashScreen (`src/lib/nativeInit.ts`).
+- Sheep3D (Three.js) retombe sur l'image statique si WebGL est indisponible ou si le contexte est perdu.

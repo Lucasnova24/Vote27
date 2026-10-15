@@ -8,6 +8,11 @@ import type {
 import type { AppState, AuthProvider, Route, Tab } from './types'
 import { currentWeekStart } from './lib/week'
 import { currentDayStart } from './lib/day'
+import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
+import { SignInWithApple } from '@capacitor-community/apple-sign-in'
+import { OAUTH_REDIRECT_URL, hapticError, hapticSuccess, hapticTap, isNative, nativePlatform, sha256Hex } from './lib/native'
+import appConfig from '../app.config.json'
 
 const initialState: AppState = {
   loading: true, authBusy: false,
@@ -207,7 +212,41 @@ export function useAppState() {
     }
   }, [])
 
-  const go = (tab: Tab) => () => update({ tab, route: null })
+  // Natif : retour OAuth (Google/Apple via navigateur) par schéma d'URL personnalisé.
+  useEffect(() => {
+    if (!isNative) return
+    let active = true
+    const handle = CapApp.addListener('appUrlOpen', ({ url }) => {
+      if (!url.startsWith(OAUTH_REDIRECT_URL)) return
+      Browser.close().catch(() => {})
+      const parsed = new URL(url.replace('#', url.includes('?') ? '&' : '?'))
+      const p = parsed.searchParams
+      const fail = (msg: string) => active && update({ authBusy: false, authError: mapAuthError(msg) })
+      const err = p.get('error_description') || p.get('error')
+      if (err) return fail(err)
+      const code = p.get('code')
+      const access = p.get('access_token')
+      const refresh = p.get('refresh_token')
+      if (code) {
+        supabase.auth.exchangeCodeForSession(code).then(({ error }) => { if (error) fail(error.message) })
+      } else if (access && refresh) {
+        supabase.auth.setSession({ access_token: access, refresh_token: refresh }).then(({ error }) => { if (error) fail(error.message) })
+      } else {
+        fail('Connexion interrompue.')
+      }
+    })
+    // Navigateur fermé sans retour : on libère l'écran de connexion.
+    const closed = Browser.addListener('browserFinished', () => {
+      if (active && stateRef.current.authBusy && !stateRef.current.authed) update({ authBusy: false })
+    })
+    return () => {
+      active = false
+      handle.then((h) => h.remove())
+      closed.then((h) => h.remove())
+    }
+  }, [])
+
+  const go = (tab: Tab) => () => { hapticTap(); update({ tab, route: null }) }
   const openRoute = (route: Route) => () => update({ route })
   const back = () => update({ route: null })
   const restore = (patch: Partial<AppState>) => update(patch)
@@ -217,6 +256,7 @@ export function useAppState() {
   const vote = (choice: 'oui' | 'non', questionCode: string) => () => {
     const wasVoted = stateRef.current.voteChoice !== null
     const uid = userIdRef.current
+    hapticSuccess()
     update((s) => ({ voteChoice: choice, points: wasVoted ? s.points : s.points + 15 }))
     if (!uid) return
     supabase
@@ -244,10 +284,12 @@ export function useAppState() {
     const item = s.dailyQuiz[s.quizI]
     const uid = userIdRef.current
     if (!item || item.my_answered_at || !uid) return
+    hapticTap()
     update({ quizSel: choiceId })
     supabase.rpc('submit_answer', { p_question_id: item.question_id, p_choice_id: choiceId }).then(({ data, error }) => {
       if (error) { logIfError('submit_answer')({ error }); return }
       const row = (data as { is_correct: boolean; on_time: boolean; answer: string; explanation: string | null }[])[0]
+      if (row.is_correct) hapticSuccess(); else hapticError()
       update((s2) => {
         const dailyQuiz = s2.dailyQuiz.map((q, idx) => idx === s2.quizI
           ? { ...q, my_choice_id: choiceId, my_is_correct: row.is_correct, my_answered_at: new Date().toISOString(), answer: row.answer, explanation: row.explanation }
@@ -303,6 +345,7 @@ export function useAppState() {
   const setTheme = (t: string) => () => update({ theme: t })
 
   const setDebPick = (eventSlug: string, candidateSlug: string) => () => {
+    hapticSuccess()
     update({ debEvent: eventSlug, debPick: candidateSlug })
     const uid = userIdRef.current
     if (uid) {
@@ -316,6 +359,7 @@ export function useAppState() {
   // A weekly pick is final until next Sunday (no update policy server-side).
   const pickFirstRound = (i: number) => () => {
     if (stateRef.current.firstRoundPick !== null) return
+    hapticSuccess()
     update({ firstRoundPick: i })
     const uid = userIdRef.current
     if (uid) {
@@ -331,11 +375,73 @@ export function useAppState() {
     return { reminders: on ? s.reminders.filter((t) => t !== title) : s.reminders.concat([title]) }
   })
 
-  const authGoogle = () => {
+  // OAuth par navigateur. Web : redirection pleine page (inchangé). Natif : on
+  // récupère l'URL d'autorisation sans rediriger la WebView (Google l'interdit)
+  // et on l'ouvre dans le navigateur système (@capacitor/browser) ; le retour est
+  // traité par le listener appUrlOpen ci-dessus.
+  const oauthBrowser = (provider: 'google' | 'apple') => {
     update({ authBusy: true, authError: null })
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }).then(({ error }) => {
+    supabase.auth.signInWithOAuth({
+      provider,
+      options: isNative
+        ? { redirectTo: OAUTH_REDIRECT_URL, skipBrowserRedirect: true }
+        : { redirectTo: window.location.origin },
+    }).then(({ data, error }) => {
+      if (error) return update({ authBusy: false, authError: mapAuthError(error.message) })
+      if (isNative && data?.url) Browser.open({ url: data.url }).catch((e) => update({ authBusy: false, authError: String(e?.message ?? e) }))
+    })
+  }
+
+  const authGoogle = () => oauthBrowser('google')
+
+  // iOS natif : Sign in with Apple via la feuille système, puis signInWithIdToken.
+  // Le nonce brut va à Supabase, son hash SHA-256 à Apple. Ailleurs : flux navigateur.
+  const authApple = () => {
+    if (!(isNative && nativePlatform === 'ios')) return oauthBrowser('apple')
+    update({ authBusy: true, authError: null })
+    ;(async () => {
+      try {
+        const rawNonce = crypto.randomUUID() + crypto.randomUUID()
+        const { response } = await SignInWithApple.authorize({
+          clientId: appConfig.appId,
+          redirectURI: 'https://invalid.example/unused', // requis par le plugin, ignoré sur iOS natif
+          scopes: 'email name',
+          nonce: await sha256Hex(rawNonce),
+        })
+        const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: response.identityToken, nonce: rawNonce })
+        if (error) return update({ authBusy: false, authError: mapAuthError(error.message) })
+        // Apple ne fournit le nom qu'à la toute première autorisation : on le garde dans les métadonnées.
+        if (response.givenName || response.familyName) {
+          await supabase.auth.updateUser({ data: { given_name: response.givenName ?? '', family_name: response.familyName ?? '' } })
+        }
+      } catch (e) {
+        const msg = String((e as { message?: string })?.message ?? e)
+        // Annulation par l'utilisateur : pas d'erreur affichée.
+        update({ authBusy: false, authError: /cancel|1001/i.test(msg) ? null : mapAuthError(msg) })
+      }
+    })()
+  }
+
+  // Accès invité (anonyme) — sert aussi d'accès démo pour les relecteurs des stores.
+  const authGuest = () => {
+    update({ authBusy: true, authError: null })
+    supabase.auth.signInAnonymously().then(({ error }) => {
       if (error) update({ authBusy: false, authError: mapAuthError(error.message) })
     })
+  }
+
+  // Suppression définitive du compte (exigée par Apple et Google) : RPC
+  // delete_my_account (supabase/account_deletion.sql) puis déconnexion locale.
+  const deleteAccount = async (): Promise<string | null> => {
+    const { error } = await supabase.rpc('delete_my_account')
+    if (error) {
+      logIfError('delete_my_account')({ error })
+      return /function .*delete_my_account|does not exist|not find/i.test(error.message)
+        ? "La suppression n'est pas encore activée sur ce serveur."
+        : 'La suppression a échoué. Réessaie ou contacte le support.'
+    }
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+    return null
   }
 
   const submitAuth = () => {
@@ -441,7 +547,7 @@ export function useAppState() {
       go, restore, openRoute, openDebate, openAgendaEvent, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
-      authGoogle, submitAuth, toggleAuthView,
+      authGoogle, authApple, authGuest, deleteAccount, submitAuth, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,

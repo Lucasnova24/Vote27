@@ -4,6 +4,8 @@ html, body {
 }
 
 body {
+  /* Zones sûres (encoche, barre d'état, coins arrondis) en appli native / PWA */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
   background: #F6F4EE;
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;

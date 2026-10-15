@@ -16,7 +16,7 @@ export default function LoadingScreen() {
       aria-label="Chargement"
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        minHeight: '100dvh', background: '#F5F0E6', gap: 8, padding: 24,
+        minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))', background: '#F5F0E6', gap: 8, padding: 24,
       }}
     >
       <style>{`

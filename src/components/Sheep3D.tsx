@@ -25,6 +25,8 @@ export default function Sheep3D({ fallback }: { fallback: ReactNode }) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     renderer.setClearColor(new Color('#F5F0E6'), 0)
+    // Perte du contexte WebGL (fréquente en WebView) : on retombe sur l'image statique.
+    renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); setFailed(true) })
     el.appendChild(renderer.domElement)
     renderer.domElement.style.cssText = 'width:100%;height:100%;display:block'
 

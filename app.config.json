@@ -1,0 +1,5 @@
+{
+  "appId": "com.novaparticipations.petitvote",
+  "appName": "Mon Petit Vote 2027",
+  "_note": "SEUL endroit où l'identifiant d'application est défini. PROVISOIRE : à confirmer avant toute publication (définitif sur les stores). Après modification, lancer `npm run app:set-id`."
+}

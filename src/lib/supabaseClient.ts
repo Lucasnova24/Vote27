@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { isNative } from './native'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -18,5 +19,9 @@ export const supabase = createClient(url, anonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    // En natif, le retour OAuth arrive par schéma d'URL (appUrlOpen) et est traité
+    // dans useAppState : PKCE + pas de détection d'URL (il n'y a pas d'URL web).
+    // Sur le web, comportement inchangé.
+    ...(isNative ? { flowType: 'pkce' as const, detectSessionInUrl: false } : {}),
   },
 })
