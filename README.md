@@ -102,11 +102,11 @@ npm run cap:ios       # ouvre Xcode (macOS ; sinon compilation via Codemagic)
 npm run assets        # régénère icônes/splash depuis resources/
 ```
 
-- **Identifiant d'application** : défini **uniquement** dans `app.config.json` (provisoire :
-  `com.novaparticipations.petitvote`, **à confirmer avant publication, définitif sur les stores**).
+- **Identifiant d'application** : défini **uniquement** dans `app.config.json` (`com.novaparticipations.petitvote`, **confirmé, définitif sur les stores**).
   Après modification : `npm run app:set-id` (met à jour Gradle, manifest, Info.plist, projet Xcode, package Java).
   Le schéma d'URL d'authentification en est dérivé.
 - **Service worker (notifications push web)** : `public/sw.js` n'est enregistré que sur le web ; en natif (`Capacitor.isNativePlatform()`), `registerServiceWorker()` ne fait rien, la carte de notifications est masquée et les tuto d'installation PWA ne s'affichent pas.
+- **iOS** : build sans Mac via Codemagic, voir [`store/IOS.md`](store/IOS.md) et `codemagic.yaml`.
 - **Android** : voir [`store/ANDROID.md`](store/ANDROID.md) (keystore, AAB, workflow GitHub Actions, Play Console).
 - **Fiches stores, captures, politique de confidentialité** : voir [`store/`](store/README.md).
 

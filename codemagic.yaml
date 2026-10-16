@@ -1,0 +1,55 @@
+# Build iOS (IPA signé + envoi TestFlight) sur Codemagic — voir store/IOS.md.
+# Aucun déclencheur automatique : lancer le workflow à la main depuis Codemagic
+# (le plan gratuit offre ~500 min macOS/mois ; un build dure ~10-15 min).
+workflows:
+  ios-testflight:
+    name: iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 40
+    integrations:
+      # Nom EXACT de l'intégration « App Store Connect API key » créée dans
+      # Codemagic (Teams > Personal account > Integrations).
+      app_store_connect: Codemagic
+    environment:
+      node: 22
+      xcode: latest
+      groups:
+        # Groupe de variables Codemagic « supabase_public » :
+        #   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (clé anon publique)
+        - supabase_public
+      vars:
+        # Identifiant de l'app (Apple ID numérique) : App Store Connect > Informations sur l'app.
+        APP_STORE_APPLE_ID: "0000000000"
+      ios_signing:
+        distribution_type: app_store
+        # Doit être égal à app.config.json > appId
+        bundle_identifier: com.novaparticipations.petitvote
+    scripts:
+      - name: Installer les dépendances
+        script: npm ci
+      - name: Build web + sync Capacitor (iOS)
+        script: |
+          npm run build
+          npx cap sync ios
+      - name: Appliquer la signature
+        script: xcode-project use-profiles
+      - name: Numéro de build = dernier + 1
+        script: |
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          NEXT=$(( ${LATEST:-0} + 1 ))
+          echo "Build number: $NEXT"
+          perl -pi -e "s/CURRENT_PROJECT_VERSION = [0-9]+;/CURRENT_PROJECT_VERSION = $NEXT;/g" ios/App/App.xcodeproj/project.pbxproj
+      - name: Construire l'IPA
+        script: |
+          xcode-project build-ipa \
+            --project "ios/App/App.xcodeproj" \
+            --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # Soumission à la review depuis App Store Connect (pas automatique).
+        submit_to_app_store: false

@@ -5,6 +5,7 @@
 | [`fiches-stores.md`](fiches-stores.md) | Descriptions courte/longue, mots-clés, notes pour les relecteurs (accès démo) |
 | [`captures-ecran.md`](captures-ecran.md) | Checklist des captures et visuels, tailles exigées |
 | [`ANDROID.md`](ANDROID.md) | Keystore, Play App Signing, build de l'AAB, checklist Play Console (compte organisation) |
+| [`IOS.md`](IOS.md) | Build iOS sans Mac via Codemagic (`../codemagic.yaml`), Apple Developer, App Store Connect, review |
 | [`../public/confidentialite.html`](../public/confidentialite.html) | Modèle de politique de confidentialité (HTML statique) |
 | [`../public/suppression-compte.html`](../public/suppression-compte.html) | Page publique de demande de suppression de compte (HTML statique) |
 
@@ -28,6 +29,6 @@ d'opinions politiques (voir la note dans la politique de confidentialité).
 
 ## Identifiant d'application
 
-`com.novaparticipations.petitvote` est **provisoire** (`app.config.json`). Il est **définitif** une fois
-publié sur Google Play / App Store : à confirmer avant tout envoi. Pour le changer : modifier
+`com.novaparticipations.petitvote` est **confirmé** (`app.config.json`) et définitif une fois
+publié sur Google Play / App Store. Pour le changer : modifier
 `app.config.json` puis `npm run app:set-id`.
