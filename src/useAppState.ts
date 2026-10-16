@@ -16,7 +16,7 @@ import appConfig from '../app.config.json'
 import { markInstallPending } from './lib/install'
 
 const initialState: AppState = {
-  loading: true, authBusy: false,
+  loading: true, authBusy: false, opinionsConsent: false, consentOpen: false,
   tab: 'accueil', route: null, debateSlug: null, agendaSlug: null, candidateName: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0, dailyQuiz: [],
@@ -141,6 +141,7 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     tab: 'accueil', route: null,
     points: profile?.points ?? 0,
     notifRead: profile?.notif_read ?? false,
+    opinionsConsent: !!profile?.opinions_consent_at,
     quizCorrectTotal: quizStats?.correct ?? 0,
     quizAttemptsTotal: quizStats?.answered ?? 0,
     authProvider: providerFromUser(user),
@@ -257,7 +258,42 @@ export function useAppState() {
   // from a candidate page, go back to the programmes comparison
   const backToProgrammes = () => update({ route: 'programmes' })
 
-  const vote = (choice: 'oui' | 'non', questionCode: string) => () => {
+  // Consentement explicite (RGPD art. 9) : les votes, affinités et pronostics peuvent
+  // révéler des opinions politiques. Avant la première saisie, on affiche un écran de
+  // consentement ; l'action demandée est rejouée si l'utilisateur accepte, abandonnée sinon.
+  const pendingConsentRef = useRef<(() => void) | null>(null)
+  const withConsent = (fn: () => void) => {
+    if (stateRef.current.opinionsConsent) return fn()
+    pendingConsentRef.current = fn
+    update({ consentOpen: true })
+  }
+  const acceptConsent = () => {
+    const uid = userIdRef.current
+    update({ opinionsConsent: true, consentOpen: false })
+    if (uid) {
+      supabase.from('profiles').update({ opinions_consent_at: new Date().toISOString() }).eq('id', uid)
+        .then(logIfError('profiles opinions_consent_at (supabase/consent.sql appliqué ?)'))
+    }
+    const fn = pendingConsentRef.current
+    pendingConsentRef.current = null
+    fn?.()
+  }
+  const refuseConsent = () => {
+    pendingConsentRef.current = null
+    update({ consentOpen: false, bMode: null })
+  }
+  // Retrait du consentement : efface les réponses (reset_progress) puis la trace du consentement.
+  const withdrawConsent = () => {
+    const uid = userIdRef.current
+    resetAll()
+    update({ opinionsConsent: false })
+    if (uid) {
+      supabase.from('profiles').update({ opinions_consent_at: null }).eq('id', uid)
+        .then(logIfError('profiles opinions_consent_at reset'))
+    }
+  }
+
+  const vote = (choice: 'oui' | 'non', questionCode: string) => () => withConsent(() => {
     const wasVoted = stateRef.current.voteChoice !== null
     const uid = userIdRef.current
     hapticSuccess()
@@ -271,7 +307,7 @@ export function useAppState() {
         update((s) => ({ voteSaved: s.voteSaved + 1 }))
       })
     if (!wasVoted) supabase.rpc('increment_points', { delta: 15 }).then(logIfError('increment_points'))
-  }
+  })
 
   // Real quiz bank: the correct choice is never sent to the client ahead of
   // time (public.get_daily_quiz's `choices` carry no is_correct flag) — the
@@ -321,7 +357,7 @@ export function useAppState() {
   // `total` is the length of whichever question list is currently being run
   // (20 for the short quiz, 100 for the long one) — the component knows it
   // since it's the one that fetched the question bank.
-  const bAnswer = (questionId: string, v: number, total: number) => () => {
+  const bAnswer = (questionId: string, v: number, total: number) => () => withConsent(() => {
     const uid = userIdRef.current
     update((s) => {
       const a = { ...s.bAnswers, [questionId]: v }
@@ -334,9 +370,9 @@ export function useAppState() {
       }
       return done ? { bAnswers: a, bDone: true, bMode: null } : { bAnswers: a, bI: s.bI + 1 }
     })
-  }
+  })
 
-  const bStart = (mode: 'court' | 'complet') => () => update({ bMode: mode, bI: 0, bAnswers: {} })
+  const bStart = (mode: 'court' | 'complet') => () => withConsent(() => update({ bMode: mode, bI: 0, bAnswers: {} }))
   const bRestart = () => update({ bMode: null, bI: 0, bAnswers: {}, bDone: false })
 
   const markRead = () => {
@@ -348,7 +384,7 @@ export function useAppState() {
   const setFilter = (f: string) => () => update({ filter: f })
   const setTheme = (t: string) => () => update({ theme: t })
 
-  const setDebPick = (eventSlug: string, candidateSlug: string) => () => {
+  const setDebPick = (eventSlug: string, candidateSlug: string) => () => withConsent(() => {
     hapticSuccess()
     update({ debEvent: eventSlug, debPick: candidateSlug })
     const uid = userIdRef.current
@@ -358,10 +394,10 @@ export function useAppState() {
         .upsert({ user_id: uid, event_slug: eventSlug, candidate_slug: candidateSlug, candidate_index: null })
         .then(logIfError('debate_predictions upsert'))
     }
-  }
+  })
 
   // A weekly pick is final until next Sunday (no update policy server-side).
-  const pickFirstRound = (i: number) => () => {
+  const pickFirstRound = (i: number) => () => withConsent(() => {
     if (stateRef.current.firstRoundPick !== null) return
     hapticSuccess()
     update({ firstRoundPick: i })
@@ -372,7 +408,7 @@ export function useAppState() {
         .insert({ user_id: uid, week_start: currentWeekStart(), candidate_index: i })
         .then(logIfError('first_round_picks insert'))
     }
-  }
+  })
 
   const toggleReminder = (title: string) => () => update((s) => {
     const on = s.reminders.indexOf(title) !== -1
@@ -559,7 +595,7 @@ export function useAppState() {
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
-      logout, resetAll,
+      logout, resetAll, acceptConsent, refuseConsent, withdrawConsent,
     },
   }
 }

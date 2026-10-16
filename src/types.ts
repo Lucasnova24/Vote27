@@ -36,6 +36,11 @@ export interface AppState {
   filter: string
   theme: string
 
+  // consentement explicite au traitement des réponses (opinions politiques), profiles.opinions_consent_at
+  opinionsConsent: boolean
+  // écran de consentement affiché (client-only)
+  consentOpen: boolean
+
   // durable data, backed by Supabase
   points: number
   notifRead: boolean

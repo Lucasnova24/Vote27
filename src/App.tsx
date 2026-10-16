@@ -28,6 +28,7 @@ import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
 import LoadingScreen from './components/LoadingScreen'
 import NotificationsPrompt from './components/NotificationsPrompt'
+import ConsentDialog from './components/ConsentDialog'
 
 export default function App() {
   const { state: s, actions } = useAppState()
@@ -138,6 +139,7 @@ export default function App() {
       </div>
 
       {s.tab === 'accueil' && !s.route && <NotificationsPrompt />}
+      {s.consentOpen && <ConsentDialog actions={actions} />}
     </div>
   )
 }
