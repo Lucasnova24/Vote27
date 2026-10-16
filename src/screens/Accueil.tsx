@@ -7,15 +7,18 @@ import { debateStarted, tonightDebate, useNow } from '../lib/debate'
 import { gapPage, h1Size } from '../styles'
 import Grid2 from '../components/Grid2'
 import StatusTag from '../components/StatusTag'
+import HomeBanner from '../components/HomeBanner'
+import ElectionNight, { electionNightVisible } from '../components/ElectionNight'
 import { BoussoleIcon, ChevronRight, CheckIcon, FirstRoundIcon, QuizIcon, VoteIcon } from '../components/Icons'
 
 interface Props {
   state: AppState
   actions: AppActions
   isWeb: boolean
+  onShowInstall: () => void
 }
 
-export default function Accueil({ state: s, actions, isWeb }: Props) {
+export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Props) {
   const voteDone = s.voteChoice !== null
   const gap = gapPage(isWeb)
   const agendaEvents = useAgenda()
@@ -92,7 +95,9 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         </div>
       </section>
 
-      <section className="card" style={{ order: 4 }} aria-label="Candidats">
+      {electionNightVisible() && <ElectionNight />}
+
+      <section className="card" style={{ order: 5 }} aria-label="Candidats">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
           <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Candidats à la présidentielle</h2>
           <span style={{ fontSize: 13, color: '#5C617B' }}>{CANDS.length}</span>
@@ -116,7 +121,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
   const colB = (
     <>
       {nextEvt && (
-        <button type="button" onClick={nextClick} className="lift" style={{ order: 2, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
+        <button type="button" onClick={nextClick} className="lift" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
           <span className="row" style={{ gap: 8 }}>
             {nextLive && <span className="live" aria-hidden="true" />}
             <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextCat!.label}</span>
@@ -129,14 +134,14 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         </button>
       )}
 
-      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
+      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 4, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
         <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
           <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">
             {CANDS.slice(0, 5).map((c) => <span key={c.name} style={{ width: 30, height: 30, borderRadius: '50%', border: '2.5px solid #171B3C', marginLeft: -10, background: c.color }} />)}
           </span>
         </span>
-        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats. Les positions sourcées sont ajoutées à mesure que les programmes officiels sont publiés.</span>
+        <span style={{ display: 'block', fontSize: 14.5, lineHeight: 1.5, color: '#B9BEDD', marginTop: 10 }}>Six thèmes, tous les candidats, d'après leur programme 2022 en attendant ceux de 2027. Touchez un candidat pour voir toutes ses mesures.</span>
         <span className="btn" style={{ marginTop: 16, background: '#fff', color: '#171B3C' }}>Lire les programmes<ChevronRight size={16} /></span>
       </button>
 
@@ -149,6 +154,7 @@ export default function Accueil({ state: s, actions, isWeb }: Props) {
         <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
+      <HomeBanner onShowInstall={onShowInstall} />
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
   )

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppState } from './useAppState'
 import { useIsWeb } from './useIsWeb'
 import { ACCENT, SHOW_POINTS } from './data'
@@ -6,6 +6,8 @@ import { firstRoundCountdownLabel, todayLabelFr } from './lib/countdown'
 import { getDisplayName, getInitials } from './lib/displayName'
 import { levelFromPoints, levelProgress } from './lib/leveling'
 import Auth from './screens/Auth'
+import InstallGuide from './screens/InstallGuide'
+import { installPending, clearInstallPending } from './lib/install'
 import Accueil from './screens/Accueil'
 import Isoloir from './screens/Isoloir'
 import Agenda from './screens/Agenda'
@@ -19,14 +21,17 @@ import FirstRound from './screens/FirstRound'
 import Debat from './screens/Debat'
 import AgendaEvent from './screens/AgendaEvent'
 import Programmes from './screens/Programmes'
+import Candidat from './screens/Candidat'
 import CompleteProfile from './screens/CompleteProfile'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
 import LoadingScreen from './components/LoadingScreen'
+import NotificationsPrompt from './components/NotificationsPrompt'
 
 export default function App() {
   const { state: s, actions } = useAppState()
+  const [showInstall, setShowInstall] = useState(installPending)
   const isWeb = useIsWeb()
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -36,11 +41,11 @@ export default function App() {
 
   // Mirror in-app navigation into the browser history so the back button /
   // swipe-back moves between screens instead of leaving the app.
-  const navKey = s.route ? `${s.route}:${s.debateSlug ?? ''}:${s.agendaSlug ?? ''}` : s.tab
+  const navKey = s.route ? `${s.route}:${s.debateSlug ?? ''}:${s.agendaSlug ?? ''}:${s.candidateName ?? ''}` : s.tab
   const lastNav = useRef<string | null>(null)
   useEffect(() => {
     if (!s.authed) return
-    const entry = { tab: s.tab, route: s.route, debateSlug: s.debateSlug, agendaSlug: s.agendaSlug }
+    const entry = { tab: s.tab, route: s.route, debateSlug: s.debateSlug, agendaSlug: s.agendaSlug, candidateName: s.candidateName }
     if (lastNav.current === null) history.replaceState(entry, '')
     else if (lastNav.current !== navKey) history.pushState(entry, '')
     lastNav.current = navKey
@@ -49,7 +54,7 @@ export default function App() {
     const onPop = (e: PopStateEvent) => {
       const h = e.state
       if (!h || !('tab' in h)) return
-      lastNav.current = h.route ? `${h.route}:${h.debateSlug ?? ''}:${h.agendaSlug ?? ''}` : h.tab
+      lastNav.current = h.route ? `${h.route}:${h.debateSlug ?? ''}:${h.agendaSlug ?? ''}:${h.candidateName ?? ''}` : h.tab
       actions.restore(h)
     }
     window.addEventListener('popstate', onPop)
@@ -69,6 +74,8 @@ export default function App() {
     return <Auth state={s} actions={actions} isWeb={isWeb} />
   }
 
+  if (showInstall) return <InstallGuide isWeb={isWeb} onDone={() => { clearInstallPending(); setShowInstall(false) }} />
+
   let screen
   if (s.route === 'vote') screen = <VoteScreen state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'quiz') screen = <QuizRun state={s} actions={actions} isWeb={isWeb} />
@@ -77,9 +84,10 @@ export default function App() {
   else if (s.route === 'firstround') screen = <FirstRound state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'debat') screen = <Debat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'agendaEvent') screen = <AgendaEvent state={s} actions={actions} isWeb={isWeb} />
+  else if (s.route === 'candidat') screen = <Candidat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'programmes') screen = <Programmes state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'completeprofile') screen = <CompleteProfile state={s} actions={actions} isWeb={isWeb} />
-  else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} />
+  else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} onShowInstall={() => setShowInstall(true)} />
   else if (s.tab === 'isoloir') screen = <Isoloir state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'agenda') screen = <Agenda state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'quiz') screen = <QuizTab state={s} actions={actions} isWeb={isWeb} />
@@ -128,6 +136,8 @@ export default function App() {
 
         {!isWeb && <BottomNav activeTab={s.tab} hasRoute={!!s.route} go={actions.go} />}
       </div>
+
+      {s.tab === 'accueil' && !s.route && <NotificationsPrompt />}
     </div>
   )
 }

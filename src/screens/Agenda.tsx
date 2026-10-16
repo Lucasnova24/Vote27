@@ -24,6 +24,15 @@ const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.',
 // What the date box shows, from most to least precise: the exact time,
 // otherwise the day, otherwise the month — and the free label as a last resort.
 function whenLabel(e: AgendaRow): { main: string; sub: string | null } {
+  // Multi-day event: show the span ("12–14" / "oct.") rather than a single day or time.
+  if (e.event_date && e.end_date && e.end_date > e.event_date && (e.date_precision === 'exact' || e.date_precision === 'jour')) {
+    const [, m1, d1] = e.event_date.split('-').map(Number)
+    const [, m2, d2] = e.end_date.split('-').map(Number)
+    return {
+      main: d1 + '–' + d2,
+      sub: m1 === m2 ? MONTHS_SHORT[m1 - 1] : MONTHS_SHORT[m1 - 1].replace('.', '') + '–' + MONTHS_SHORT[m2 - 1].replace('.', ''),
+    }
+  }
   if (e.start_time && e.event_date && e.date_precision === 'exact') return { main: e.start_time.slice(0, 5), sub: null }
   if (e.event_date && (e.date_precision === 'exact' || e.date_precision === 'jour')) {
     const [, m, d] = e.event_date.split('-').map(Number)

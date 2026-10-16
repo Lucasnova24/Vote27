@@ -18,18 +18,32 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
   const question = useDailyVoteQuestion()
   const [tally, setTally] = useState<{ oui: number; non: number } | null>(null)
 
-  // Real tally of every ballot cast in the app (get_vote_results RPC).
+  // Real tally of every ballot cast in the app (get_vote_results RPC),
+  // refreshed every few seconds so other voters' ballots show up live.
   useEffect(() => {
     if (!voteDone) return
-    supabase.rpc('get_vote_results').then(({ data, error }) => {
-      if (error) {
-        console.error('[supabase] get_vote_results:', error.message)
-        return
-      }
-      const rows = (data as { choice: string; total: number }[] | null) ?? []
-      const get = (c: string) => Number(rows.find((r) => r.choice === c)?.total ?? 0)
-      setTally({ oui: get('oui'), non: get('non') })
-    })
+    let active = true
+    const load = () => {
+      if (document.hidden) return
+      supabase.rpc('get_vote_results').then(({ data, error }) => {
+        if (!active) return
+        if (error) {
+          console.error('[supabase] get_vote_results:', error.message)
+          return
+        }
+        const rows = (data as { choice: string; total: number }[] | null) ?? []
+        const get = (c: string) => Number(rows.find((r) => r.choice === c)?.total ?? 0)
+        setTally({ oui: get('oui'), non: get('non') })
+      })
+    }
+    load()
+    const id = setInterval(load, 3000)
+    document.addEventListener('visibilitychange', load)
+    return () => {
+      active = false
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', load)
+    }
   }, [voteDone, s.voteSaved])
 
   const total = tally ? tally.oui + tally.non : 0
@@ -80,9 +94,6 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
                 <div className="bar" style={{ height: 14 }}><i style={{ width: r.pct, background: r.color }} /></div>
               </div>
             ))}
-            {tally !== null && (
-              <div className="num" style={{ fontSize: 13, color: '#5C617B', paddingTop: 12, borderTop: '1px solid #EDE9DF' }}>{total + (total > 1 ? ' bulletins' : ' bulletin')}</div>
-            )}
           </div>
           <div className="pop" style={{ background: '#171B3C', color: '#fff', borderRadius: 22, padding: 22, textAlign: 'center' }}>
             <div className="dsp num" style={{ fontSize: 44, fontWeight: 800, color: '#F0A03C', lineHeight: 1 }}>+15 ◆</div>

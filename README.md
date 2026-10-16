@@ -106,8 +106,7 @@ npm run assets        # régénère icônes/splash depuis resources/
   `com.novaparticipations.petitvote`, **à confirmer avant publication, définitif sur les stores**).
   Après modification : `npm run app:set-id` (met à jour Gradle, manifest, Info.plist, projet Xcode, package Java).
   Le schéma d'URL d'authentification en est dérivé.
-- **Pas de service worker** : le dépôt n'en contient pas (aucun `sw.js`, aucun enregistrement). Si un jour
-  il en faut un pour le web, ne pas l'enregistrer quand `Capacitor.isNativePlatform()` est vrai.
+- **Service worker (notifications push web)** : `public/sw.js` n'est enregistré que sur le web ; en natif (`Capacitor.isNativePlatform()`), `registerServiceWorker()` ne fait rien, la carte de notifications est masquée et les tuto d'installation PWA ne s'affichent pas.
 - **Android** : voir [`store/ANDROID.md`](store/ANDROID.md) (keystore, AAB, workflow GitHub Actions, Play Console).
 - **Fiches stores, captures, politique de confidentialité** : voir [`store/`](store/README.md).
 
@@ -141,3 +140,46 @@ com.novaparticipations.petitvote://auth-callback
 - Haptique (`@capacitor/haptics`) sur navigation, vote, quiz, pronostics ; partage natif (`@capacitor/share`) dans Profil.
 - Zones sûres (`env(safe-area-inset-*)`), StatusBar et SplashScreen (`src/lib/nativeInit.ts`).
 - Sheep3D (Three.js) retombe sur l'image statique si WebGL est indisponible ou si le contexte est perdu.
+
+## Notifications push (mobile)
+
+L'app envoie des notifications push (Web Push / PWA). Les messages se rédigent dans une
+table Supabase éditable comme un tableur : **`notifications_planning`**.
+
+### Écrire / planifier une notification
+
+Supabase Studio → **Table Editor → `notifications_planning`** → *Insert row*, ou
+*Import data from CSV* avec [`supabase/notifications_planning_modele.csv`](supabase/notifications_planning_modele.csv)
+(tu peux le remplir dans Excel et l'enregistrer en CSV UTF-8).
+
+| Colonne | Rôle |
+|---|---|
+| `categorie` | `question_du_jour`, `evenements`, `vote_semaine` ou `autre` |
+| `titre` / `message` | texte affiché sur le téléphone |
+| `lien` | laisser `/` |
+| `date_envoi` / `heure_envoi` | quand l'envoyer, **heure de Paris** (ex. `2026-10-12` / `08:30`) |
+| `actif` | décocher pour suspendre sans supprimer |
+| `envoye_le`, `nb_envois` | remplis automatiquement à l'envoi |
+
+Une ligne est envoyée à tous les appareils abonnés dans la minute qui suit son heure. Une
+ligne dont l'heure est dépassée de plus de 6 h n'est jamais envoyée.
+
+### Mise en place (une seule fois)
+
+1. **Clés VAPID** : `npx web-push generate-vapid-keys`. Garde la clé privée secrète.
+2. **App** : ajoute `VITE_VAPID_PUBLIC_KEY=<clé publique>` à `.env.local` (et aux variables
+   de ton hébergeur), puis redéploie l'app.
+3. **SQL** : exécute [`supabase/notifications_schema.sql`](supabase/notifications_schema.sql).
+4. **Edge Function** :
+   ```bash
+   supabase functions deploy send-notifications --no-verify-jwt
+   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... \
+     VAPID_SUBJECT=mailto:toi@exemple.fr
+   ```
+5. **Déclencheur chaque minute** : suis la section « pg_cron » en bas de
+   `notifications_schema.sql` (extensions `pg_cron` + `pg_net`, secret généré dans le Vault).
+
+### Côté utilisateur
+
+Profil → carte **Notifications** → *Activer*. Sur iPhone/iPad, les notifications ne
+fonctionnent que si l'app a d'abord été ajoutée à l'écran d'accueil (la carte l'explique).

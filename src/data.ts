@@ -8,7 +8,8 @@ export const LIVE_DEBATE = true
 // 18 April 2027; 2nd round: 2 May 2027), one per party — when a party has
 // several declared/pressenti figures (e.g. Le Pen vs Bardella for the RN,
 // or the Parti socialiste's primary field), only the one polling highest
-// is kept. Sorted descending by national voting-intention polls where a
+// is kept (PS/Place publique primary, 9-11 Oct. 2026: Glucksmann won in the
+// 1st round; Faure, Royal, Maurel and Guedj lost and are not listed). Sorted descending by national voting-intention polls where a
 // figure exists (Harris Interactive, 14 Sept. 2026 aggregate, itself an
 // average across institutes); candidates with no individually-tracked
 // figure (they poll too low to be broken out) are appended afterwards in
@@ -22,7 +23,7 @@ export const CANDS: Candidate[] = [
   { name: 'Marine Le Pen', party: 'Rassemblement national', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'ML' },
   { name: 'Jean-Luc Mélenchon', party: 'La France insoumise', status: 'déclaré', color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'JM' },
   { name: 'Édouard Philippe', party: 'Horizons', status: 'déclaré', color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'EP' },
-  { name: 'Raphaël Glucksmann', party: 'Place publique', status: 'pressenti', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'RG' },
+  { name: 'Raphaël Glucksmann', party: 'Place publique', status: 'déclaré', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'RG' },
   { name: 'Gabriel Attal', party: 'Renaissance', status: 'déclaré', color: '#C2385A', ink: '#8C1F3D', soft: '#FFDCE5', initials: 'GA' },
   { name: 'Bruno Retailleau', party: 'Les Républicains', status: 'déclaré', color: '#0B6BB8', ink: '#0A4577', soft: '#D8EBFB', initials: 'BR' },
   { name: 'Éric Zemmour', party: 'Reconquête', status: 'déclaré', color: '#1F7A3E', ink: '#14532D', soft: '#DDF3E3', initials: 'EZ' },
@@ -35,7 +36,7 @@ export const CANDS: Candidate[] = [
   { name: 'François Asselineau', party: 'Union populaire républicaine', status: 'déclaré', color: '#6E5B3E', ink: '#443923', soft: '#EDE6D8', initials: 'FA' },
   { name: 'Delphine Batho', party: 'Génération écologie', status: 'déclaré', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'DB' },
   { name: 'Xavier Bertrand', party: 'Nous, France', status: 'déclaré', color: '#C8341C', ink: '#8A1F0E', soft: '#FFDFD8', initials: 'XB' },
-  { name: 'Karim Bouamrane', party: 'Parti socialiste', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'KB' },
+  { name: 'Karim Bouamrane', party: 'La France humaine et forte', status: 'déclaré', color: '#3B4FD8', ink: '#1F2A8A', soft: '#E3E7FF', initials: 'KB' },
   { name: 'Bernard Cazeneuve', party: 'La Convention', status: 'déclaré', color: '#0E7A6B', ink: '#0A4F45', soft: '#D2F1EA', initials: 'BC' },
   { name: 'Sylvain Durif', party: 'Elvita', status: 'déclaré', color: '#A85400', ink: '#6E3A00', soft: '#FFEBC6', initials: 'SD' },
   { name: 'Anasse Kazib', party: 'Révolution permanente', status: 'déclaré', color: '#6B45D9', ink: '#3F238F', soft: '#E8E0FF', initials: 'AK' },

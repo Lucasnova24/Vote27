@@ -2,7 +2,7 @@ import type { DailyQuizRow } from './lib/dbTypes'
 
 export type Tab = 'accueil' | 'isoloir' | 'agenda' | 'quiz' | 'profil'
 
-export type Route = 'vote' | 'quiz' | 'quizhistory' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | null
+export type Route = 'vote' | 'quiz' | 'quizhistory' | 'boussole' | 'firstround' | 'debat' | 'programmes' | 'completeprofile' | 'agendaEvent' | 'candidat' | null
 
 export type AuthView = 'signup' | 'login'
 export type AuthProvider = 'apple' | 'google' | 'anonymous' | 'email' | null
@@ -31,6 +31,8 @@ export interface AppState {
   debateSlug: string | null
   // agenda slug of the event opened on the 'agendaEvent' route (its detail page)
   agendaSlug: string | null
+  // name (as in CANDS) of the candidate opened on the 'candidat' route
+  candidateName: string | null
   filter: string
   theme: string
 

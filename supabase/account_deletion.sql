@@ -14,6 +14,9 @@
 -- Note : les ligues créées par l'utilisateur sont supprimées avec lui (cascade
 -- sur owner_id), ce qui retire aussi leurs autres membres de ces ligues.
 -- Fonctionne aussi pour les comptes anonymes (invités).
+--
+-- Remplace public.delete_account() de schema.sql, que l'app n'appelle plus : celle-ci
+-- nettoie aussi les tables hors schéma portant un user_id (quiz_answers, push_subscriptions…).
 -- ═════════════════════════════════════════════════════════════
 
 create or replace function public.delete_my_account()

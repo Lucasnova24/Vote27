@@ -10,7 +10,7 @@ interface Props {
 
 const ORDER: { id: Tab; label: string; Icon: (p: { size?: number }) => JSX.Element }[] = [
   { id: 'accueil', label: 'Accueil', Icon: NavHomeIcon },
-  { id: 'isoloir', label: 'Isoloir', Icon: NavIsoloirIcon },
+  { id: 'isoloir', label: 'Isoloir & Programme', Icon: NavIsoloirIcon },
   { id: 'agenda', label: 'Agenda', Icon: NavAgendaIcon },
   { id: 'quiz', label: 'Quiz', Icon: QuizIcon },
   { id: 'profil', label: 'Profil', Icon: NavProfilIcon },
@@ -40,7 +40,7 @@ export default function BottomNav({ activeTab, hasRoute, go }: Props) {
             <span className="pill" style={{ background: on ? t.soft : 'transparent', color: on ? t.ink : '#5C617B' }}>
               <Icon size={22} />
             </span>
-            {label}
+            <span style={{ lineHeight: 1.1, padding: '0 2px' }}>{label}</span>
           </button>
         )
       })}
