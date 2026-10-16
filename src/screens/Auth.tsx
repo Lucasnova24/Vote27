@@ -5,6 +5,9 @@ import Brand from '../components/Brand'
 import { AppleLogo, GoogleLogo } from '../components/Icons'
 import { isNative, nativePlatform } from '../lib/native'
 
+// Bouton « Continuer avec Apple » masqué tant que Sign in with Apple n'est pas relié (Supabase/Apple Developer).
+const SHOW_APPLE_SIGN_IN = false
+
 interface Props {
   state: AppState
   actions: AppActions
@@ -67,7 +70,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
             <button type="button" onClick={actions.authGoogle} className="btn" style={{ background: '#fff', color: '#14162B', border: '1.5px solid #DDD7C9' }}>
               <GoogleLogo size={17} />Continuer avec Google
             </button>
-            {!(isNative && nativePlatform === 'android') && (
+            {SHOW_APPLE_SIGN_IN && !(isNative && nativePlatform === 'android') && (
               <button type="button" onClick={actions.authApple} className="btn" style={{ background: '#000', color: '#fff' }}>
                 <AppleLogo size={17} />Continuer avec Apple
               </button>
