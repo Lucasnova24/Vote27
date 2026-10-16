@@ -5,6 +5,7 @@ import { BADGES } from '../data'
 import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
 import { gapPage, h1Size } from '../styles'
+import { shareText } from '../lib/native'
 import Grid2 from '../components/Grid2'
 import NotificationsCard from '../components/NotificationsCard'
 import { BoussoleIcon, ChevronRight, LogoDiamond, PersonIcon } from '../components/Icons'
@@ -17,14 +18,14 @@ interface Props {
 
 export default function Profil({ state: s, actions, isWeb }: Props) {
   const gap = gapPage(isWeb)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const onDelete = async () => {
-    if (!window.confirm('Supprimer définitivement ton compte et toutes tes données ? Cette action est irréversible.')) return
     setDeleting(true)
-    setDeleteError(false)
-    const ok = await actions.deleteAccount()
-    if (!ok) { setDeleting(false); setDeleteError(true) }
+    setDeleteError(null)
+    const err = await actions.deleteAccount()
+    if (err) { setDeleting(false); setDeleteError(err) }
   }
   const level = levelFromPoints(s.points)
   const { xpIntoLevel, xpTarget, pct } = levelProgress(s.points)
@@ -123,10 +124,22 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
       <div className="stk" style={{ order: 6, alignItems: 'center', gap: 2, textAlign: 'center' }}>
         <div style={{ fontSize: 13, color: '#5C617B', paddingBottom: 4 }}>{accountLine}</div>
+        <button type="button" onClick={() => shareText('Mon Petit Vote 2027', "Je prépare 2027 avec Mon Petit Vote : quiz, affinités et débats.")} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#3B4FD8' }}>Partager l'application</button>
         <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
         <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
-        <button type="button" onClick={onDelete} disabled={deleting} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>{deleting ? 'Suppression…' : 'Supprimer mon compte'}</button>
-        {deleteError && <div role="alert" style={{ fontSize: 12.5, color: '#B0301A' }}>La suppression a échoué. Réessaie plus tard.</div>}
+        {!confirmDelete ? (
+          <button type="button" onClick={() => setConfirmDelete(true)} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Supprimer mon compte</button>
+        ) : (
+          <div role="alertdialog" aria-label="Confirmer la suppression du compte" className="card stk" style={{ gap: 10, padding: 14, maxWidth: 420, textAlign: 'left' }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700 }}>Supprimer définitivement ton compte ?</div>
+            <div style={{ fontSize: 13, color: '#454A66', lineHeight: 1.5 }}>Ton compte et toutes tes données (votes, quiz, affinités, pronostics, points, classements, ligues) seront effacés. Cette action est irréversible.</div>
+            {deleteError && <div role="alert" style={{ fontSize: 13, fontWeight: 600, color: '#8A1F0E', background: '#FFDFD8', borderRadius: 12, padding: '10px 12px' }}>{deleteError}</div>}
+            <div className="row" style={{ gap: 8 }}>
+              <button type="button" disabled={deleting} onClick={() => { setConfirmDelete(false); setDeleteError(null) }} className="btn" style={{ flex: 1, background: '#EFEBE2', color: '#14162B' }}>Annuler</button>
+              <button type="button" disabled={deleting} onClick={onDelete} className="btn" style={{ flex: 1, background: '#B0301A', color: '#fff' }}>{deleting ? '…' : 'Supprimer'}</button>
+            </div>
+          </div>
+        )}
         <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.55, padding: '8px 12px 0', maxWidth: 420 }}>
           Mon Petit Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
         </div>

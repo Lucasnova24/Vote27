@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { isNative } from './native'
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined
 
@@ -23,7 +24,9 @@ function pushSupported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!VAPID_PUBLIC_KEY
 }
 
+// Web Push / service worker : web uniquement (pas d'enregistrement en natif Capacitor).
 export function registerServiceWorker() {
+  if (isNative) return
   if (!('serviceWorker' in navigator)) return
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch((e) => console.error('[push] service worker:', e))
@@ -31,6 +34,7 @@ export function registerServiceWorker() {
 }
 
 export async function getPushStatus(): Promise<PushStatus> {
+  if (isNative) return 'unsupported'
   if (isIos() && !isStandalone()) return 'needs-install'
   if (!pushSupported()) return 'unsupported'
   if (Notification.permission === 'denied') return 'denied'

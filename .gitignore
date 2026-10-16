@@ -5,3 +5,12 @@ dist-ssr
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+.env
+.env.*
+!.env.example
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+resources/.cache

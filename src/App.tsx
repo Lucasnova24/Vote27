@@ -94,7 +94,7 @@ export default function App() {
   else screen = <Profil state={s} actions={actions} isWeb={isWeb} />
 
   return (
-    <div style={{ display: 'flex', height: '100dvh', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: 'calc(100dvh - env(safe-area-inset-top, 0px))', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
       {isWeb && (
         <Sidebar
           activeTab={s.tab} hasRoute={!!s.route} go={actions.go}

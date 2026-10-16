@@ -1,7 +1,11 @@
+import { isNative } from './native'
+
 const KEY = 'mpv_install_pending'
 
 export function isStandalone() {
   if (typeof window === 'undefined') return false
+  // L'app native est déjà « installée » : pas de tuto d'ajout à l'écran d'accueil.
+  if (isNative) return true
   return window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
