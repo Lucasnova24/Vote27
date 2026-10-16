@@ -69,11 +69,11 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
         <div className="stk" style={{ gap: 12 }}>
           <button type="button" onClick={actions.vote('oui', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#E3E7FF', border: '1.5px solid #B8C0F5', textAlign: 'left' }}>
             <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#1F2A8A', lineHeight: 1 }}>Oui</span>
-            <span style={{ display: 'block', fontSize: 14.5, color: '#2A3596', marginTop: 6 }}>{question.oui_label}</span>
+            {question.oui_label && <span style={{ display: 'block', fontSize: 14.5, color: '#2A3596', marginTop: 6 }}>{question.oui_label}</span>}
           </button>
           <button type="button" onClick={actions.vote('non', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#FFEBC6', border: '1.5px solid #F2CD86', textAlign: 'left' }}>
             <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#6E3A00', lineHeight: 1 }}>Non</span>
-            <span style={{ display: 'block', fontSize: 14.5, color: '#7A4300', marginTop: 6 }}>{question.non_label}</span>
+            {question.non_label && <span style={{ display: 'block', fontSize: 14.5, color: '#7A4300', marginTop: 6 }}>{question.non_label}</span>}
           </button>
         </div>
       )}

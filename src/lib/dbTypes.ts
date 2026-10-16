@@ -32,12 +32,12 @@ export interface VoteRow {
   created_at: string
 }
 
-// supabase/vote_bank_schema.sql
+// supabase/vote_bank_schema.sql + vote_calendar.sql (labels absents des questions planifiées)
 export interface VoteQuestionRow {
   code: string
   question: string
-  oui_label: string
-  non_label: string
+  oui_label: string | null
+  non_label: string | null
 }
 
 // quiz_attempts predates the real quiz bank below and is no longer written
