@@ -127,6 +127,9 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
         <button type="button" onClick={() => shareText('Mon Petit Vote 2027', "Je prépare 2027 avec Mon Petit Vote : quiz, affinités et débats.")} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#3B4FD8' }}>Partager l'application</button>
         <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
         <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
+        {s.opinionsConsent && (
+          <button type="button" onClick={() => { if (window.confirm('Retirer ton consentement efface tes votes, affinités et pronostics. Continuer ?')) actions.withdrawConsent() }} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Retirer mon consentement (efface mes réponses)</button>
+        )}
         {!confirmDelete ? (
           <button type="button" onClick={() => setConfirmDelete(true)} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Supprimer mon compte</button>
         ) : (

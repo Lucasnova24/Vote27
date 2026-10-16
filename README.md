@@ -71,6 +71,13 @@ hors dépôt portant un `user_id` sont nettoyées explicitement. Le bouton « Su
 (Profil, avec confirmation) appelle cette RPC. **Ce script n'est appliqué sur aucun projet distant
 automatiquement : à lancer toi-même.**
 
+## 4 ter. Consentement RGPD (opinions politiques)
+
+Exécuter [`supabase/consent.sql`](supabase/consent.sql) (colonne `profiles.opinions_consent_at`, idempotent).
+L'app affiche un écran de consentement explicite avant la première réponse (vote, affinités, pronostics) et
+permet de le retirer dans Profil (efface les réponses). Sans la colonne, l'app fonctionne mais le consentement
+n'est pas conservé entre les sessions.
+
 ## 5. Install and run
 
 ```bash

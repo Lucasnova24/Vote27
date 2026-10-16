@@ -19,6 +19,8 @@ export interface ProfileRow {
   interets: string | null
   date_naissance: string | null
   sexe: string | null
+  // consentement explicite aux réponses (supabase/consent.sql) ; absent tant que non migré
+  opinions_consent_at?: string | null
   created_at: string
 }
 
