@@ -33,7 +33,7 @@ insert into public.vote_questions (code, ordre, question, theme, date_publicatio
   ('J016', 36, 'Faut-il inscrire un principe de laïcité renforcée dans la Constitution ?', 'Institutions', '2026-10-31', 'active'),
   ('J017', 37, 'Faut-il créer un pass culture élargi à tous les âges ?', 'Social', '2026-11-01', 'active'),
   ('J018', 38, 'Faut-il renforcer le pacte de stabilité budgétaire européen ?', 'Europe', '2026-11-02', 'active'),
-  ('J019', 39, 'Faut-il supprimer la trève hivernale ?', 'Social', '2026-11-03', 'active'),
+  ('J019', 39, 'Faut-il supprimer la trêve hivernale ?', 'Social', '2026-11-03', 'active'),
   ('J020', 40, 'Faut-il abaisser le droit de vote à 16 ans ?', 'Institutions', '2026-11-04', 'active'),
   ('J021', 41, 'Faut-il supprimer les niches fiscales dont bénéficient les grandes entreprises ?', 'Économie', '2026-11-05', 'active'),
   ('J022', 42, 'Faut-il renforcer les effectifs des services de renseignement ?', 'Sécurité', '2026-11-06', 'active'),
