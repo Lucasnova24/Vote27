@@ -1,7 +1,7 @@
 # Android — build de l'AAB de release et publication
 
 Compte Google Play **organisation** : pas d'obligation de test fermé de 12 testeurs / 14 jours avant la production.
-Identifiant d'application provisoire : `com.novaparticipations.petitvote` (**à confirmer avant le premier envoi : définitif**).
+Identifiant d'application : `com.novaparticipations.petitvote` (confirmé ; définitif après le premier envoi).
 
 ## 1. Prérequis locaux
 JDK 21, Android SDK (Android Studio ou `sdkmanager`), Node 22. Variables Supabase dans `.env.local`
@@ -51,6 +51,11 @@ Secrets à créer (Settings > Secrets and variables > Actions) :
 | `VITE_SUPABASE_ANON_KEY` | clé `anon` publique |
 
 L'AAB est publié comme artefact du run (14 jours). (Codemagic ne propose pas de minutes Linux gratuites ; ce workflow s'en passe.)
+
+### Vérification de compilation
+Le workflow **Android debug** (`.github/workflows/android-debug.yml`, sans secret) compile l'APK de debug à chaque PR
+touchant `android/`, `src/` ou les dépendances, et peut être lancé à la main. **Lance-le une première fois avant
+le build de release** : la compilation Android n'a pas pu être vérifiée dans l'environnement de développement initial.
 
 ## 6. Tester le retour OAuth sur Android
 Dans Supabase > Authentication > URL Configuration > Redirect URLs, ajouter `com.novaparticipations.petitvote://auth-callback`
