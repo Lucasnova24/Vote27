@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import type { AgendaRow } from '../lib/dbTypes'
@@ -74,8 +75,15 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
   const tonight = tonightDebate(events, now)
   const tonightOpen = debateStarted(tonight, now)
 
-  const filtered = (events ?? []).filter((e) => {
-    if (e.status === 'passe') return false
+  const [candFilter, setCandFilter] = useState<string | null>(null)
+
+  const upcoming = (events ?? []).filter((e) => e.status !== 'passe')
+  const candOptions = Array.from(
+    new Map(upcoming.flatMap((e) => e.candidates).map((c) => [c.slug, c.name])).entries(),
+  ).sort((a, b) => a[1].localeCompare(b[1], 'fr'))
+
+  const filtered = upcoming.filter((e) => {
+    if (candFilter && !e.candidates.some((c) => c.slug === candFilter)) return false
     const cat = FILTER_TO_CATEGORY[s.filter]
     return cat === null || cat === undefined || e.category === cat
   })
@@ -158,6 +166,19 @@ export default function Agenda({ state: s, actions, isWeb }: Props) {
           )
         })}
       </div>
+
+      {candOptions.length > 0 && (
+        <div role="group" aria-label="Filtrer par candidat" style={{ order: 1, display: 'flex', gap: 8, overflowX: 'auto', margin: isWeb ? 0 : '0 -16px', padding: isWeb ? 0 : '0 16px' }}>
+          {[['', 'Tous les candidats'] as [string, string]].concat(candOptions).map(([slug, name]) => {
+            const active = (candFilter ?? '') === slug
+            return (
+              <button key={slug || 'all'} type="button" onClick={() => setCandFilter(slug || null)} className="chip" aria-pressed={active} style={{ flex: 'none', background: active ? '#14162B' : '#fff', color: active ? '#fff' : '#454A66', borderColor: active ? '#14162B' : '#DDD7C9' }}>
+                {name}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div className="stk" style={{ order: 2, gap: 20 }}>
         {events === null && <div style={{ fontSize: 13, color: '#5C617B' }}>Chargement…</div>}
