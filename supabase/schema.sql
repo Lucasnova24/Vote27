@@ -722,7 +722,8 @@ insert into public.candidates (slug, full_name, party, candidacy_status, candida
   ('bernard-cazeneuve',     'Bernard Cazeneuve',     'Gauche (hors primaire)',    'Déclaré (16 juillet 2026)',                'A décliné la primaire socialiste.',                      null),
   ('delphine-batho',        'Delphine Batho',        'Génération écologie',       'Déclarée',                                 null,                                                     null),
   ('karim-bouamrane',       'Karim Bouamrane',       'PS',                        'Déclaré',                                  'Maire de Saint-Ouen.',                                   null),
-  ('nathalie-arthaud',      'Nathalie Arthaud',      'LO',                        'Déclarée',                                 null,                                                     null)
+  ('nathalie-arthaud',      'Nathalie Arthaud',      'LO',                        'Déclarée',                                 null,                                                     null),
+  ('natacha-polony',        'Natacha Polony',        'Sans étiquette',            'Pressentie',                               null,                                                     null)
 on conflict (slug) do nothing;
 
 insert into public.events

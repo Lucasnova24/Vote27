@@ -45,6 +45,7 @@ export const CANDS: Candidate[] = [
   { name: 'Jean Lassalle', party: 'Résistons !', status: 'pressenti', color: '#1F7A3E', ink: '#14532D', soft: '#DDF3E3', initials: 'JL' },
   { name: 'David Lisnard', party: 'Nouvelle Énergie', status: 'pressenti', color: '#B8541F', ink: '#7A3512', soft: '#FCE3D3', initials: 'DL' },
   { name: 'Florian Philippot', party: 'Les Patriotes', status: 'déclaré', color: '#7A3E9D', ink: '#4E2766', soft: '#EFE0FA', initials: 'FP' },
+  { name: 'Natacha Polony', party: 'Sans étiquette', status: 'pressenti', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'NP' },
   { name: 'Dominique de Villepin', party: 'Sans étiquette', status: 'pressenti', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'DV' },
 ]
 
