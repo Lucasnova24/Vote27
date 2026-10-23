@@ -151,7 +151,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
   return (
     <div className="rise stk" style={{ gap }}>
       <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
-        <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>
+        {!isWeb && <div className="eyebrow">{todayLabelFr() + ' · ' + firstRoundCountdownLabel()}</div>}
         <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>Accueil</h1>
       </div>
       <HomeBanner onShowInstall={onShowInstall} />
