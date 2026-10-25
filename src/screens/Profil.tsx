@@ -4,10 +4,10 @@ import type { AppState } from '../types'
 import { BADGES } from '../data'
 import { getDisplayName } from '../lib/displayName'
 import { levelFromPoints, levelProgress } from '../lib/leveling'
-import { gapPage, h1Size } from '../styles'
-import { shareText } from '../lib/native'
+import { gapPage } from '../styles'
 import Grid2 from '../components/Grid2'
 import NotificationsCard from '../components/NotificationsCard'
+import ShareCard from '../components/ShareCard'
 import { BoussoleIcon, ChevronRight, LogoDiamond, PersonIcon } from '../components/Icons'
 
 interface Props {
@@ -124,9 +124,7 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
       <div className="stk" style={{ order: 6, alignItems: 'center', gap: 2, textAlign: 'center' }}>
         <div style={{ fontSize: 13, color: '#5C617B', paddingBottom: 4 }}>{accountLine}</div>
-        <button type="button" onClick={() => shareText('Mon Petit Vote 2027', "Je prépare 2027 avec Mon Petit Vote : quiz, affinités et débats.")} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#3B4FD8' }}>Partager l'application</button>
         <button type="button" onClick={actions.logout} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Se déconnecter</button>
-        <button type="button" onClick={actions.resetAll} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#B0301A' }}>Réinitialiser ma progression</button>
         {s.opinionsConsent && (
           <button type="button" onClick={() => { if (window.confirm('Retirer ton consentement efface tes votes, affinités et pronostics. Continuer ?')) actions.withdrawConsent() }} style={{ minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: '#454A66' }}>Retirer mon consentement (efface mes réponses)</button>
         )}
@@ -152,11 +150,8 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
   return (
     <div className="rise stk" style={{ gap }}>
-      <div className="stk" style={{ gap: 8, marginBottom: 4 }}>
-        <div className="eyebrow">Profil</div>
-        <h1 className="dsp" style={{ margin: 0, fontWeight: 700, lineHeight: 1, fontSize: h1Size(isWeb) }}>{getDisplayName(s)}</h1>
-        <div style={{ fontSize: 15, color: '#454A66' }}>{accountLine}</div>
-      </div>
+      <h1 className="sr-only">Profil</h1>
+      <ShareCard />
       <Grid2 isWeb={isWeb} gap={gap} colA={colA} colB={colB} />
     </div>
   )

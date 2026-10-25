@@ -38,6 +38,8 @@ export interface VoteQuestionRow {
   question: string
   oui_label: string | null
   non_label: string | null
+  arguments_pour?: string[]
+  arguments_contre?: string[]
 }
 
 // quiz_attempts predates the real quiz bank below and is no longer written

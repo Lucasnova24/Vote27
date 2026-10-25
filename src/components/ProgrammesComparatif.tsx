@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { CANDS, THEMES, THEME_STYLE } from '../data'
@@ -17,10 +18,22 @@ interface Props {
 // Isoloir & Programmes tab. Tapping a candidate opens their full page.
 export default function ProgrammesComparatif({ state: s, actions, isWeb }: Props) {
   const positions = useCandidatePositions()
+  // Ordre aléatoire à chaque ouverture de l'écran, puis filtre optionnel par candidat.
+  const shuffled = useMemo(() => {
+    const a = CANDS.slice()
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }, [])
+  const [candFilter, setCandFilter] = useState<string | null>(null)
+  const shown = candFilter ? shuffled.filter((c) => c.name === candFilter) : shuffled
+  const chipRow = { display: 'flex', gap: 8, overflowX: 'auto' as const, margin: isWeb ? 0 : '0 -16px', padding: isWeb ? 0 : '0 16px' }
 
   return (
     <div className="stk" style={{ gap: 14 }}>
-      <div role="group" aria-label="Choisir un thème" style={{ display: 'flex', gap: 8, overflowX: 'auto', margin: isWeb ? 0 : '0 -16px', padding: isWeb ? 0 : '0 16px' }}>
+      <div role="group" aria-label="Choisir un thème" style={chipRow}>
         {THEMES.map((t) => {
           const active = s.theme === t
           const ts = THEME_STYLE[t]
@@ -31,8 +44,21 @@ export default function ProgrammesComparatif({ state: s, actions, isWeb }: Props
           )
         })}
       </div>
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: isWeb ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)' }}>
+      <div role="group" aria-label="Filtrer par candidat" style={chipRow}>
+        <button type="button" onClick={() => setCandFilter(null)} className="chip" aria-pressed={candFilter === null} style={{ background: candFilter === null ? '#171B3C' : '#fff', color: candFilter === null ? '#fff' : '#454A66', borderColor: candFilter === null ? '#171B3C' : '#DDD7C9' }}>
+          Tous les candidats
+        </button>
         {CANDS.map((c) => {
+          const active = candFilter === c.name
+          return (
+            <button key={c.name} type="button" onClick={() => setCandFilter(active ? null : c.name)} className="chip" aria-pressed={active} style={{ background: active ? c.color : '#fff', color: active ? '#fff' : '#454A66', borderColor: active ? c.color : '#DDD7C9' }}>
+              {c.name}
+            </button>
+          )
+        })}
+      </div>
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: isWeb ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)' }}>
+        {shown.map((c) => {
           const pos = positions?.find((p) => p.candidate_name === c.name && p.theme === s.theme) ?? null
           const prog = PROGRAMMES_2022[c.name]
           const th = prog?.themes[s.theme]

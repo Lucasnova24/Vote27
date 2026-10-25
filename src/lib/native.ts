@@ -45,6 +45,14 @@ export async function shareText(title: string, text: string, url?: string): Prom
   }
 }
 
+// Partage de l'application à des amis (feuille de partage, ou lien copié).
+export const APP_SHARE_TITLE = 'Mon Petit Vote 2027'
+export const APP_SHARE_TEXT = 'Je prépare 2027 avec Mon Petit Vote : quiz, affinités et débats. Rejoins-moi !'
+export function shareApp(): Promise<boolean> {
+  const url = isNative ? undefined : window.location.origin
+  return shareText(APP_SHARE_TITLE, APP_SHARE_TEXT, url)
+}
+
 export async function sha256Hex(input: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
