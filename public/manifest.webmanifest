@@ -1,6 +1,6 @@
 {
   "name": "Mon Petit Vote 2027",
-  "short_name": "Petit Vote",
+  "short_name": "Mon Petit Vote",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F0E6",

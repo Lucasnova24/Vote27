@@ -97,21 +97,21 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
 
       {electionNightVisible() && <ElectionNight />}
 
-      <section className="card" style={{ order: 5 }} aria-label="Candidats">
+      <section className="card" style={{ order: 4 }} aria-label="Candidats">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
           <h2 className="dsp" style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>Candidats à la présidentielle</h2>
           <span style={{ fontSize: 13, color: '#5C617B' }}>{CANDS.length}</span>
         </div>
         <div className="stk" style={{ maxHeight: 360, overflowY: 'auto' }}>
           {CANDS.map((c) => (
-            <div key={c.name} className="row sep" style={{ gap: 12, padding: '11px 0' }}>
+            <button key={c.name} type="button" onClick={actions.openCandidate(c.name)} className="row sep" style={{ gap: 12, padding: '11px 0', width: '100%', textAlign: 'left' }} aria-label={'Voir le programme de ' + c.name}>
               <span style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', background: c.color }}>{c.initials}</span>
               <span style={{ flex: 1, minWidth: 0, display: 'block' }}>
                 <span style={{ display: 'block', fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
                 <span style={{ display: 'block', fontSize: 13, color: '#5C617B' }}>{c.party}</span>
               </span>
               <StatusTag status={c.status} />
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -121,7 +121,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
   const colB = (
     <>
       {nextEvt && (
-        <button type="button" onClick={nextClick} className="lift" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
+        <button type="button" onClick={nextClick} className="lift" style={{ order: 5, display: 'block', width: '100%', textAlign: 'left', background: nextBg, border: '1px solid ' + nextBc, borderRadius: 22, padding: 18 }}>
           <span className="row" style={{ gap: 8 }}>
             {nextLive && <span className="live" aria-hidden="true" />}
             <span className="eyebrow" style={{ color: nextInk }}>{'Prochain évènement · ' + nextCat!.label}</span>
@@ -134,7 +134,7 @@ export default function Accueil({ state: s, actions, isWeb, onShowInstall }: Pro
         </button>
       )}
 
-      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 4, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
+      <button type="button" onClick={actions.openRoute('programmes')} className="press" style={{ order: 3, display: 'block', width: '100%', textAlign: 'left', background: '#171B3C', color: '#fff', borderRadius: 22, padding: 20 }}>
         <span className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span className="dsp" style={{ display: 'block', fontSize: 25, lineHeight: 1.05, fontWeight: 700, maxWidth: 230 }}>Les programmes, côte à côte</span>
           <span style={{ display: 'flex', paddingLeft: 10, flex: 'none' }} aria-hidden="true">

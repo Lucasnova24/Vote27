@@ -132,9 +132,6 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
           </div>
 
           <div className="stk" style={{ alignItems: 'center', gap: 2 }}>
-            <button type="button" onClick={actions.authGuest} style={{ minHeight: 44, padding: '0 8px', fontSize: 14, fontWeight: 700, color: '#454A66', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-              Continuer sans compte
-            </button>
             <div style={{ fontSize: 14, color: '#454A66' }}>
               {isSignup ? 'Tu as déjà un compte ?' : 'Pas encore de compte ?'}{' '}
               <button type="button" onClick={actions.toggleAuthView} style={{ fontWeight: 700, color: ACCENT, minHeight: 44, padding: '0 4px', textDecoration: 'underline', textUnderlineOffset: '3px' }}>

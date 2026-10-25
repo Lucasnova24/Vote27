@@ -65,6 +65,23 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
         Question posée à tous les inscrits. Un seul bulletin par personne. Le résultat affiché est le décompte réel des bulletins déposés dans l'app.
       </div>
 
+      {question && ((question.arguments_pour?.length ?? 0) > 0 || (question.arguments_contre?.length ?? 0) > 0) && (
+        <div className="stk" style={{ gap: 10 }}>
+          {[
+            { label: 'Arguments pour le Oui', items: question.arguments_pour ?? [], bg: '#E3E7FF', bc: '#B8C0F5', fg: '#1F2A8A' },
+            { label: 'Arguments pour le Non', items: question.arguments_contre ?? [], bg: '#FFEBC6', bc: '#F2CD86', fg: '#6E3A00' },
+          ].filter((g) => g.items.length > 0).map((g) => (
+            <details key={g.label} style={{ background: g.bg, border: '1px solid ' + g.bc, borderRadius: 18, padding: '12px 16px', color: g.fg }}>
+              <summary style={{ cursor: 'pointer', fontSize: 15, fontWeight: 700, minHeight: 28 }}>{g.label}</summary>
+              <ul style={{ margin: '10px 0 2px', paddingLeft: 20, fontSize: 14.5, lineHeight: 1.55 }}>
+                {g.items.map((a, i) => <li key={i} style={{ marginTop: i ? 8 : 0 }}>{a}</li>)}
+              </ul>
+            </details>
+          ))}
+          <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.5 }}>Arguments avancés par chaque camp, à titre informatif.</div>
+        </div>
+      )}
+
       {!voteDone && question && (
         <div className="stk" style={{ gap: 12 }}>
           <button type="button" onClick={actions.vote('oui', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#E3E7FF', border: '1.5px solid #B8C0F5', textAlign: 'left' }}>

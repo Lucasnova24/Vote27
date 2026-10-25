@@ -46,7 +46,7 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
         </div>
       </div>
 
-      <section className="card" style={{ order: 2 }} aria-label="Quiz du jour">
+      <section className="card" style={{ order: 3 }} aria-label="Quiz du jour">
         <h2 className="dsp" style={{ margin: 0, fontSize: 25, lineHeight: 1.08, fontWeight: 700 }}>Les institutions, en deux minutes</h2>
         <div style={{ fontSize: 14.5, lineHeight: 1.5, color: '#454A66', marginTop: 8 }}>{'Chaque bonne réponse rapporte 20 ◆ et renvoie à sa source.'}</div>
         <button type="button" onClick={actions.openRoute('quiz')} className="btn" style={{ marginTop: 16, background: '#A85400' }}>
@@ -54,7 +54,7 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
         </button>
       </section>
 
-      <button type="button" onClick={actions.openRoute('quizhistory')} className="card lift row" style={{ order: 3, width: '100%', gap: 12, textAlign: 'left' }}>
+      <button type="button" onClick={actions.openRoute('quizhistory')} className="card lift row" style={{ order: 4, width: '100%', gap: 12, textAlign: 'left' }}>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: 'block', fontSize: 15.5, fontWeight: 700 }}>Historique de mes réponses</span>
           <span style={{ display: 'block', fontSize: 13, color: '#5C617B', marginTop: 2 }}>Revoir les quiz des jours précédents</span>
@@ -65,7 +65,7 @@ export default function QuizTab({ state: s, actions, isWeb }: Props) {
   )
 
   const colB = (
-    <div style={{ order: 4 }}>
+    <div style={{ order: 2 }}>
       <Leagues />
     </div>
   )
