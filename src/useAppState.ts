@@ -14,6 +14,7 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { OAUTH_REDIRECT_URL, hapticError, hapticSuccess, hapticTap, isNative, nativePlatform, sha256Hex } from './lib/native'
 import appConfig from '../app.config.json'
 import { markInstallPending } from './lib/install'
+import { UNDER_AGE_MESSAGE, isUnderMinAge } from './lib/age'
 
 const initialState: AppState = {
   loading: true, authBusy: false, opinionsConsent: false, consentOpen: false,
@@ -495,6 +496,7 @@ export function useAppState() {
       if (!s.authFirst.trim() || !s.authLast.trim()) return update({ authError: 'Indique ton prénom et ton nom.' })
       if (s.authPseudo.trim().length < 3) return update({ authError: 'Le pseudo doit faire 3 caractères minimum.' })
       if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
+      if (isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
       if (!s.authSex) return update({ authError: 'Sélectionne une option pour le sexe.' })
     }
     update({ authBusy: true, authError: null })
@@ -545,6 +547,7 @@ export function useAppState() {
   const saveProfileExtra = () => {
     const s = stateRef.current
     const uid = userIdRef.current
+    if (s.authDob && isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
     if (uid) {
       supabase
         .from('profiles')
