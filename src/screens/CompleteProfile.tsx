@@ -3,6 +3,7 @@ import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
+import { maxDobIso } from '../lib/age'
 
 interface Props {
   state: AppState
@@ -39,7 +40,7 @@ export default function CompleteProfile({ state: s, actions, isWeb }: Props) {
         <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <label className="lbl" htmlFor="pf-dob">Date de naissance</label>
-            <input id="pf-dob" className="inp" type="date" value={s.authDob} onChange={actions.setAuthDob} />
+            <input id="pf-dob" className="inp" type="date" max={maxDobIso()} value={s.authDob} onChange={actions.setAuthDob} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <label className="lbl" htmlFor="pf-sex">Sexe</label>
@@ -89,6 +90,9 @@ export default function CompleteProfile({ state: s, actions, isWeb }: Props) {
         </div>
       </div>
 
+      {s.authError && (
+        <div role="alert" style={{ fontSize: 13, fontWeight: 600, color: '#8A1F0E', background: '#FFDFD8', borderRadius: 12, padding: '10px 12px' }}>{s.authError}</div>
+      )}
       <button type="button" onClick={actions.saveProfileExtra} className="btn" style={{ background: ACCENT }}>Enregistrer</button>
     </div>
   )

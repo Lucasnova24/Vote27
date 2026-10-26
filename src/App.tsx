@@ -23,6 +23,7 @@ import AgendaEvent from './screens/AgendaEvent'
 import Programmes from './screens/Programmes'
 import Candidat from './screens/Candidat'
 import CompleteProfile from './screens/CompleteProfile'
+import DobGate from './screens/DobGate'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
 import Brand from './components/Brand'
@@ -73,6 +74,10 @@ export default function App() {
 
   if (!s.authed) {
     return <Auth state={s} actions={actions} isWeb={isWeb} />
+  }
+
+  if ((s.authProvider === 'google' || s.authProvider === 'apple') && !s.authDob) {
+    return <DobGate state={s} actions={actions} />
   }
 
   if (showInstall) return <InstallGuide isWeb={isWeb} onDone={() => { clearInstallPending(); setShowInstall(false) }} />
