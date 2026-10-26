@@ -570,6 +570,29 @@ export function useAppState() {
     back()
   }
 
+  // Comptes Google/Apple : la date de naissance n'est pas fournie par le fournisseur.
+  // Moins de 15 ans → le compte vient d'être créé, on le supprime et on déconnecte.
+  const submitDobGate = () => {
+    const s = stateRef.current
+    const uid = userIdRef.current
+    if (!uid) return
+    if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
+    update({ authBusy: true, authError: null })
+    ;(async () => {
+      if (isUnderMinAge(s.authDob)) {
+        const err = await deleteAccount()
+        if (err) await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+        return update({ authBusy: false, authError: UNDER_AGE_MESSAGE })
+      }
+      const { error } = await supabase.from('profiles').update({ date_naissance: s.authDob }).eq('id', uid)
+      if (error) {
+        logIfError('profiles dob update')({ error })
+        return update({ authBusy: false, authError: "L'enregistrement a échoué. Réessaie." })
+      }
+      update({ authBusy: false })
+    })()
+  }
+
   const logout = () => {
     supabase.auth.signOut().then(logIfError('signOut'))
   }
@@ -594,7 +617,7 @@ export function useAppState() {
       go, restore, openRoute, openDebate, openAgendaEvent, openCandidate, backToProgrammes, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
-      authGoogle, authApple, authGuest, deleteAccount, submitAuth, toggleAuthView,
+      authGoogle, authApple, authGuest, deleteAccount, submitAuth, submitDobGate, toggleAuthView,
       setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
