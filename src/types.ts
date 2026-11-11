@@ -97,6 +97,7 @@ export interface AppState {
   authPseudo: string
   authEmail: string
   authPass: string
+  authDob: string
   authSex: string
   authError: string | null
 }
