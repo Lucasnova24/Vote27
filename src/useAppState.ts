@@ -198,8 +198,12 @@ export function useAppState() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return
       if (session?.user) {
+        const sameUser = userIdRef.current === session.user.id && stateRef.current.authed
         userIdRef.current = session.user.id
         if (event === 'TOKEN_REFRESHED') return
+        // supabase-js ré-émet SIGNED_IN quand l'appli repasse au premier plan : on ne
+        // recharge pas (sinon écran de chargement + retour forcé sur l'accueil).
+        if (sameUser && event === 'SIGNED_IN') return
         update({ loading: true })
         loadUserData(session.user).then((patch) => {
           if (active) update(patch)
