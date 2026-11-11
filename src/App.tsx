@@ -22,6 +22,7 @@ import Debat from './screens/Debat'
 import AgendaEvent from './screens/AgendaEvent'
 import Programmes from './screens/Programmes'
 import Candidat from './screens/Candidat'
+import Admin from './screens/Admin'
 import CompleteProfile from './screens/CompleteProfile'
 import DobGate from './screens/DobGate'
 import Sidebar from './components/Sidebar'
@@ -92,6 +93,7 @@ export default function App() {
   else if (s.route === 'agendaEvent') screen = <AgendaEvent state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'candidat') screen = <Candidat state={s} actions={actions} isWeb={isWeb} />
   else if (s.route === 'programmes') screen = <Programmes state={s} actions={actions} isWeb={isWeb} />
+  else if (s.route === 'admin' && s.isAdmin) screen = <Admin actions={actions} isWeb={isWeb} />
   else if (s.route === 'completeprofile') screen = <CompleteProfile state={s} actions={actions} isWeb={isWeb} />
   else if (s.tab === 'accueil') screen = <Accueil state={s} actions={actions} isWeb={isWeb} onShowInstall={() => setShowInstall(true)} />
   else if (s.tab === 'isoloir') screen = <Isoloir state={s} actions={actions} isWeb={isWeb} />
