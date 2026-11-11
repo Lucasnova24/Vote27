@@ -14,7 +14,6 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { OAUTH_REDIRECT_URL, hapticError, hapticSuccess, hapticTap, isNative, nativePlatform, sha256Hex } from './lib/native'
 import appConfig from '../app.config.json'
 import { markInstallPending } from './lib/install'
-import { UNDER_AGE_MESSAGE, isUnderMinAge } from './lib/age'
 
 const initialState: AppState = {
   loading: true, authBusy: false, opinionsConsent: false, consentOpen: false,
@@ -496,7 +495,6 @@ export function useAppState() {
       if (!s.authFirst.trim() || !s.authLast.trim()) return update({ authError: 'Indique ton prénom et ton nom.' })
       if (s.authPseudo.trim().length < 3) return update({ authError: 'Le pseudo doit faire 3 caractères minimum.' })
       if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
-      if (isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
       if (!s.authSex) return update({ authError: 'Sélectionne une option pour le sexe.' })
     }
     update({ authBusy: true, authError: null })
@@ -547,7 +545,6 @@ export function useAppState() {
   const saveProfileExtra = () => {
     const s = stateRef.current
     const uid = userIdRef.current
-    if (s.authDob && isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
     if (uid) {
       supabase
         .from('profiles')
@@ -571,7 +568,6 @@ export function useAppState() {
   }
 
   // Comptes Google/Apple : la date de naissance n'est pas fournie par le fournisseur.
-  // Moins de 15 ans → le compte vient d'être créé, on le supprime et on déconnecte.
   const submitDobGate = () => {
     const s = stateRef.current
     const uid = userIdRef.current
@@ -579,14 +575,9 @@ export function useAppState() {
     if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
     update({ authBusy: true, authError: null })
     ;(async () => {
-      if (isUnderMinAge(s.authDob)) {
-        const err = await deleteAccount()
-        if (err) await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
-        return update({ authBusy: false, authError: UNDER_AGE_MESSAGE })
-      }
-      const { error } = await supabase.from('profiles').update({ date_naissance: s.authDob }).eq('id', uid)
-      if (error) {
-        logIfError('profiles dob update')({ error })
+      const { data, error } = await supabase.from('profiles').update({ date_naissance: s.authDob }).eq('id', uid).select('id')
+      if (error || !data?.length) {
+        logIfError('profiles dob update')({ error: error ?? { message: 'no row updated' } })
         return update({ authBusy: false, authError: "L'enregistrement a échoué. Réessaie." })
       }
       update({ authBusy: false })
