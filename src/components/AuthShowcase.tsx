@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import Brand from './Brand'
 
 // Panneau gauche de l'écran de connexion (web) : un carrousel qui accroche
@@ -86,7 +86,33 @@ function SlideAffinites() {
   )
 }
 
-/* ——— Slide 3 : Isoloir & programmes ——— */
+/* ——— Slide 3 : Isoloir (les votes) ——— */
+function SlideIsoloir() {
+  return (
+    <Phone tilt={-3}>
+      <div className="eyebrow">Isoloir · exemple</div>
+      <div style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 16, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <span className="tag" style={{ alignSelf: 'flex-start', background: '#E3E7FF', color: '#1F2A8A', fontSize: 11 }}>Vote du jour</span>
+        <div className="dsp" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.15 }}>Faut-il rendre le vote obligatoire ?</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, textAlign: 'center', borderRadius: 12, padding: '9px 0', fontSize: 13, fontWeight: 800, background: '#1F7A3E', color: '#fff' }}>Oui ✓</div>
+          <div style={{ flex: 1, textAlign: 'center', borderRadius: 12, padding: '9px 0', fontSize: 13, fontWeight: 800, background: '#EFEBE2', color: MUTED }}>Non</div>
+        </div>
+      </div>
+      <div style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 16, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <span className="tag" style={{ alignSelf: 'flex-start', background: '#FFEBC6', color: '#6E3A00', fontSize: 11 }}>1er tour · vote de la semaine</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['#3B4FD8', '#0E7A6B', '#A85400', '#6B45D9', '#C2385A'].map((c, i) => (
+            <span key={c} style={{ width: 30, height: 30, borderRadius: '50%', background: c, outline: i === 1 ? `2.5px solid ${INK}` : 'none', outlineOffset: 2, opacity: i === 1 ? 1 : 0.5 }} />
+          ))}
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: MUTED, fontWeight: 600 }}>Retrouve tout l'historique de tes votes</div>
+    </Phone>
+  )
+}
+
+/* ——— Slide 4 : Programmes ——— */
 function SlideProgrammes() {
   const themes = [
     { n: 'Économie', c: '#A85400', s: '#FFEBC6', on: true },
@@ -95,7 +121,7 @@ function SlideProgrammes() {
   ]
   return (
     <Phone tilt={-3}>
-      <div className="eyebrow">Isoloir &amp; programme · exemple</div>
+      <div className="eyebrow">Programmes · exemple</div>
       <div style={{ display: 'flex', gap: 6 }}>
         {themes.map((t) => (
           <span key={t.n} className="tag" style={{ background: t.on ? t.c : t.s, color: t.on ? '#fff' : t.c }}>{t.n}</span>
@@ -180,22 +206,29 @@ const SLIDES: { key: string; kicker: string; title: string; text: string; visual
     visual: <SlideAffinites />,
   },
   {
+    key: 'isoloir',
+    kicker: '2 · L\'isoloir',
+    title: 'Vote, même avant l\'élection.',
+    text: 'Vote du jour, vote après chaque débat, pronostic du 1er tour chaque semaine : donne ton avis et suis l\'évolution de tes choix.',
+    visual: <SlideIsoloir />,
+  },
+  {
     key: 'programmes',
-    kicker: '2 · Isoloir & programme',
+    kicker: '3 · Programmes',
     title: 'Compare les programmes, sources à l\'appui.',
     text: 'Six thèmes, tous les candidats déclarés, et un lien vérifiable pour chaque position. Zéro intox.',
     visual: <SlideProgrammes />,
   },
   {
     key: 'quiz',
-    kicker: '3 · Le quiz',
+    kicker: '4 · Le quiz',
     title: 'Teste-toi, un peu chaque jour.',
     text: 'Un quiz quotidien pour mieux comprendre les institutions et les enjeux. Gagne des points, des badges et grimpe dans les ligues.',
     visual: <SlideQuiz />,
   },
   {
     key: 'agenda',
-    kicker: '4 · L\'agenda',
+    kicker: '5 · L\'agenda',
     title: 'Ne rate aucun débat.',
     text: 'Débats, meetings, interviews : suis tout le calendrier de la campagne et reçois un rappel avant le direct.',
     visual: <SlideAgenda />,
@@ -204,14 +237,32 @@ const SLIDES: { key: string; kicker: string; title: string; text: string; visual
 
 const DELAY = 6500
 
+const arrowStyle: React.CSSProperties = {
+  width: 40, height: 40, borderRadius: '50%', flex: 'none', display: 'grid', placeItems: 'center',
+  background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.22)', color: '#fff',
+}
+
 export default function AuthShowcase() {
   const [i, setI] = useState(0)
   const [paused, setPaused] = useState(false)
 
+  const go = (n: number) => setI((n + SLIDES.length) % SLIDES.length)
+  const next = () => go(i + 1)
+  const prev = () => go(i - 1)
+
+  // Le minuteur suit la barre : temps restant conservé pendant la pause.
+  const remaining = useRef(DELAY)
+  const lastSlide = useRef(i)
   useEffect(() => {
     if (paused) return
-    const id = window.setTimeout(() => setI((n) => (n + 1) % SLIDES.length), DELAY)
-    return () => window.clearTimeout(id)
+    if (lastSlide.current !== i) { lastSlide.current = i; remaining.current = DELAY }
+    const start = Date.now()
+    const id = window.setTimeout(() => go(i + 1), remaining.current)
+    return () => {
+      window.clearTimeout(id)
+      remaining.current = Math.max(0, remaining.current - (Date.now() - start))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i, paused])
 
   const slide = SLIDES[i]
@@ -238,20 +289,38 @@ export default function AuthShowcase() {
       </div>
 
       <div style={{ position: 'relative' }} className="stk">
-        <div role="tablist" aria-label="Découvrir l'application" className="row" style={{ gap: 8 }}>
-          {SLIDES.map((s, n) => (
-            <button
-              key={s.key}
-              type="button"
-              role="tab"
-              aria-selected={n === i}
-              aria-label={s.kicker}
-              onClick={() => setI(n)}
-              style={{ height: 24, display: 'flex', alignItems: 'center', padding: 0 }}
-            >
-              <span style={{ display: 'block', height: 6, width: n === i ? 34 : 14, borderRadius: 99, background: n === i ? '#fff' : 'rgba(255,255,255,.3)', transition: 'width .3s ease, background-color .3s ease' }} />
-            </button>
-          ))}
+        <style>{`@keyframes authFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }`}</style>
+        <div className="row" style={{ gap: 12 }}>
+          <button type="button" onClick={prev} aria-label="Explication précédente" className="press" style={arrowStyle}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <div role="tablist" aria-label="Découvrir l'application" className="row" style={{ gap: 6, flex: 1, maxWidth: 360 }}>
+            {SLIDES.map((sl, n) => (
+              <button
+                key={sl.key}
+                type="button"
+                role="tab"
+                aria-selected={n === i}
+                aria-label={sl.kicker}
+                onClick={() => go(n)}
+                style={{ flex: 1, height: 24, display: 'flex', alignItems: 'center', padding: 0 }}
+              >
+                <span style={{ display: 'block', width: '100%', height: 5, borderRadius: 99, background: 'rgba(255,255,255,.25)', overflow: 'hidden' }}>
+                  <span
+                    key={n === i ? 'on-' + i : 'off'}
+                    style={{
+                      display: 'block', height: '100%', borderRadius: 99, background: '#fff', transformOrigin: 'left',
+                      transform: n < i ? 'scaleX(1)' : 'scaleX(0)',
+                      ...(n === i ? { animation: `authFill ${DELAY}ms linear forwards`, animationPlayState: paused ? 'paused' : 'running' } : {}),
+                    }}
+                  />
+                </span>
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={next} aria-label="Explication suivante" className="press" style={arrowStyle}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
         </div>
         <div style={{ fontSize: 12, lineHeight: 1.55, color: '#A7ADD3', maxWidth: 520, marginTop: 10 }}>
           Mon Petit Vote 2027 est une application civique indépendante et non officielle. Les écrans ci-dessus sont des exemples illustratifs ; les votes, quiz et pronostics n'ont aucune valeur de sondage officiel.
