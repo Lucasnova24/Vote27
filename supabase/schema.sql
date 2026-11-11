@@ -715,21 +715,24 @@ insert into public.candidates (slug, full_name, party, candidacy_status, candida
   ('edouard-philippe',      'Édouard Philippe',      'Horizons',                  'Déclaré (septembre 2024)',                 null,                                                     'https://www.edouardphilippe.fr/'),
   ('gabriel-attal',         'Gabriel Attal',         'Renaissance',               'Déclaré (22 mai 2026)',                    null,                                                     'https://attalpresident.fr/'),
   ('bruno-retailleau',      'Bruno Retailleau',      'LR',                        'Désigné par les adhérents (19 avril 2026)','73,8 % des voix en consultation interne.',              null),
-  ('marine-tondelier',      'Marine Tondelier',      'Les Écologistes',           'Déclarée',                                 'Hors primaire PS / Place publique.',                    'https://marinetondelier.fr/'),
+  ('marine-tondelier',      'Marine Tondelier',      'Les Écologistes',           'Pressentie',                               'Vote des adhérents Écologistes du 10 au 13 décembre 2026 (candidature ou ralliement).', 'https://marinetondelier.fr/'),
   ('fabien-roussel',        'Fabien Roussel',        'PCF',                       'Déclaré (6 septembre 2026)',               'Validé à 72 % par les militants.',                       null),
-  ('olivier-faure',         'Olivier Faure',         'PS',                        'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
-  ('raphael-glucksmann',    'Raphaël Glucksmann',    'Place publique',            'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
-  ('segolene-royal',        'Ségolène Royal',        'Primaire PS / Place publique','Candidate à la primaire',                'Primaire « Choisir 2027 ».',                             null),
-  ('jerome-guedj',          'Jérôme Guedj',          'PS',                        'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
-  ('emmanuel-maurel',       'Emmanuel Maurel',       'GRS',                       'Candidat à la primaire',                   'Primaire « Choisir 2027 ».',                             null),
-  ('eric-zemmour',          'Éric Zemmour',          'Reconquête',                'Candidature confirmée oralement (17 sept. 2026)', 'Déclaration formelle attendue à l''automne.',   null),
+  ('olivier-faure',         'Olivier Faure',         'PS',                        'Éliminé à la primaire (11 octobre 2026)',  'Primaire « Choisir 2027 », remportée par Raphaël Glucksmann.', null),
+  ('raphael-glucksmann',    'Raphaël Glucksmann',    'Place publique',            'Désigné par la primaire (11 octobre 2026)', 'Plus de 66 % des voix dès le 1er tour de « Choisir 2027 ».', null),
+  ('segolene-royal',        'Ségolène Royal',        'Primaire PS / Place publique','Éliminée à la primaire (11 octobre 2026)', 'Primaire « Choisir 2027 », remportée par Raphaël Glucksmann.', null),
+  ('jerome-guedj',          'Jérôme Guedj',          'PS',                        'Éliminé à la primaire (11 octobre 2026)',  'Primaire « Choisir 2027 », remportée par Raphaël Glucksmann.', null),
+  ('emmanuel-maurel',       'Emmanuel Maurel',       'GRS',                       'Éliminé à la primaire (11 octobre 2026)',  'Primaire « Choisir 2027 », remportée par Raphaël Glucksmann.', null),
+  ('eric-zemmour',          'Éric Zemmour',          'Reconquête',                'Déclaré (17 septembre 2026)',              'Annonce sur BFMTV.',                                     null),
   ('nicolas-dupont-aignan', 'Nicolas Dupont-Aignan', 'DLF',                       'Déclaré (19 septembre 2026)',              '4e candidature.',                                        null),
   ('david-lisnard',         'David Lisnard',         'Nouvelle Énergie',          'Déclaré',                                  'A quitté LR en avril 2026.',                             null),
   ('bernard-cazeneuve',     'Bernard Cazeneuve',     'Gauche (hors primaire)',    'Déclaré (16 juillet 2026)',                'A décliné la primaire socialiste.',                      null),
   ('delphine-batho',        'Delphine Batho',        'Génération écologie',       'Déclarée',                                 null,                                                     null),
   ('karim-bouamrane',       'Karim Bouamrane',       'PS',                        'Déclaré',                                  'Maire de Saint-Ouen.',                                   null),
   ('nathalie-arthaud',      'Nathalie Arthaud',      'LO',                        'Déclarée',                                 null,                                                     null),
-  ('natacha-polony',        'Natacha Polony',        'Sans étiquette',            'Pressentie',                               null,                                                     null)
+  ('natacha-polony',        'Natacha Polony',        'Sans étiquette',            'Déclarée (14 octobre 2026)',               'Annonce sur France Inter.',                              null),
+  ('olivier-becht',         'Olivier Becht',         'Sans étiquette',            'Déclaré (octobre 2026)',                   'Se revendique de l''« extrême centre ».',                null),
+  ('teddy-riner',           'Teddy Riner',           'Sans étiquette',            'Déclaré (9 novembre 2026)',                'Annonce en vidéo et dans Le Parisien.',                  null),
+  ('francois-ruffin',       'François Ruffin',       'Debout !',                  'Déclaré (14 septembre 2026)',              'Annonce dans Libération.',                               null)
 on conflict (slug) do nothing;
 
 insert into public.events
