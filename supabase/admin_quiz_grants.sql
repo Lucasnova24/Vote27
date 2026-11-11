@@ -1,0 +1,11 @@
+-- ═════════════════════════════════════════════════════════════
+-- Vote2027 — droits de table pour l'édition des questions de quiz
+-- À exécuter après admin_roles_schema.sql. Idempotent.
+--
+-- La policy « quiz_questions: admin write » ne suffit pas : sans GRANT, le
+-- rôle `authenticated` reçoit « permission denied for table quiz_questions »
+-- avant que le RLS ne soit évalué (l'écran Administration > Quiz restait vide).
+-- Le RLS reste le filtre : seuls les comptes is_admin() voient ou modifient
+-- des lignes ; un utilisateur normal obtient 0 ligne.
+-- ═════════════════════════════════════════════════════════════
+grant select, insert, update, delete on public.quiz_questions to authenticated;
