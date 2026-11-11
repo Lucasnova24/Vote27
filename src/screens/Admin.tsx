@@ -52,6 +52,8 @@ interface TableDef {
   table: string
   pk: string
   select?: string
+  // colonne « jour » : permet de trier / filtrer la liste par jour
+  dayKey?: string
   children?: ChildDef[]
   order: { column: string; ascending?: boolean }[]
   title: (r: Row) => string
@@ -67,7 +69,7 @@ const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
 
 const TABLES: TableDef[] = [
   {
-    id: 'vote', label: 'Vote du jour', table: 'vote_questions', pk: 'code',
+    id: 'vote', label: 'Vote du jour', table: 'vote_questions', pk: 'code', dayKey: 'date_publication',
     order: [{ column: 'ordre' }],
     title: (r) => str(r.question), sub: (r) => `${str(r.code)} · ${str(r.statut)}${r.date_publication ? ' · ' + str(r.date_publication) : ''}`,
     canCreate: true, canDelete: true,
@@ -100,7 +102,7 @@ const TABLES: TableDef[] = [
     ],
   },
   {
-    id: 'events', label: 'Agenda', table: 'events', pk: 'id',
+    id: 'events', label: 'Agenda', table: 'events', pk: 'id', dayKey: 'event_date',
     order: [{ column: 'event_date', ascending: false }],
     title: (r) => str(r.title), sub: (r) => `${str(r.category)} · ${str(r.event_date) || str(r.date_label) || 'date à fixer'}`,
     canCreate: true, canDelete: true,
@@ -225,7 +227,7 @@ const TABLES: TableDef[] = [
     ],
   },
   {
-    id: 'notifs', label: 'Notifications', table: 'notifications_planning', pk: 'id',
+    id: 'notifs', label: 'Notifications', table: 'notifications_planning', pk: 'id', dayKey: 'date_envoi',
     order: [{ column: 'date_envoi', ascending: false }, { column: 'heure_envoi' }],
     title: (r) => str(r.titre), sub: (r) => `${str(r.date_envoi)} ${str(r.heure_envoi).slice(0, 5)} · ${r.actif ? 'actif' : 'inactif'}${r.envoye_le ? ' · envoyé' : ''}`,
     canCreate: true, canDelete: true,
@@ -539,6 +541,9 @@ export default function Admin({ actions, isWeb }: Props) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  // tri / filtre par jour (onglets qui ont une colonne jour)
+  const [sort, setSort] = useState<'defaut' | 'asc' | 'desc'>('asc')
+  const [day, setDay] = useState('')
   // null = liste ; 'new' = création ; Row = édition
   const [editing, setEditing] = useState<Row | 'new' | null>(null)
 
@@ -552,14 +557,30 @@ export default function Admin({ actions, isWeb }: Props) {
     setRows((data as unknown as Row[]) ?? [])
   }, [def])
 
-  useEffect(() => { setEditing(null); setQuery(''); void load() }, [load])
+  useEffect(() => { setEditing(null); setQuery(''); setDay(''); setSort('asc'); void load() }, [load])
 
   const shown = useMemo(() => {
     if (!rows) return []
     const n = query.trim().toLowerCase()
-    if (!n) return rows
-    return rows.filter((r) => JSON.stringify(r).toLowerCase().includes(n))
-  }, [rows, query])
+    let out = n ? rows.filter((r) => JSON.stringify(r).toLowerCase().includes(n)) : rows
+    const k = def.dayKey
+    if (k) {
+      if (day) out = out.filter((r) => str(r[k]).slice(0, 10) === day)
+      if (sort !== 'defaut') {
+        // sans jour : toujours en fin de liste, quel que soit le sens
+        const dir = sort === 'asc' ? 1 : -1
+        out = [...out].sort((a, b) => {
+          const da = str(a[k]).slice(0, 10)
+          const db = str(b[k]).slice(0, 10)
+          if (!da && !db) return 0
+          if (!da) return 1
+          if (!db) return -1
+          return da < db ? -dir : da > db ? dir : 0
+        })
+      }
+    }
+    return out
+  }, [rows, query, def, sort, day])
 
   return (
     <div className="rise stk" style={{ gap: 18, width: '100%', margin: '0 auto', maxWidth: wideWidth(isWeb) }}>
@@ -591,18 +612,42 @@ export default function Admin({ actions, isWeb }: Props) {
               <button type="button" onClick={() => setEditing('new')} className="btn" style={{ flex: 'none', background: '#171B3C', minHeight: 50 }}>+ Ajouter</button>
             )}
           </div>
+          {def.dayKey && (
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              <select className="inp" aria-label="Trier par jour" value={sort} onChange={(e) => setSort(e.target.value as 'defaut' | 'asc' | 'desc')} style={{ flex: '1 1 160px', width: 'auto' }}>
+                <option value="asc">Jour : du plus ancien au plus récent</option>
+                <option value="desc">Jour : du plus récent au plus ancien</option>
+                <option value="defaut">Ordre d'origine</option>
+              </select>
+              <input className="inp" type="date" aria-label="Aller à un jour" value={day} onChange={(e) => setDay(e.target.value)} style={{ flex: '1 1 150px', width: 'auto' }} />
+              <button type="button" className="chip" onClick={() => setDay(new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }))} style={{ background: '#fff', borderColor: '#DDD7C9' }}>Aujourd'hui</button>
+              {day && <button type="button" className="chip" onClick={() => setDay('')} style={{ background: '#fff', borderColor: '#DDD7C9' }}>Tous les jours</button>}
+            </div>
+          )}
           {loadError && <div role="alert" style={errBox}>{loadError}</div>}
           {rows === null ? (
             <div style={{ fontSize: 14, color: '#5C617B' }}>Chargement…</div>
           ) : (
             <div className="stk" style={{ gap: 8 }}>
               <div className="eyebrow">{shown.length} élément{shown.length > 1 ? 's' : ''}</div>
-              {shown.map((r) => (
-                <button key={str(r[def.pk])} type="button" onClick={() => setEditing(r)} className="card lift stk" style={{ gap: 3, textAlign: 'left', padding: '12px 14px' }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>{def.title(r)}</span>
-                  {def.sub && <span style={{ fontSize: 12.5, color: '#5C617B' }}>{def.sub(r)}</span>}
-                </button>
-              ))}
+              {shown.map((r, i) => {
+                const k = def.dayKey
+                const d = k ? str(r[k]).slice(0, 10) : ''
+                const prev = k && i > 0 ? str(shown[i - 1][k]).slice(0, 10) : null
+                // titre de jour quand on trie par jour et que le jour change
+                const header = k && sort !== 'defaut' && (i === 0 || d !== prev)
+                  ? (d ? new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Sans jour')
+                  : null
+                return (
+                  <div key={str(r[def.pk])} className="stk" style={{ gap: 8 }}>
+                    {header && <div className="eyebrow" style={{ paddingTop: i === 0 ? 0 : 8 }}>{header}</div>}
+                    <button type="button" onClick={() => setEditing(r)} className="card lift stk" style={{ gap: 3, textAlign: 'left', padding: '12px 14px' }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>{def.title(r)}</span>
+                      {def.sub && <span style={{ fontSize: 12.5, color: '#5C617B' }}>{def.sub(r)}</span>}
+                    </button>
+                  </div>
+                )
+              })}
               {shown.length === 0 && !loadError && <div style={{ fontSize: 14, color: '#5C617B' }}>Aucun élément.</div>}
             </div>
           )}
