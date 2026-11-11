@@ -3,7 +3,6 @@ import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import Brand from '../components/Brand'
 import { AppleLogo, GoogleLogo } from '../components/Icons'
-import { maxDobIso } from '../lib/age'
 import { isNative, nativePlatform } from '../lib/native'
 
 // Bouton « Continuer avec Apple » masqué tant que Sign in with Apple n'est pas relié (Supabase/Apple Developer).
@@ -100,10 +99,6 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
                   <input id="au-pseudo" className="inp" autoComplete="nickname" value={s.authPseudo} onChange={actions.setAuthPseudo} placeholder="lea_m" />
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <label className="lbl" htmlFor="au-dob">Date de naissance</label>
-                    <input id="au-dob" className="inp" type="date" max={maxDobIso()} autoComplete="bday" value={s.authDob} onChange={actions.setAuthDob} />
-                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <label className="lbl" htmlFor="au-sex">Sexe</label>
                     <select id="au-sex" className="inp" value={s.authSex} onChange={actions.setAuthSex}>

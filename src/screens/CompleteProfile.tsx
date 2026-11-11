@@ -3,7 +3,6 @@ import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import { backLink, flowWrap, h1Size } from '../styles'
 import { ChevronLeft } from '../components/Icons'
-import { maxDobIso } from '../lib/age'
 
 interface Props {
   state: AppState
@@ -38,10 +37,6 @@ export default function CompleteProfile({ state: s, actions, isWeb }: Props) {
           <input id="pf-pseudo" className="inp" value={s.authPseudo} onChange={actions.setAuthPseudo} placeholder="lea_m" />
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <label className="lbl" htmlFor="pf-dob">Date de naissance</label>
-            <input id="pf-dob" className="inp" type="date" max={maxDobIso()} value={s.authDob} onChange={actions.setAuthDob} />
-          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <label className="lbl" htmlFor="pf-sex">Sexe</label>
             <select id="pf-sex" className="inp" value={s.authSex} onChange={actions.setAuthSex}>

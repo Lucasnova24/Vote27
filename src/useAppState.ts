@@ -14,7 +14,6 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in'
 import { OAUTH_REDIRECT_URL, hapticError, hapticSuccess, hapticTap, isNative, nativePlatform, sha256Hex } from './lib/native'
 import appConfig from '../app.config.json'
 import { markInstallPending } from './lib/install'
-import { UNDER_AGE_MESSAGE, isUnderMinAge } from './lib/age'
 
 const initialState: AppState = {
   loading: true, authBusy: false, opinionsConsent: false, consentOpen: false,
@@ -29,7 +28,7 @@ const initialState: AppState = {
   reminders: [],
   quizCorrectTotal: 0, quizAttemptsTotal: 0,
   authed: false, authView: 'signup', authProvider: null,
-  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authDob: '', authSex: '', authError: null,
+  authFirst: '', authLast: '', authPseudo: '', authEmail: '', authPass: '', authSex: '', authError: null,
 }
 
 function providerFromUser(user: User): AuthProvider {
@@ -150,7 +149,6 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     authFirst: profile?.first_name ?? '',
     authLast: profile?.last_name ?? '',
     authPseudo: profile?.pseudo ?? '',
-    authDob: profile?.date_naissance ?? '',
     authSex: profile?.sexe ?? '',
     profileVille: profile?.ville ?? '',
     profileRegion: profile?.region ?? '',
@@ -495,8 +493,6 @@ export function useAppState() {
     if (s.authView === 'signup') {
       if (!s.authFirst.trim() || !s.authLast.trim()) return update({ authError: 'Indique ton prénom et ton nom.' })
       if (s.authPseudo.trim().length < 3) return update({ authError: 'Le pseudo doit faire 3 caractères minimum.' })
-      if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
-      if (isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
       if (!s.authSex) return update({ authError: 'Sélectionne une option pour le sexe.' })
     }
     update({ authBusy: true, authError: null })
@@ -514,7 +510,7 @@ export function useAppState() {
             .from('profiles')
             .upsert({
               id: data.user.id, email: s.authEmail, first_name: s.authFirst, last_name: s.authLast, pseudo: s.authPseudo,
-              date_naissance: s.authDob, sexe: s.authSex,
+              sexe: s.authSex,
             })
         }
         update({ authBusy: false, authPass: '' })
@@ -534,7 +530,6 @@ export function useAppState() {
   const setAuthPseudo = (e: ChangeEvent<HTMLInputElement>) => update({ authPseudo: e.target.value, authError: null })
   const setAuthEmail = (e: ChangeEvent<HTMLInputElement>) => update({ authEmail: e.target.value, authError: null })
   const setAuthPass = (e: ChangeEvent<HTMLInputElement>) => update({ authPass: e.target.value, authError: null })
-  const setAuthDob = (e: ChangeEvent<HTMLInputElement>) => update({ authDob: e.target.value, authError: null })
   const setAuthSex = (e: ChangeEvent<HTMLSelectElement>) => update({ authSex: e.target.value, authError: null })
 
   const setProfileVille = (e: ChangeEvent<HTMLInputElement>) => update({ profileVille: e.target.value })
@@ -547,7 +542,6 @@ export function useAppState() {
   const saveProfileExtra = () => {
     const s = stateRef.current
     const uid = userIdRef.current
-    if (s.authDob && isUnderMinAge(s.authDob)) return update({ authError: UNDER_AGE_MESSAGE })
     if (uid) {
       supabase
         .from('profiles')
@@ -555,7 +549,6 @@ export function useAppState() {
           first_name: s.authFirst || null,
           last_name: s.authLast || null,
           pseudo: s.authPseudo || null,
-          date_naissance: s.authDob || null,
           sexe: s.authSex || null,
           ville: s.profileVille || null,
           region: s.profileRegion || null,
@@ -568,29 +561,6 @@ export function useAppState() {
         .then(logIfError('profiles extra fields update'))
     }
     back()
-  }
-
-  // Comptes Google/Apple : la date de naissance n'est pas fournie par le fournisseur.
-  // Moins de 15 ans → le compte vient d'être créé, on le supprime et on déconnecte.
-  const submitDobGate = () => {
-    const s = stateRef.current
-    const uid = userIdRef.current
-    if (!uid) return
-    if (!s.authDob) return update({ authError: 'Indique ta date de naissance.' })
-    update({ authBusy: true, authError: null })
-    ;(async () => {
-      if (isUnderMinAge(s.authDob)) {
-        const err = await deleteAccount()
-        if (err) await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
-        return update({ authBusy: false, authError: UNDER_AGE_MESSAGE })
-      }
-      const { error } = await supabase.from('profiles').update({ date_naissance: s.authDob }).eq('id', uid)
-      if (error) {
-        logIfError('profiles dob update')({ error })
-        return update({ authBusy: false, authError: "L'enregistrement a échoué. Réessaie." })
-      }
-      update({ authBusy: false })
-    })()
   }
 
   const logout = () => {
@@ -617,8 +587,8 @@ export function useAppState() {
       go, restore, openRoute, openDebate, openAgendaEvent, openCandidate, backToProgrammes, back, vote, answer, next, bAnswer, bStart, bRestart,
       markRead, setFilter, setTheme, setDebPick, pickFirstRound,
       toggleReminder,
-      authGoogle, authApple, authGuest, deleteAccount, submitAuth, submitDobGate, toggleAuthView,
-      setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthDob, setAuthSex,
+      authGoogle, authApple, authGuest, deleteAccount, submitAuth, toggleAuthView,
+      setAuthFirst, setAuthLast, setAuthPseudo, setAuthEmail, setAuthPass, setAuthSex,
       setProfileVille, setProfileRegion, setProfilePays, setProfileCP, setProfileTel, setProfileInterets,
       saveProfileExtra,
       logout, resetAll, acceptConsent, refuseConsent, withdrawConsent,
