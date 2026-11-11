@@ -49,8 +49,8 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
   const total = tally ? tally.oui + tally.non : 0
   const results = tally && total > 0
     ? [
-        { label: 'Oui', pct: Math.round((tally.oui / total) * 100) + '%', color: ACCENT },
-        { label: 'Non', pct: Math.round((tally.non / total) * 100) + '%', color: '#C26A00' },
+        { label: 'Oui', pct: Math.round((tally.oui / total) * 100) + '%', color: '#2E9D57' },
+        { label: 'Non', pct: Math.round((tally.non / total) * 100) + '%', color: '#D64545' },
       ]
     : []
 
@@ -65,32 +65,15 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
         Question posée à tous les inscrits. Un seul bulletin par personne. Le résultat affiché est le décompte réel des bulletins déposés dans l'app.
       </div>
 
-      {question && ((question.arguments_pour?.length ?? 0) > 0 || (question.arguments_contre?.length ?? 0) > 0) && (
-        <div className="stk" style={{ gap: 10 }}>
-          {[
-            { label: 'Arguments pour le Oui', items: question.arguments_pour ?? [], bg: '#E3E7FF', bc: '#B8C0F5', fg: '#1F2A8A' },
-            { label: 'Arguments pour le Non', items: question.arguments_contre ?? [], bg: '#FFEBC6', bc: '#F2CD86', fg: '#6E3A00' },
-          ].filter((g) => g.items.length > 0).map((g) => (
-            <details key={g.label} style={{ background: g.bg, border: '1px solid ' + g.bc, borderRadius: 18, padding: '12px 16px', color: g.fg }}>
-              <summary style={{ cursor: 'pointer', fontSize: 15, fontWeight: 700, minHeight: 28 }}>{g.label}</summary>
-              <ul style={{ margin: '10px 0 2px', paddingLeft: 20, fontSize: 14.5, lineHeight: 1.55 }}>
-                {g.items.map((a, i) => <li key={i} style={{ marginTop: i ? 8 : 0 }}>{a}</li>)}
-              </ul>
-            </details>
-          ))}
-          <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.5 }}>Arguments avancés par chaque camp, à titre informatif.</div>
-        </div>
-      )}
-
       {!voteDone && question && (
         <div className="stk" style={{ gap: 12 }}>
-          <button type="button" onClick={actions.vote('oui', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#E3E7FF', border: '1.5px solid #B8C0F5', textAlign: 'left' }}>
-            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#1F2A8A', lineHeight: 1 }}>Oui</span>
-            {question.oui_label && <span style={{ display: 'block', fontSize: 14.5, color: '#2A3596', marginTop: 6 }}>{question.oui_label}</span>}
+          <button type="button" onClick={actions.vote('oui', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#DDF3E4', border: '1.5px solid #9ED8B0', textAlign: 'left' }}>
+            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#14532D', lineHeight: 1 }}>Oui</span>
+            {question.oui_label && <span style={{ display: 'block', fontSize: 14.5, color: '#1B6B3A', marginTop: 6 }}>{question.oui_label}</span>}
           </button>
-          <button type="button" onClick={actions.vote('non', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#FFEBC6', border: '1.5px solid #F2CD86', textAlign: 'left' }}>
-            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#6E3A00', lineHeight: 1 }}>Non</span>
-            {question.non_label && <span style={{ display: 'block', fontSize: 14.5, color: '#7A4300', marginTop: 6 }}>{question.non_label}</span>}
+          <button type="button" onClick={actions.vote('non', question.code)} className="press" style={{ display: 'block', width: '100%', padding: '22px 20px', borderRadius: 22, background: '#FDE0E0', border: '1.5px solid #F2A9A9', textAlign: 'left' }}>
+            <span className="dsp" style={{ display: 'block', fontSize: 32, fontWeight: 800, color: '#7F1D1D', lineHeight: 1 }}>Non</span>
+            {question.non_label && <span style={{ display: 'block', fontSize: 14.5, color: '#991B1B', marginTop: 6 }}>{question.non_label}</span>}
           </button>
         </div>
       )}
@@ -117,6 +100,23 @@ export default function VoteScreen({ state: s, actions, isWeb }: Props) {
             <div style={{ fontSize: 14.5, color: '#B9BEDD', marginTop: 8 }}>{'Bulletin enregistré : ' + (s.voteChoice === 'oui' ? 'Oui' : 'Non')}</div>
           </div>
           <button type="button" onClick={actions.back} className="btn" style={{ background: ACCENT }}>Retour au bulletin</button>
+        </div>
+      )}
+
+      {question && ((question.arguments_pour?.length ?? 0) > 0 || (question.arguments_contre?.length ?? 0) > 0) && (
+        <div className="stk" style={{ gap: 10 }}>
+          {[
+            { label: 'Arguments pour le Oui', items: question.arguments_pour ?? [], bg: '#DDF3E4', bc: '#9ED8B0', fg: '#14532D' },
+            { label: 'Arguments pour le Non', items: question.arguments_contre ?? [], bg: '#FDE0E0', bc: '#F2A9A9', fg: '#7F1D1D' },
+          ].filter((g) => g.items.length > 0).map((g) => (
+            <details key={g.label} style={{ background: g.bg, border: '1px solid ' + g.bc, borderRadius: 18, padding: '12px 16px', color: g.fg }}>
+              <summary style={{ cursor: 'pointer', fontSize: 15, fontWeight: 700, minHeight: 28 }}>{g.label}</summary>
+              <ul style={{ margin: '10px 0 2px', paddingLeft: 20, fontSize: 14.5, lineHeight: 1.55 }}>
+                {g.items.map((a, i) => <li key={i} style={{ marginTop: i ? 8 : 0 }}>{a}</li>)}
+              </ul>
+            </details>
+          ))}
+          <div style={{ fontSize: 12.5, color: '#5C617B', lineHeight: 1.5 }}>Arguments avancés par chaque camp, à titre informatif.</div>
         </div>
       )}
     </div>
