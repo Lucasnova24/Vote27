@@ -2,6 +2,7 @@ import type { AppActions } from '../useAppState'
 import type { AppState } from '../types'
 import { ACCENT } from '../data'
 import Brand from '../components/Brand'
+import AuthShowcase from '../components/AuthShowcase'
 import { AppleLogo, GoogleLogo } from '../components/Icons'
 import { maxDobIso } from '../lib/age'
 import { isNative, nativePlatform } from '../lib/native'
@@ -25,26 +26,7 @@ export default function Auth({ state: s, actions, isWeb }: Props) {
 
   return (
     <div style={{ position: 'relative', display: 'flex', minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))', background: '#F6F4EE', color: '#14162B', fontFamily: "'Hanken Grotesk',system-ui,sans-serif", overflow: 'hidden' }}>
-      {isWeb && (
-        <div style={{ flex: 1, minWidth: 0, background: '#171B3C', color: '#fff', padding: 56, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <Brand size={48} dark />
-          <div className="stk" style={{ gap: 32 }}>
-            <div className="dsp" style={{ fontSize: 50, lineHeight: 1.04, fontWeight: 700, maxWidth: 520 }}>
-              Six thèmes, tous les candidats déclarés, une source vérifiable pour chaque position.
-            </div>
-            <div style={{ display: 'flex', gap: 6, height: 16, maxWidth: 520 }} aria-hidden="true">
-              <div style={{ flex: 26, borderRadius: 99, background: '#5B6DF0' }} />
-              <div style={{ flex: 23, borderRadius: 99, background: '#2FB39F' }} />
-              <div style={{ flex: 19, borderRadius: 99, background: '#F0A03C' }} />
-              <div style={{ flex: 17, borderRadius: 99, background: '#9A78F2' }} />
-              <div style={{ flex: 15, borderRadius: 99, background: '#EF7C97' }} />
-            </div>
-          </div>
-          <div style={{ fontSize: 13, lineHeight: 1.55, color: '#A7ADD3', maxWidth: 460 }}>
-            Mon Petit Vote 2027 est une application civique indépendante et non officielle. Les candidats affichés sont réels (déclarés ou pressentis) ; les votes, quiz et pronostics de l'app n'ont aucune valeur de sondage officiel.
-          </div>
-        </div>
-      )}
+      {isWeb && <AuthShowcase />}
 
       <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', display: 'flex' }}>
         <div className="rise" style={{ margin: 'auto', width: '100%', maxWidth: 420, padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', gap: 18, opacity: busy ? 0.7 : 1, pointerEvents: busy ? 'none' : 'auto' }}>
