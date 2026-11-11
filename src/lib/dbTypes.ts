@@ -21,6 +21,8 @@ export interface ProfileRow {
   sexe: string | null
   // consentement explicite aux réponses (supabase/consent.sql) ; absent tant que non migré
   opinions_consent_at?: string | null
+  // supabase/admin_roles_schema.sql ; absent tant que non migré
+  role?: 'user' | 'admin'
   created_at: string
 }
 

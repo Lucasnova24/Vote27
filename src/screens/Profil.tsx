@@ -100,6 +100,16 @@ export default function Profil({ state: s, actions, isWeb }: Props) {
 
       <div style={{ order: 4 }}><NotificationsCard /></div>
 
+      {s.isAdmin && (
+        <button type="button" onClick={actions.openRoute('admin')} className="card lift row" style={{ order: 4, justifyContent: 'space-between', gap: 12, textAlign: 'left' }}>
+          <span className="stk" style={{ gap: 2 }}>
+            <span style={{ fontSize: 15, fontWeight: 700 }}>Administration</span>
+            <span style={{ fontSize: 13, color: '#454A66' }}>Modifier candidats, agenda, vote du jour, quiz, affinités</span>
+          </span>
+          <ChevronRight />
+        </button>
+      )}
+
       <section style={{ order: 5 }} aria-label="Badges">
         <h2 className="dsp" style={{ margin: '6px 0 12px', fontSize: 22, fontWeight: 700 }}>Badges</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>

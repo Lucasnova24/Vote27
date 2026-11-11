@@ -16,7 +16,7 @@ import appConfig from '../app.config.json'
 import { markInstallPending } from './lib/install'
 
 const initialState: AppState = {
-  loading: true, authBusy: false, opinionsConsent: false, consentOpen: false,
+  loading: true, authBusy: false, opinionsConsent: false, consentOpen: false, isAdmin: false,
   tab: 'accueil', route: null, debateSlug: null, agendaSlug: null, candidateName: null, filter: 'Tout', theme: 'Institutions',
   points: 0, notifRead: false, voteChoice: null, voteSaved: 0,
   quizDoneToday: false, quizScore: 0, dailyQuiz: [],
@@ -142,6 +142,7 @@ async function loadUserData(user: User): Promise<Partial<AppState>> {
     points: profile?.points ?? 0,
     notifRead: profile?.notif_read ?? false,
     opinionsConsent: !!profile?.opinions_consent_at,
+    isAdmin: profile?.role === 'admin',
     quizCorrectTotal: quizStats?.correct ?? 0,
     quizAttemptsTotal: quizStats?.answered ?? 0,
     authProvider: providerFromUser(user),
