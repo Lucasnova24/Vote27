@@ -43,10 +43,17 @@ export const CANDS: Candidate[] = [
   { name: 'Selma Labib', party: 'NPA – Révolutionnaires', status: 'déclaré', color: '#C2385A', ink: '#8C1F3D', soft: '#FFDCE5', initials: 'SL' },
   { name: 'Francis Lalanne', party: 'France Libre', status: 'déclaré', color: '#0B6BB8', ink: '#0A4577', soft: '#D8EBFB', initials: 'FL' },
   { name: 'Jean Lassalle', party: 'Résistons !', status: 'pressenti', color: '#1F7A3E', ink: '#14532D', soft: '#DDF3E3', initials: 'JL' },
-  { name: 'David Lisnard', party: 'Nouvelle Énergie', status: 'pressenti', color: '#B8541F', ink: '#7A3512', soft: '#FCE3D3', initials: 'DL' },
+  { name: 'David Lisnard', party: 'Nouvelle Énergie', status: 'déclaré', color: '#B8541F', ink: '#7A3512', soft: '#FCE3D3', initials: 'DL' },
   { name: 'Florian Philippot', party: 'Les Patriotes', status: 'déclaré', color: '#7A3E9D', ink: '#4E2766', soft: '#EFE0FA', initials: 'FP' },
-  { name: 'Natacha Polony', party: 'Sans étiquette', status: 'pressenti', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'NP' },
+  { name: 'Natacha Polony', party: 'Sans étiquette', status: 'déclaré', color: '#475569', ink: '#293548', soft: '#E2E6EC', initials: 'NP' },
   { name: 'Dominique de Villepin', party: 'Sans étiquette', status: 'pressenti', color: '#B8175A', ink: '#7A0F3C', soft: '#FBDCE9', initials: 'DV' },
+
+  // — added after launch: appended at the END on purpose, because
+  // first_round_picks stores the position in this array (candidate_index);
+  // inserting in the middle would re-attribute past weekly picks —
+  { name: 'Olivier Becht', party: 'Sans étiquette', status: 'déclaré', color: '#2C7DA0', ink: '#1B4E63', soft: '#D6ECF5', initials: 'OB' },
+  { name: 'Teddy Riner', party: 'Sans étiquette', status: 'déclaré', color: '#6E5B3E', ink: '#443923', soft: '#EDE6D8', initials: 'TR' },
+  { name: 'François Ruffin', party: 'Debout !', status: 'déclaré', color: '#C8341C', ink: '#8A1F0E', soft: '#FFDFD8', initials: 'FR' },
 ]
 
 // The quiz question bank (1650 questions across 11 themes) lives entirely in
