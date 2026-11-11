@@ -18,7 +18,7 @@ export default function DobGate({ state: s, actions }: Props) {
         <div className="stk" style={{ gap: 8 }}>
           <h1 className="dsp" style={{ margin: 0, fontSize: 32, lineHeight: 1.05, fontWeight: 700 }}>Une dernière étape</h1>
           <div style={{ fontSize: 15, lineHeight: 1.5, color: '#454A66' }}>
-            Indique ta date de naissance pour finaliser ton inscription. L'application est réservée aux personnes de 15 ans et plus.
+            Indique ta date de naissance pour finaliser ton inscription.
           </div>
         </div>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 16 }}>

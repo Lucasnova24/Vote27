@@ -42,11 +42,8 @@ alter table public.profiles add column if not exists interets text;
 alter table public.profiles add column if not exists date_naissance date;
 alter table public.profiles add column if not exists sexe text;
 
--- Inscription réservée aux 15 ans et plus. NOT VALID : les lignes existantes
--- ne sont pas revérifiées, seules les nouvelles écritures le sont.
+-- Contrôle d'âge minimum retiré (la date de naissance reste collectée).
 alter table public.profiles drop constraint if exists profiles_min_age;
-alter table public.profiles add constraint profiles_min_age
-  check (date_naissance is null or date_naissance <= (current_date - interval '15 years')::date) not valid;
 
 alter table public.profiles enable row level security;
 
